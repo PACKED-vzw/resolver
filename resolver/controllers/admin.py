@@ -134,8 +134,9 @@ def admin_edit_document(id):
             return admin_view_persistent_object(id)
 
         # TODO: I assume only one instance per document type
-        if request.form['type'] in map(lambda obj: obj.type,\
-                                           doc.persistent_object.documents):
+        if (request.form['type'] != doc.type) and\
+           (request.form['type'] in map(lambda obj: obj.type,\
+                                        doc.persistent_object.documents)):
             flash("There already is a document of this type", "warning")
             return render_template("admin/edit_document.html", title="Admin",\
                                    document=doc, types=document_types)
