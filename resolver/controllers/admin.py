@@ -65,12 +65,14 @@ def admin_new_persistent_object():
 @app.route('/admin/document/<int:id>')
 def admin_view_document(id):
     doc = Document.query.filter(Document.id == id).first()
+    po = doc.persistent_object
 
     if not doc:
         flash("Document not found", "warning")
         return redirect("/admin/object")
 
-    return render_template("admin/document.html", title="Admin", document=doc)
+    return render_template("admin/document.html", title="Admin",\
+                           document=doc, po=po)
 
 #@app.route('/admin/document/<int:id>', methods=["DELETE"])
 @app.route('/admin/document/delete/<int:id>')
