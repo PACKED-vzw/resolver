@@ -12,11 +12,7 @@
         Type: {{ object.type }}
       </div>
     </div>
-  </div>
-</div>
 
-<div class="row">
-  <div class="col-md-8 col-md-offset-2">
     <ul class="list-group">
       <li class="list-group-item disabled">
         <h3 class="panel-title">Documents</h3>
@@ -29,11 +25,7 @@
       </li>
       {% endfor %}
     </ul>
-  </div>
-</div>
 
-<div class="row">
-  <div class="col-md-8 col-md-offset-2">
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title">Add document</h3>
@@ -50,6 +42,9 @@
             <label for="type" class="col-sm-2">Type</label>
             <div class="col-sm-10">
               <select id="type" name="type" class="form-control">
+                {% for type in types %}
+                <option value="{{ type }}">{{ type|capitalize }}</option>
+                {% endfor %}
                 <option value="data">Data</option>
                 <option value="representation">Representation</option>
               </select>
@@ -61,6 +56,15 @@
             </div>
           </div>
         </form>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Actions</h3>
+      </div>
+      <div class="panel-body">
+        <a href="#" class="btn btn-primary">Edit</a>
+        <a href="/admin/object/delete/{{ object.id }}" class="btn btn-danger">Delete</a>
       </div>
     </div>
   </div>

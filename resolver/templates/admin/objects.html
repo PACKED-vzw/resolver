@@ -18,10 +18,9 @@
             <label for="type" class="col-sm-2">Type</label>
             <div class="col-sm-10">
               <select id="type" name="type" class="form-control">
-                <option value="work">Work</option>
-                <option value="agent">Agent</option>
-                <option value="concept">Concept</option>
-                <option value="event">Event</option>
+                {% for type in types %}
+                <option value="{{ type }}">{{ type|capitalize }}</option>
+                {% endfor %}
               </select>
             </div>
           </div>
