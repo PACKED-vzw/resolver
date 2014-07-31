@@ -16,7 +16,8 @@ def admin_index():
 @app.route('/admin/object')
 def admin_list_persistent_objects():
     objects = PersistentObject.query.all()
-    return render_template("admin/objects.html", title="Admin", objects=objects)
+    return render_template("admin/objects.html", title="Admin",\
+                           objects=objects, types=object_types)
 
 @app.route('/admin/object/<int:id>')
 def admin_view_persistent_object(id):
@@ -25,7 +26,8 @@ def admin_view_persistent_object(id):
     if po:
         documents = po.documents
         return render_template("admin/object.html", title="Admin",
-                               object=po, documents=documents)
+                               object=po, documents=documents,\
+                               types=document_types)
     else:
         flash("Object not found!", "danger")
         return redirect("/admin/object")
@@ -117,6 +119,35 @@ def admin_new_document(id):
     # TODO: to flash or not to flash (UX)
 
     return redirect('/admin/object/%s' % id)
+
+@app.route('/admin/document/edit/<int:id>', methods=["GET", "POST"])
+def admin_edit_document(id):
+    doc = Document.query.filter(Document.id == id).first()
+
+    if not doc:
+        flash("Document not found", "warning")
+        return redirect("/admin/object")
+
+    if request.method == 'POST':
+        if not(request.form['type'] in document_types):
+            flash("Type of document not allowed", "danger")
+            return admin_view_persistent_object(id)
+
+        # TODO: I assume only one instance per document type
+        if request.form['type'] in map(lambda obj: obj.type,\
+                                           doc.persistent_object.documents):
+            flash("There already is a document of this type", "warning")
+            return render_template("admin/edit_document.html", title="Admin",\
+                                   document=doc, types=document_types)
+
+        # TODO: Check form (WTForms?)
+        doc.enabled = 'enabled' in request.form
+        doc.type = request.form['type']
+        doc.url = request.form['url']
+        return redirect('/admin/document/%s' % id)
+
+    return render_template("admin/edit_document.html", title="Admin",\
+                           document=doc, types=document_types)
 
 @app.route('/admin/csv', methods=["GET", "POST"])
 def admin_csv_import():
