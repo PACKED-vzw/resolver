@@ -1,0 +1,68 @@
+{% extends "admin/layout.html" %}
+{% block body %}
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">About object</h3>
+      </div>
+      <div class="panel-body">
+        Title: {{ object.title }}<br>
+        Type: {{ object.type }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <ul class="list-group">
+      <li class="list-group-item disabled">
+        <h3 class="panel-title">Documents</h3>
+      </li>
+      {% for document in documents %}
+      <li class="list-group-item">
+        <a href="/admin/document/{{ document.id }}">{{ document.type }}</a>
+        <a href="{{ document.url }}" target="_blank"><span class="glyphicon glyphicon-circle-arrow-right"></span></a>
+        <a href="/admin/document/delete/{{ object.id }}"><span class="glyphicon glyphicon-remove"></span></a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Add document</h3>
+      </div>
+      <div class="panel-body">
+        <form action="/admin/document/{{ object.id }}" method="POST" role="form" class="form-horizontal">
+          <div class="form-group">
+            <label for="url" class="col-sm-2">URL</label>
+            <div class="col-sm-10">
+              <input class="form-control" id="url" name="url" placeholder="URL" type="text">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="type" class="col-sm-2">Type</label>
+            <div class="col-sm-10">
+              <select id="type" name="type" class="form-control">
+                <option value="data">Data</option>
+                <option value="representation">Representation</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <button type="submit" class="btn btn-default">Add</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
