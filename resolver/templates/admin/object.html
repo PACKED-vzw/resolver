@@ -9,7 +9,7 @@
       </div>
       <div class="panel-body">
         Title: {{ object.title }}<br>
-        Type: {{ object.type }}
+        Type: {{ object.type|capitalize }}
       </div>
     </div>
 
@@ -61,7 +61,7 @@
         <h3 class="panel-title">Actions</h3>
       </div>
       <div class="panel-body">
-        <a href="#" class="btn btn-primary">Edit</a>
+        <a href="/admin/object/edit/{{ object.id }}" class="btn btn-primary">Edit</a>
         <a href="/admin/object/delete/{{ object.id }}" class="btn btn-danger">Delete</a>
       </div>
     </div>

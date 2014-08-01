@@ -18,7 +18,7 @@ def view_object(id):
     if docs["data"]:
         return redirect(docs["data"].url, code=303)
 
-    return "Found"
+    return "Found (Landing page)"
 
 @app.route('/collection/<object_type>/<document_type>/<int:id>')
 def view_document(object_type, document_type, id):
@@ -28,5 +28,10 @@ def view_document(object_type, document_type, id):
 
     if not doc:
         return "Not found"
+
+    print doc.enabled
+
+    if not doc.enabled:
+        return "Link disabled"
 
     return redirect(doc.url, code=303)

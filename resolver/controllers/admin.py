@@ -4,6 +4,8 @@ from resolver.model import PersistentObject, Document,\
 from resolver.database import db_session
 from flask import redirect, request, render_template, flash
 
+# TODO: Edit titles everywhere
+
 @app.route('/')
 def index():
     return redirect('/admin')
@@ -63,6 +65,30 @@ def admin_new_persistent_object():
     else:
         flash("Type of object not allowed", "danger")
         return admin_view_persistent_objects()
+
+@app.route('/admin/object/edit/<int:id>', methods=["GET", "POST"])
+def admin_edit_object(id):
+    obj = PersistentObject.query.filter(PersistentObject.id == id).first()
+
+    if not obj:
+        flash("Object not found", "warning")
+        return redirect("/admin/object")
+
+    if request.method == 'POST':
+        if not(request.form['type'] in object_types):
+            flash("Type of object not allowed", "danger")
+            render_template("admin/edit_object.html", title="Admin",\
+                            object=obj, types=object_types)
+
+        # TODO: Check form (WTForms?)
+        obj.title = request.form['title']
+        obj.type = request.form['type']
+        db_session.commit() #commit changes to DB
+
+        return redirect('/admin/object/%s' % id)
+
+    return render_template("admin/edit_object.html", title="Admin",\
+                           object=obj, types=object_types)
 
 @app.route('/admin/document/<int:id>')
 def admin_view_document(id):
@@ -131,7 +157,9 @@ def admin_edit_document(id):
     if request.method == 'POST':
         if not(request.form['type'] in document_types):
             flash("Type of document not allowed", "danger")
-            return admin_view_persistent_object(id)
+            #return admin_view_persistent_object(id)
+            return render_template("admin/edit_document.html", title="Admin",\
+                                   document=doc, types=document_types)
 
         # TODO: I assume only one instance per document type
         if (request.form['type'] != doc.type) and\
@@ -145,6 +173,8 @@ def admin_edit_document(id):
         doc.enabled = 'enabled' in request.form
         doc.type = request.form['type']
         doc.url = request.form['url']
+        db_session.commit() #commit changes to DB
+
         return redirect('/admin/document/%s' % id)
 
     return render_template("admin/edit_document.html", title="Admin",\
