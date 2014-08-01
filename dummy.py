@@ -1,5 +1,5 @@
 from resolver.database import db_session, init_db
-from resolver.model import PersistentObject, Document
+from resolver.model import PersistentObject, Document, User
 
 init_db()
 
@@ -23,5 +23,7 @@ for object, documents in objects:
     db_session.add(object)
     for document in documents:
         db_session.add(document)
+
+db_session.add(User("admin", "default"))
 
 db_session.commit()

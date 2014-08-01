@@ -4,3 +4,4 @@ class Config(object):
     DATABASE_PASS = ""
     DATABASE_NAME = "resolver"
     SECRET_KEY = "changeme"
+    SALT = "changemetoo"
