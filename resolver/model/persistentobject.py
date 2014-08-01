@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Enum
 from sqlalchemy.orm import backref, relationship
 from resolver.database import Base
 
+# TODO: make types a property of PersistentObject?
 object_types = ('work', 'agent', 'concept', 'event')
 
 class PersistentObject(Base):

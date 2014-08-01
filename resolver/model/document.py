@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Enum, Boolean, ForeignKey
 from sqlalchemy.orm import backref, relationship
 from resolver.database import Base
 
+# TODO: make types a property of Document?
 document_types = ('data', 'representation')
 
 class Document(Base):
