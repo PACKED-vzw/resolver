@@ -1,6 +1,7 @@
 from resolver import app
-from resolver.model import PersistentObject, Document
-from flask import redirect
+from resolver.model import PersistentObject, Document, DocumentHit
+from resolver.database import db_session
+from flask import redirect, request
 
 @app.route('/collection')
 def collection():
@@ -25,13 +26,14 @@ def view_document(object_type, document_type, id):
     doc = Document.query.filter(Document.object_id == id,
                                 Document.type == document_type,
                                 PersistentObject.type == object_type).first()
-
     if not doc:
         return "Not found"
 
-    print doc.enabled
+    # TODO: make sure we get the right IP address from the WSGI host!!!
+    hit = DocumentHit(doc.id, request.remote_addr, request.referrer)
+    db_session.add(hit)
+    db_session.commit()
 
     if not doc.enabled:
         return "Link disabled"
-
     return redirect(doc.url, code=303)

@@ -13,6 +13,7 @@ class Document(Base):
     url = Column(String(512))
     enabled = Column(Boolean)
 
+    # TODO: is this valid?
     persistent_object = relationship("PersistentObject", backref=backref(''))
 
     def __init__(self, object_id, type='data', url=None):
