@@ -5,6 +5,7 @@ from resolver.database import db_session
 from resolver.controllers.admin.user import check_privilege
 from flask import redirect, request, render_template, flash
 from resolver.forms import ObjectForm, DocumentForm
+from resolver.util import log
 
 @app.route('/admin/object')
 @check_privilege
@@ -29,6 +30,7 @@ def admin_new_persistent_object():
                                id=form.id.data)
         db_session.add(obj)
         db_session.commit()
+        log("added a new object to the system: %s" % obj)
         # TODO: to flash or not to flash (UX)
         return redirect("/admin/object/%s" % obj.id)
     else:
@@ -38,7 +40,6 @@ def admin_new_persistent_object():
 @check_privilege
 def admin_view_persistent_object(id, form=None):
     po = PersistentObject.query.filter(PersistentObject.id == id).first()
-
     if po:
         documents = po.documents
         form = form if form else DocumentForm()
@@ -53,27 +54,21 @@ def admin_view_persistent_object(id, form=None):
 def admin_new_document(id):
     form = DocumentForm()
     po = PersistentObject.query.filter(PersistentObject.id == id).first()
-
     if not po:
         flash("Object for document not found!", "danger")
         return admin_view_persistent_objects()
-
     if not form.validate():
         return admin_view_persistent_object(id, form=form)
-
     # TODO: I assume only one instance per document type
     if form.type.data in map(lambda obj: obj.type, po.documents):
         flash("There already is a document of this type", "warning")
         return admin_view_persistent_object(id, form=form)
-
-    # TODO: Check if URL is not empty and sane (WTForms?)
     document = Document(id, type=form.type.data, url=form.url.data,
                         enabled=form.enabled.data)
     db_session.add(document)
     db_session.commit()
-
+    log("added a new document `%s' to the object `%s'" % (document, po))
     # TODO: to flash or not to flash (UX)
-
     return redirect('/admin/object/%s' % id)
 
 @app.route('/admin/object/edit/<id>', methods=["GET", "POST"])
@@ -91,14 +86,13 @@ def admin_edit_object(id):
         if not form.validate():
             return render_template("admin/edit_object.html", title="Admin",
                                    object=obj, form=form)
-
+        old = str(obj)
         obj.title = form.title.data
         obj.type = form.type.data
         obj.id = form.id.data
         db_session.commit() #commit changes to DB
-
+        log("changed object `%s' to `%s'" % (old, obj))
         return redirect('/admin/object/%s' % obj.id)
-
     form = ObjectForm(request.form, obj)
     return render_template("admin/edit_object.html", title="Admin",
                            object=obj, form=form)
@@ -108,19 +102,13 @@ def admin_edit_object(id):
 @check_privilege
 def admin_delete_persistent_object(id):
     po = PersistentObject.query.filter(PersistentObject.id == id).first()
-
     if not po:
         flash("Object not found!", "danger")
     else:
-
-        for doc in po.documents:
-            db_session.delete(doc)
-
         db_session.delete(po)
         db_session.commit()
-
+        log("removed the object `%s' from the system" % po)
         flash("Object deleted succesfully!", "success")
-
     return redirect("/admin/object")
 
 @app.route('/admin/csv', methods=["GET", "POST"])
@@ -137,5 +125,4 @@ def admin_csv_export():
             data += "'%s', '%s', '%s', '%s', '%s', '%s'\n" %\
                     (object.id, object.title, object.type,
                      document.type, document.url, document.enabled)
-
     return data
