@@ -22,8 +22,6 @@ class PersistentObject(Base):
         self.type = type
         self.title = title
 
-    def __str__(self):
-        return '<PObject %r>' % (self.id)
-
     def __repr__(self):
-        return '<PObject %r>' % (self.id)
+        return '<Object(%s), id=%s, title=%s>' %\
+            (self.type, self.id, self.title)

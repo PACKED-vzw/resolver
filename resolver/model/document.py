@@ -24,8 +24,6 @@ class Document(Base):
         self.url = url
         self.enabled = enabled
 
-    def __str__(self):
-        return '<Document %r>' % (self.id)
-
     def __repr__(self):
-        return '<PObject %r>' % (self.id)
+        return '<Document(%s), enabled=%s, url=%s>' %\
+            (self.type, self.enabled,self.url)
