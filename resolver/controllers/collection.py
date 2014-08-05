@@ -40,9 +40,11 @@ def view_document(object_type, document_type, id):
             return redirect(doc.url, code=303)
         else:
             title = "No link"
+            # TODO: Configuration for default messages
             message = "No link is available for this document."
     else:
         title = "Link disabled"
+        # TODO: Configuration for default messages
         message = "The link for this document was disabled by an administrator."
 
     if doc.notes:

@@ -1,0 +1,72 @@
+{% extends "admin/layout.html" %}
+{% block body %}
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Hits per document type</h3>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Hits</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tuple in document_hits %}
+          <tr>
+            <td>{{ tuple[0] | capitalize }}</td>
+            <td>{{ tuple[1] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Hits per object type</h3>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Hits</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tuple in object_hits %}
+          <tr>
+            <td>{{ tuple[0] | capitalize }}</td>
+            <td>{{ tuple[1] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Top 10 referrers</h3>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Referrer</th>
+            <th>Hits</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tuple in referrers %}
+          <tr>
+            <td>{{ tuple[0] }}</td>
+            <td>{{ tuple[1] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

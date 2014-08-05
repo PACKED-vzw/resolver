@@ -26,5 +26,8 @@ class DocumentHit(Base):
         self.document_id = document
         self.ip = ip
         self.referrer = clean_url(referrer)
-
         self.timestamp = datetime.now()
+
+    def __repr__(self):
+        return '<DocumentHit, time=%s, document=%s, type=%s>' %\
+            (self.timestamp, self.document_id, self.document.type)
