@@ -59,6 +59,7 @@ def admin_edit_document(id):
         doc.enabled = form.enabled.data
         doc.type = form.type.data
         doc.url = form.url.data
+        doc.notes = form.notes.data
         db_session.commit() #commit changes to DB
         log("changed document `%s' to `%s'" % (old, doc))
         # TODO: redirect to /admin/object instead?

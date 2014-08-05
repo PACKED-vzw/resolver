@@ -64,7 +64,7 @@ def admin_new_document(id):
         flash("There already is a document of this type", "warning")
         return admin_view_persistent_object(id, form=form)
     document = Document(id, type=form.type.data, url=form.url.data,
-                        enabled=form.enabled.data)
+                        enabled=form.enabled.data, notes=form.notes.data)
     db_session.add(document)
     db_session.commit()
     log("added a new document `%s' to the object `%s'" % (document, po))

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Enum, Boolean, ForeignKey, Text
 from sqlalchemy.orm import backref, relationship
 from resolver.database import Base
 
@@ -14,15 +14,17 @@ class Document(Base):
                                               ondelete="cascade"))
     url = Column(String(512))
     enabled = Column(Boolean)
+    notes = Column(Text)
 
     # TODO: is this valid?
     persistent_object = relationship("PersistentObject", backref=backref(''))
 
-    def __init__(self, object_id, type='data', url=None, enabled=True):
+    def __init__(self, object_id, type, url=None, enabled=True, notes=None):
         self.object_id = object_id
         self.type = type
         self.url = url
         self.enabled = enabled
+        self.notes = notes
 
     def __repr__(self):
         return '<Document(%s), enabled=%s, url=%s>' %\

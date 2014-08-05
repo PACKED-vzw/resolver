@@ -14,7 +14,9 @@ class DocumentHit(Base):
     __tablename__ = 'documenthit'
     id = Column(Integer, primary_key=True)
     ip = Column(String(15))
-    document_id = Column(Integer, ForeignKey("document.id"))
+    document_id = Column(Integer, ForeignKey("document.id",
+                                             onupdate="cascade",
+                                             ondelete="cascade"))
     referrer = Column(String(128))
     timestamp = Column(DateTime)
 

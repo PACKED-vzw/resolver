@@ -1,7 +1,6 @@
 from flask_wtf import Form
 from wtforms import StringField, SelectField, BooleanField,\
-    PasswordField, validators
-
+    PasswordField, TextAreaField, validators
 from resolver.model import object_types, document_types
 
 class ObjectForm(Form):
@@ -14,12 +13,13 @@ class ObjectForm(Form):
 
 class DocumentForm(Form):
     # TODO: URL not required
-    url = StringField('URL', [validators.required(), validators.URL()])
+    url = StringField('URL', [validators.optional(), validators.URL()])
     type = SelectField('Type', [validators.required()],
                        choices=zip(document_types,
                                    map(lambda c: c.capitalize(),
                                        document_types)))
     enabled = BooleanField('Enabled', default=True)
+    notes = TextAreaField('Notes', [validators.optional()])
 
 class SigninForm(Form):
     username = StringField('Username', [validators.required(),
