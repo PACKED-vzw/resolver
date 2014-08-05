@@ -1,8 +1,7 @@
 from flask import Flask
-from config import Config
 
 app = Flask(__name__)
-app.secret_key = Config.SECRET_KEY
+app.config.from_object('resolver.config.Config')
 
 # TODO: Logging in production only
 # TODO: Add log file to config

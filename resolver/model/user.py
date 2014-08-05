@@ -1,12 +1,12 @@
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import backref, relationship
-from resolver.database import Base
-from resolver.config import Config
 from hashlib import sha256
+from resolver import app
+from resolver.database import Base
 
 def hash_password(password):
     m = sha256()
-    m.update(Config.SALT + password)
+    m.update(app.config['SALT'] + password)
     return m.hexdigest()
 
 class User(Base):

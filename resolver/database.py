@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from resolver.config import Config
+from resolver import app
 
 engine = create_engine('mysql://%s:%s@%s/%s' %
-                       (Config.DATABASE_USER, Config.DATABASE_PASS,
-                        Config.DATABASE_HOST, Config.DATABASE_NAME),\
+                       (app.config['DATABASE_USER'], app.config['DATABASE_PASS'],
+                        app.config['DATABASE_HOST'], app.config['DATABASE_NAME']),\
                        convert_unicode=True, pool_recycle=3600)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
