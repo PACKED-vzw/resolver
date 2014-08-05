@@ -7,7 +7,7 @@ from flask import redirect, request
 def collection():
     return 'Error: ID required'
 
-@app.route('/collection/<int:id>')
+@app.route('/collection/<id>')
 def view_object(id):
     po = PersistentObject.query.filter(PersistentObject.id == id).first()
 
@@ -21,7 +21,7 @@ def view_object(id):
 
     return "Found (Landing page)"
 
-@app.route('/collection/<object_type>/<document_type>/<int:id>')
+@app.route('/collection/<object_type>/<document_type>/<id>')
 def view_document(object_type, document_type, id):
     doc = Document.query.filter(Document.object_id == id,
                                 Document.type == document_type,
@@ -35,5 +35,7 @@ def view_document(object_type, document_type, id):
     db_session.commit()
 
     if not doc.enabled:
-        return "Link disabled"
+        # We return HTTP error code 410 (Gone).
+        # TODO: check if this is a good idea (wrt. search engines etc)
+        return "Link disabled", 403
     return redirect(doc.url, code=303)

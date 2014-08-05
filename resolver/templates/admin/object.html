@@ -1,3 +1,4 @@
+{% from "_formhelpers.html" import render_field %}
 {% extends "admin/layout.html" %}
 {% block body %}
 
@@ -21,7 +22,7 @@
       <li class="list-group-item">
         <a href="/admin/document/{{ document.id }}">{{ document.type }}</a>
         <a href="{{ document.url }}" target="_blank"><span class="glyphicon glyphicon-circle-arrow-right"></span></a>
-        <a href="/admin/document/delete/{{ object.id }}"><span class="glyphicon glyphicon-remove"></span></a>
+        <a href="/admin/document/delete/{{ document.id }}"><span class="glyphicon glyphicon-remove"></span></a>
       </li>
       {% endfor %}
     </ul>
@@ -31,25 +32,19 @@
         <h3 class="panel-title">Add document</h3>
       </div>
       <div class="panel-body">
-        <form action="/admin/document/{{ object.id }}" method="POST" role="form" class="form-horizontal">
+        <form action="/admin/object/{{ object.id }}" method="POST" role="form" class="form-horizontal">
           <div class="form-group">
-            <label for="url" class="col-sm-2">URL</label>
-            <div class="col-sm-10">
-              <input class="form-control" id="url" name="url" placeholder="URL" type="text">
-            </div>
+            {{ render_field(form.url, placeholder="URL") }}
           </div>
           <div class="form-group">
-            <label for="type" class="col-sm-2">Type</label>
-            <div class="col-sm-10">
-              <select id="type" name="type" class="form-control">
-                {% for type in types %}
-                <option value="{{ type }}">{{ type|capitalize }}</option>
-                {% endfor %}
-              </select>
-            </div>
+            {{ render_field(form.type) }}
+          </div>
+          <div class="form-group">
+            {{ render_field(form.enabled) }}
           </div>
           <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
+              {{ form.csrf_token }}
               <button type="submit" class="btn btn-default">Add</button>
             </div>
           </div>

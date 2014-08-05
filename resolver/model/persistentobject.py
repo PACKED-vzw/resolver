@@ -7,7 +7,7 @@ object_types = ('work', 'agent', 'concept', 'event')
 
 class PersistentObject(Base):
     __tablename__ = 'persistentobject'
-    id = Column(Integer, primary_key=True)
+    id = Column(String(64), primary_key=True)
     type = Column(Enum(*object_types))
     title =  Column(String(512))
 

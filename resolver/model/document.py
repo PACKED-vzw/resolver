@@ -9,18 +9,20 @@ class Document(Base):
     __tablename__ = 'document'
     id = Column(Integer, primary_key=True)
     type = Column(Enum(*document_types))
-    object_id = Column(Integer, ForeignKey("persistentobject.id"))
+    object_id = Column(String(64), ForeignKey("persistentobject.id",
+                                              onupdate="cascade",
+                                              ondelete="cascade"))
     url = Column(String(512))
     enabled = Column(Boolean)
 
     # TODO: is this valid?
     persistent_object = relationship("PersistentObject", backref=backref(''))
 
-    def __init__(self, object_id, type='data', url=None):
+    def __init__(self, object_id, type='data', url=None, enabled=True):
         self.object_id = object_id
         self.type = type
         self.url = url
-        self.enabled = True
+        self.enabled = enabled
 
     def __str__(self):
         return '<Document %r>' % (self.id)

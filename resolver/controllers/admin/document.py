@@ -38,33 +38,6 @@ def admin_delete_document(id):
 
     return redirect("/admin/object/%s" % object_id)
 
-@app.route('/admin/document/<int:id>', methods=["POST"])
-@check_privilege
-def admin_new_document(id):
-    po = PersistentObject.query.filter(PersistentObject.id == id).first()
-
-    if not po:
-        flash("Object for document not found!", "danger")
-        return admin_view_persistent_objects()
-
-    if not(request.form['type'] in document_types):
-        flash("Type of document not allowed", "danger")
-        return admin_view_persistent_object(id)
-
-    # TODO: I assume only one instance per document type
-    if request.form['type'] in map(lambda obj: obj.type, po.documents):
-        flash("There already is a document of this type", "warning")
-        return admin_view_persistent_object(id)
-
-    # TODO: Check if URL is not empty and sane (WTForms?)
-    document = Document(id, type=request.form['type'], url=request.form['url'])
-    db_session.add(document)
-    db_session.commit()
-
-    # TODO: to flash or not to flash (UX)
-
-    return redirect('/admin/object/%s' % id)
-
 @app.route('/admin/document/edit/<int:id>', methods=["GET", "POST"])
 @check_privilege
 def admin_edit_document(id):
@@ -75,27 +48,21 @@ def admin_edit_document(id):
         return redirect("/admin/object")
 
     if request.method == 'POST':
-        if not(request.form['type'] in document_types):
-            flash("Type of document not allowed", "danger")
-            #return admin_view_persistent_object(id)
-            return render_template("admin/edit_document.html", title="Admin",\
-                                   document=doc, types=document_types)
+        form = DocumentForm()
 
         # TODO: I assume only one instance per document type
-        if (request.form['type'] != doc.type) and\
-           (request.form['type'] in map(lambda obj: obj.type,\
-                                        doc.persistent_object.documents)):
+        if (form.type.data != doc.type) and\
+           (form.type.data in map(lambda obj: obj.type,
+                                  doc.persistent_object.documents)):
             flash("There already is a document of this type", "warning")
-            return render_template("admin/edit_document.html", title="Admin",\
-                                   document=doc, types=document_types)
-
-        # TODO: Check form (WTForms?)
-        doc.enabled = 'enabled' in request.form
-        doc.type = request.form['type']
-        doc.url = request.form['url']
+            return render_template("admin/edit_document.html", title="Admin",
+                                   document=doc, form=form)
+        doc.enabled = form.enabled.data
+        doc.type = form.type.data
+        doc.url = form.url.data
         db_session.commit() #commit changes to DB
-
+        # TODO: redirect to /admin/object instead?
         return redirect('/admin/document/%s' % id)
-
+    form = DocumentForm(request.form, doc)
     return render_template("admin/edit_document.html", title="Admin",\
-                           document=doc, types=document_types)
+                           document=doc, form=form)
