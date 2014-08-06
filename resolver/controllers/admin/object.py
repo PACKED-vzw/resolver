@@ -180,8 +180,8 @@ def admin_csv_import():
             log("imported a new document `%s' for the object `%s'" %
                 (doc, obj))
 
-    # TODO: db_session.commit() in teardown
-    db_session.commit()
+        db_session.commit()
+
     log("finished a CSV import session.")
     # TODO: redirect to objects page after import?
     flash("Data imported", "success")
@@ -195,7 +195,6 @@ def admin_csv_export():
     # require unicode and Python's csv/UnicodeWriter don't like unicode that
     # much
     file = tempfile.NamedTemporaryFile()
-    print file.name
     writer = UnicodeWriter(file)
 
     #writer.writerow(['PID', 'object type', 'title', 'document type', 'URL',
