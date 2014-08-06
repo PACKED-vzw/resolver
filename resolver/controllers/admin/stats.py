@@ -46,7 +46,9 @@ def admin_stats_index(year=None, month=None):
                                    key=lambda (k,v): (v,k),
                                    reverse=True)][0:10]
 
+    total_hits = reduce(lambda a, t: a + t[1], referrers, 0)
+
     return render_template("admin/stats.html", title='Admin',
                            object_hits=hits_per_object_type,
                            document_hits=hits_per_document_type,
-                           referrers=referrers)
+                           referrers=referrers, hits=total_hits)

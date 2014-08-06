@@ -29,7 +29,7 @@ class PersistentObject(Base):
 
     documents = relationship("Document", backref="persistentobject")
 
-    def __init__(self, id=None, type='work', title=None):
+    def __init__(self, id, type='work', title=None):
         self.id = id
         self.type = type
         self.title = title

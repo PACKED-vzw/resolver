@@ -1,11 +1,12 @@
+import csv, tempfile
+from flask import redirect, request, render_template, flash, make_response
 from resolver import app
 from resolver.model import PersistentObject, Document,\
     object_types, document_types
 from resolver.database import db_session
 from resolver.controllers.admin.user import check_privilege
-from flask import redirect, request, render_template, flash
 from resolver.forms import ObjectForm, DocumentForm
-from resolver.util import log
+from resolver.util import log, UnicodeWriter, UnicodeReader
 
 @app.route('/admin/object')
 @check_privilege
@@ -111,18 +112,107 @@ def admin_delete_persistent_object(id):
         flash("Object deleted succesfully!", "success")
     return redirect("/admin/object")
 
-@app.route('/admin/csv', methods=["GET", "POST"])
+@app.route('/admin/csv')
+@check_privilege
+def admin_csv():
+    return render_template('admin/csv.html', title='Admin')
+
+@app.route('/admin/csv/import', methods=["POST"])
 @check_privilege
 def admin_csv_import():
-    return "TODO"
+    def allowed(filename):
+        return ('.' in filename) and\
+            (filename.rsplit('.', 1)[1].lower() == 'csv')
 
-@app.route('/admin/export')
+    file = request.files['file']
+
+    if not file:
+        flash("No file provided", "warning")
+        return redirect("/admin/csv")
+
+    if not allowed(file.filename):
+        flash("File not allowed", "warning")
+        return redirect("/admin/csv")
+
+    log("is starting a CSV import session...")
+    # TODO: skip first row if it includes legend?
+    reader = UnicodeReader(file)
+    for id, otype, title, dtype, url, enabled, notes in reader:
+        obj = PersistentObject.query.\
+              filter(PersistentObject.id == id).first()
+        doc = Document.query.\
+              filter(Document.object_id == id).\
+              filter(Document.type == dtype).\
+              first()
+
+        if not otype in object_types:
+            flash("An object was encountered with an incorrect type\
+            (ID: %s)" % id, "warning")
+            continue
+
+        if not dtype in document_types:
+            flash("A document was encountered with an incorrect type\
+            (Object ID: %s)" % id, "warning")
+            continue
+
+        if obj:
+            str = "modified `%s'" % obj
+            obj.id = id
+            obj.type = otype
+            obj.title = title
+            log("%s to `%s'" % (str, obj))
+        else:
+            obj = PersistentObject(id, type=otype, title=title)
+            db_session.add(obj)
+            log("imported a new object to the system: %s" % obj)
+
+        if doc:
+            str = "modified `%s'" % doc
+            doc.enabled = (enabled == '1')
+            doc.type = dtype
+            doc.url = url
+            doc.notes = notes
+            log("%s to `%s'" % (str, doc))
+        else:
+            # TODO: Make enabled more idiot-proof
+            doc = Document(id, dtype, url, enabled=='1', notes)
+            db_session.add(doc)
+            log("imported a new document `%s' for the object `%s'" %
+                (doc, obj))
+
+    # TODO: db_session.commit() in teardown
+    db_session.commit()
+    log("finished a CSV import session.")
+    # TODO: redirect to objects page after import?
+    flash("Data imported", "success")
+    return redirect("/admin/csv")
+
+@app.route('/admin/csv/export')
 @check_privilege
 def admin_csv_export():
-    data = "'id', 'title', 'object_type', 'document_type', 'url', 'enabled'\n"
-    for object in PersistentObject.query.all():
+    objects = PersistentObject.query.all()
+    # I'd rather write all data to a memory stream than a file, but streams
+    # require unicode and Python's csv/UnicodeWriter don't like unicode that
+    # much
+    file = tempfile.NamedTemporaryFile()
+    print file.name
+    writer = UnicodeWriter(file)
+
+    #writer.writerow(['PID', 'object type', 'title', 'document type', 'URL',
+    #                 'enabled', 'notes'])
+
+    for object in objects:
         for document in object.documents:
-            data += "'%s', '%s', '%s', '%s', '%s', '%s'\n" %\
-                    (object.id, object.title, object.type,
-                     document.type, document.url, document.enabled)
-    return data
+            writer.writerow([object.id, object.type, object.title, document.type,
+                             document.url, "1" if document.enabled else "0",
+                             str(document.notes)])
+
+    file.seek(0)
+
+    response = make_response(file.read())
+    response.headers["Content-Disposition"] = 'attachment; filename="export.csv"'
+    response.headers["Content-Type"] = 'text/csv'
+
+    file.close()
+
+    return response
