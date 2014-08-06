@@ -22,7 +22,10 @@ def view_object(id):
     return "Found (Landing page)"
 
 @app.route('/collection/<object_type>/<document_type>/<id>')
-def view_document(object_type, document_type, id):
+@app.route('/collection/<object_type>/<document_type>/<id>/<slug>')
+def view_document(object_type, document_type, id, slug=None):
+    # TODO: Do we tolerate incorrect slugs? Might cause some problems with SEO?
+
     doc = Document.query.filter(Document.object_id == id,
                                 Document.type == document_type,
                                 PersistentObject.type == object_type).first()
