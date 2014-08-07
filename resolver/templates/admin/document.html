@@ -15,6 +15,18 @@
     </div>
     <div class="panel panel-default">
       <div class="panel-heading">
+        <h3 class="panel-title">Notes</h3>
+      </div>
+      <div class="panel-body">
+        {% if document.notes %}
+        {{ document.notes }}
+        {% else %}
+        <em>No notes</em>
+        {% endif %}
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
         <h3 class="panel-title">Actions</h3>
       </div>
       <div class="panel-body">
