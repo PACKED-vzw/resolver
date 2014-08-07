@@ -29,3 +29,10 @@ class Document(Base):
     def __repr__(self):
         return '<Document(%s), enabled=%s, url=%s>' %\
             (self.type, self.enabled,self.url)
+
+    @property
+    def persistent_uri(self):
+        # TODO: Change this when URL templates are implemented
+        return "/collection/%s/%s/%s/%s" % (self.persistent_object.type,
+                                            self.type, self.persistent_object.id,
+                                            self.persistent_object.slug)

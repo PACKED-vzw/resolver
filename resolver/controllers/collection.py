@@ -12,14 +12,21 @@ def view_object(id):
     po = PersistentObject.query.filter(PersistentObject.id == id).first()
 
     if not po:
-        return "Not Found"
+        return render_template('notice.html', title='Object Not Found',
+                               message='No object is associated with \'%s\''%id),\
+            404
 
-    # TODO: Implement default action
-    docs = po.documents_by_type
-    if docs["data"]:
-        return redirect(docs["data"].url, code=303)
+    # TODO: Default redirect instead of landing page?
+    #docs = po.documents_by_type
+    #if docs["data"]:
+    #    return redirect(docs["data"].url, code=303)
 
-    return "Found (Landing page)"
+    # TODO: keep it to enabled documents only?
+    docs = po.documents
+    docs = filter(lambda doc: doc.enabled, docs)
+    return render_template('landing.html',
+                           title=po.title if po.title else 'Untitled',
+                           documents=docs)
 
 @app.route('/collection/<object_type>/<document_type>/<id>')
 @app.route('/collection/<object_type>/<document_type>/<id>/<slug>')

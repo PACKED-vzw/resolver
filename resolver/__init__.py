@@ -15,12 +15,12 @@ app.logger.addHandler(file_handler)
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('notice.html', title='Page Not Found',
-                           message='The page you requested was not found.')
+                           message='The page you requested was not found.'), 404
 
 @app.errorhandler(500)
 def internal_error(e):
     app.logger.exception(e)
     return render_template('notice.html', title='Server Error',
-                           message='Something went terribly wrong!')
+                           message='Something went terribly wrong!'), 500
 
 import resolver.controllers
