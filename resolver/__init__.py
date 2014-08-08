@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+from resolver.exception import NotFoundException
 
 app = Flask(__name__)
 app.config.from_object('resolver.config.Config')
@@ -13,6 +14,7 @@ file_handler.setFormatter(logging.Formatter('[%(levelname)s] %(asctime)s -- %(me
 app.logger.addHandler(file_handler)
 
 @app.errorhandler(404)
+@app.errorhandler(NotFoundException)
 def page_not_found(e):
     return render_template('notice.html', title='Page Not Found',
                            message='The page you requested was not found.'), 404

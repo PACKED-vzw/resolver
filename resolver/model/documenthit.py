@@ -25,7 +25,7 @@ class DocumentHit(Base):
     def __init__(self, document, ip, referrer):
         self.document_id = document
         self.ip = ip
-        self.referrer = clean_url(referrer)
+        self.referrer = clean_url(referrer) if referrer else referrer
         self.timestamp = datetime.now()
 
     def __repr__(self):

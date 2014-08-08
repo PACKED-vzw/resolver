@@ -5,3 +5,8 @@ class Config(object):
     DATABASE_NAME = "resolver"
     SECRET_KEY = "changeme"
     SALT = "changemetoo"
+
+    # SIMPLE_URL should only contain %id
+    SIMPLE_URL = "collection/%id"
+    # FULL_URL should contain %otype, %dtype, %id, and preferably also %slug
+    FULL_URL = "collection/%otype/%dtype/%id/%slug"
