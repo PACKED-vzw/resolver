@@ -9,11 +9,11 @@ TITLE_MAX = 512
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
 
-def slugify(text, delim=u'-'):
+def slugify(text, delim=u'-', lower=True):
     """Generates an ASCII-only slug.
        Written by Armin Ronacher."""
     result = []
-    for word in _punct_re.split(text.lower()):
+    for word in _punct_re.split(text.lower() if lower else text):
         result.extend(unidecode(word).split())
     return unicode(delim.join(result))
 
@@ -30,7 +30,8 @@ class PersistentObject(Base):
     documents = relationship("Document", backref="persistentobject")
 
     def __init__(self, id, type='work', title=None):
-        self.id = id
+        # Slugify the ID to make sure it causes no problems in URLs
+        self.id = slugify(id, lower=False, delim=u'')
         self.type = type
         self.title = title
         self.slug = slugify(title)[:64] if title else ""
