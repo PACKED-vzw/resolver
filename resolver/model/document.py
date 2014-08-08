@@ -1,5 +1,7 @@
+import re
 from sqlalchemy import Column, Integer, String, Enum, Boolean, ForeignKey, Text
 from sqlalchemy.orm import backref, relationship
+from resolver import app
 from resolver.database import Base
 
 # TODO: make types a property of Document?
@@ -32,7 +34,9 @@ class Document(Base):
 
     @property
     def persistent_uri(self):
-        # TODO: Change this when URL templates are implemented
-        return "/collection/%s/%s/%s/%s" % (self.persistent_object.type,
-                                            self.type, self.persistent_object.id,
-                                            self.persistent_object.slug)
+        return reduce(lambda str, t: re.sub(t[0], t[1], str),
+                      [('%id', self.object_id),
+                       ('%otype', self.persistent_object.type),
+                       ('%dtype', self.type),
+                       ('%slug', self.persistent_object.slug)],
+                      app.config['FULL_URL'])
