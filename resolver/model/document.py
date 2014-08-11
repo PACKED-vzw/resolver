@@ -39,4 +39,4 @@ class Document(Base):
                        ('%otype', self.persistent_object.type),
                        ('%dtype', self.type),
                        ('%slug', self.persistent_object.slug)],
-                      app.config['FULL_URL'])
+                      '/'+app.config['FULL_URL'])

@@ -14,18 +14,16 @@
       </div>
     </div>
 
-    <ul class="list-group">
-      <li class="list-group-item disabled">
+    <div class="panel panel-default">
+      <div class="panel-heading">
         <h3 class="panel-title">Documents</h3>
-      </li>
-      {% for document in documents %}
-      <li class="list-group-item">
-        <a href="/admin/document/{{ document.id }}">{{ document.type }}</a>
-        <a href="{{ document.url }}" target="_blank"><span class="glyphicon glyphicon-circle-arrow-right"></span></a>
-        <a href="/admin/document/delete/{{ document.id }}"><span class="glyphicon glyphicon-remove"></span></a>
-      </li>
-      {% endfor %}
-    </ul>
+      </div>
+      <div class="list-group">
+        {% for document in documents %}
+        <a href="javascript:void(0);" onclick="showDocument('{{ document.id }}');" class="list-group-item">{{ document.type }}</a>
+        {% endfor %}
+      </div>
+    </div>
 
     <div class="panel panel-default">
       <div class="panel-heading">
@@ -54,6 +52,7 @@
         </form>
       </div>
     </div>
+
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title">Actions</h3>
@@ -61,6 +60,68 @@
       <div class="panel-body">
         <a href="/admin/object/edit/{{ object.id }}" class="btn btn-primary">Edit</a>
         <a href="/admin/object/delete/{{ object.id }}" class="btn btn-danger">Delete</a>
+      </div>
+    </div>
+
+    <div class="modal fade" id="docModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Document details</h4>
+          </div>
+          <div id="docModalDetails" class="modal-body">
+            Type: <span id="docModalType"></span><br>
+            Enabled: <span id="docModalEnabled"></span><br>
+            Linked URL: <span id="docModalURL"></span><br>
+            Persistent URL: <span id="docModalPURI"></span><br>
+            Notes: <span id="docModalNotes"></span><br>
+          </div>
+          <div id="docModalForm" class="modal-body" style="display:none;">
+            <div id="editErrors"></div>
+            <form role="form" class="form-horizontal" id="docEditForm" action="javascript:void(0);">
+              <div class="form-group">
+                <label for="url" class="col-sm-2 control-label">URL</label>
+                <div class="col-sm-10">
+                  <input class="form-control" id="editUrl" name="url" placeholder="URL" type="text" value="">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="type" class="col-sm-2 control-label">Type</label>
+                <div class="col-sm-10">
+                  <select class="form-control" id="editType" name="type">
+                    <option value="data">Data</option>
+                    <option value="representation">Representation</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="enabled" class="col-sm-2 control-label">Enabled</label>
+                <div class="col-sm-10">
+                  <input class="form-control" id="editEnabled" name="enabled" type="checkbox" value="y">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="notes" class="col-sm-2 control-label">Notes</label>
+                <div class="col-sm-10">
+                  <textarea class="form-control" id="editNotes" name="notes"></textarea>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                  {{ form.csrf_token }}
+                  <button type="submit" class="btn btn-primary">Edit</button>
+                  <button type="button" class="btn btn-default" id="btnCancel">Cancel</button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="btnEdit">Edit</button>
+            <button type="button" class="btn btn-danger" id="btnDelete">Delete</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
