@@ -3,7 +3,7 @@ from flask import redirect, request, render_template, flash, make_response
 from resolver import app
 from resolver.model import PersistentObject, Document,\
     object_types, document_types
-from resolver.database import db_session
+from resolver.database import db
 from resolver.controllers.admin.user import check_privilege
 from resolver.forms import ObjectForm, DocumentForm
 from resolver.util import log, UnicodeWriter, UnicodeReader
@@ -29,8 +29,8 @@ def admin_new_persistent_object():
         obj = PersistentObject(type=form.type.data,
                                title=form.title.data,
                                id=form.id.data)
-        db_session.add(obj)
-        db_session.commit()
+        db.session.add(obj)
+        db.session.commit()
         log("added a new object to the system: %s" % obj)
         # TODO: to flash or not to flash (UX)
         return redirect("/admin/object/%s" % obj.id)
@@ -66,8 +66,8 @@ def admin_new_document(id):
         return admin_view_persistent_object(id, form=form)
     document = Document(id, type=form.type.data, url=form.url.data,
                         enabled=form.enabled.data, notes=form.notes.data)
-    db_session.add(document)
-    db_session.commit()
+    db.session.add(document)
+    db.session.commit()
     log("added a new document `%s' to the object `%s'" % (document, po))
     # TODO: to flash or not to flash (UX)
     return redirect('/admin/object/%s' % id)
@@ -91,7 +91,7 @@ def admin_edit_object(id):
         obj.title = form.title.data
         obj.type = form.type.data
         obj.id = form.id.data
-        db_session.commit() #commit changes to DB
+        db.session.commit() #commit changes to DB
         log("changed object `%s' to `%s'" % (old, obj))
         return redirect('/admin/object/%s' % obj.id)
     form = ObjectForm(request.form, obj)
@@ -106,8 +106,8 @@ def admin_delete_persistent_object(id):
     if not po:
         flash("Object not found!", "danger")
     else:
-        db_session.delete(po)
-        db_session.commit()
+        db.session.delete(po)
+        db.session.commit()
         log("removed the object `%s' from the system" % po)
         flash("Object deleted succesfully!", "success")
     return redirect("/admin/object")
@@ -163,7 +163,7 @@ def admin_csv_import():
             log("%s to `%s'" % (str, obj))
         else:
             obj = PersistentObject(id, type=otype, title=title)
-            db_session.add(obj)
+            db.session.add(obj)
             log("imported a new object to the system: %s" % obj)
 
         if doc:
@@ -176,11 +176,11 @@ def admin_csv_import():
         else:
             # TODO: Make enabled more idiot-proof
             doc = Document(id, dtype, url, enabled=='1', notes)
-            db_session.add(doc)
+            db.session.add(doc)
             log("imported a new document `%s' for the object `%s'" %
                 (doc, obj))
 
-        db_session.commit()
+        db.session.commit()
 
     log("finished a CSV import session.")
     # TODO: redirect to objects page after import?

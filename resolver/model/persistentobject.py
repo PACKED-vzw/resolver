@@ -1,8 +1,6 @@
 import re
 from unidecode import unidecode
-from sqlalchemy import Column, Integer, String, Enum
-from sqlalchemy.orm import backref, relationship, synonym
-from resolver.database import Base
+from resolver.database import db
 
 SLUG_MAX = 64
 TITLE_MAX = 512
@@ -20,14 +18,14 @@ def slugify(text, delim=u'-', lower=True):
 # TODO: make types a property of PersistentObject?
 object_types = ('work', 'agent', 'concept', 'event')
 
-class PersistentObject(Base):
+class PersistentObject(db.Model):
     __tablename__ = 'persistentobject'
-    id = Column(String(64), primary_key=True)
-    type = Column(Enum(*object_types))
-    _title =  Column('title', String(TITLE_MAX))
-    slug = Column(String(SLUG_MAX))
+    id = db.Column(db.String(64), primary_key=True)
+    type = db.Column(db.Enum(*object_types))
+    _title =  db.Column('title', db.String(TITLE_MAX))
+    slug = db.Column(db.String(SLUG_MAX))
 
-    documents = relationship("Document", backref="persistentobject")
+    documents = db.relationship("Document", backref="persistentobject")
 
     def __init__(self, id, type='work', title=None):
         # Slugify the ID to make sure it causes no problems in URLs
@@ -53,4 +51,4 @@ class PersistentObject(Base):
         self._title = value
         self.slug = slugify(value)[:64] if value else ""
 
-    title = synonym('_title', descriptor=title)
+    title = db.synonym('_title', descriptor=title)

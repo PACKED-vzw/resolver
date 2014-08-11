@@ -1,8 +1,6 @@
-from sqlalchemy import Column, Integer, String, Enum, Boolean, ForeignKey, DateTime
-from sqlalchemy.orm import backref, relationship
 from datetime import datetime
 from urlparse import urlparse
-from resolver.database import Base
+from resolver.database import db
 
 def clean_url(url):
     """Cleans up an url so only the (sub)domain remains.
@@ -10,17 +8,17 @@ def clean_url(url):
             => some.weird.doma.in """
     return urlparse(url).netloc
 
-class DocumentHit(Base):
+class DocumentHit(db.Model):
     __tablename__ = 'documenthit'
-    id = Column(Integer, primary_key=True)
-    ip = Column(String(15))
-    document_id = Column(Integer, ForeignKey("document.id",
-                                             onupdate="cascade",
-                                             ondelete="cascade"))
-    referrer = Column(String(128))
-    timestamp = Column(DateTime)
+    id = db.Column(db.Integer, primary_key=True)
+    ip = db.Column(db.String(15))
+    document_id = db.Column(db.Integer, db.ForeignKey("document.id",
+                                                      onupdate="cascade",
+                                                      ondelete="cascade"))
+    referrer = db.Column(db.String(128))
+    timestamp = db.Column(db.DateTime)
 
-    document = relationship("Document")
+    document = db.relationship("Document")
 
     def __init__(self, document, ip, referrer):
         self.document_id = document

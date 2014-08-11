@@ -1,25 +1,23 @@
 import re
-from sqlalchemy import Column, Integer, String, Enum, Boolean, ForeignKey, Text
-from sqlalchemy.orm import backref, relationship
 from resolver import app
-from resolver.database import Base
+from resolver.database import db
 
 # TODO: make types a property of Document?
 document_types = ('data', 'representation')
 
-class Document(Base):
+class Document(db.Model):
     __tablename__ = 'document'
-    id = Column(Integer, primary_key=True)
-    type = Column(Enum(*document_types))
-    object_id = Column(String(64), ForeignKey("persistentobject.id",
-                                              onupdate="cascade",
-                                              ondelete="cascade"))
-    url = Column(String(512))
-    enabled = Column(Boolean)
-    notes = Column(Text)
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.Enum(*document_types))
+    object_id = db.Column(db.String(64), db.ForeignKey("persistentobject.id",
+                                                       onupdate="cascade",
+                                                       ondelete="cascade"))
+    url = db.Column(db.String(512))
+    enabled = db.Column(db.Boolean)
+    notes = db.Column(db.Text)
 
     # TODO: is this valid?
-    persistent_object = relationship("PersistentObject", backref=backref(''))
+    persistent_object = db.relationship("PersistentObject", backref=db.backref(''))
 
     def __init__(self, object_id, type, url=None, enabled=True, notes=None):
         self.object_id = object_id

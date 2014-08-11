@@ -2,7 +2,7 @@ from flask import redirect, request, render_template, flash, session
 from functools import update_wrapper
 from resolver import app
 from resolver.model import User
-from resolver.database import db_session
+from resolver.database import db
 from resolver.forms import SigninForm, UserForm
 from resolver.util import log
 
@@ -71,8 +71,8 @@ def admin_new_user():
             flash("The two passwords do not match.", "warning")
             return admin_list_users(form=form)
         user = User(form.username.data, form.password.data)
-        db_session.add(user)
-        db_session.commit()
+        db.session.add(user)
+        db.session.commit()
         log("added user `%s' to the system" % user.username)
         flash("User added succesfully", "success")
         return admin_list_users()
@@ -89,8 +89,8 @@ def admin_delete_user(username):
     if not user:
         flash("User not found", "warning")
         return redirect("/admin/user")
-    db_session.delete(user)
-    db_session.commit()
+    db.session.delete(user)
+    db.session.commit()
     log("removed user `%s' from the system" % user.username)
     flash("User removed succesfully", "success")
     return redirect("/admin/user")
@@ -115,7 +115,7 @@ def admin_change_user_password(username):
         flash("Password can not be empty", "warning")
         return render_template("admin/user.html", title="Admin", user=user)
     user.change_password(request.form['password'])
-    db_session.commit()
+    db.session.commit()
     log("changed the password of user `%s'" % user.username)
     flash("Password changed succesfully", "success")
     return admin_view_user(username)

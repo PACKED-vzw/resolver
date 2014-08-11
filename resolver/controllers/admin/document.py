@@ -3,7 +3,7 @@ from resolver import app
 from resolver.util import log
 from resolver.model import PersistentObject, Document,\
     object_types, document_types
-from resolver.database import db_session
+from resolver.database import db
 from resolver.controllers.admin.user import check_privilege
 from resolver.controllers.admin.object import *
 from flask import redirect, request, render_template, flash
@@ -34,8 +34,8 @@ def admin_delete_document(id):
         return redirect("/admin/object")
     log("removed the document `%s' from object `%s'" %
         (doc, doc.persistent_object))
-    db_session.delete(doc)
-    db_session.commit()
+    db.session.delete(doc)
+    db.session.commit()
     flash("Document deleted succesfully", "success")
     return redirect("/admin/object/%s" % object_id)
 
@@ -63,7 +63,7 @@ def admin_edit_document_json(id):
         doc.type = form.type.data
         doc.url = form.url.data
         doc.notes = form.notes.data
-        db_session.commit() #commit changes to DB
+        db.session.commit() #commit changes to DB
         log("changed document `%s' to `%s'" % (old, doc))
         return json.dumps({'success':True})
     else:

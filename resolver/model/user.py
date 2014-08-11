@@ -1,19 +1,17 @@
-from sqlalchemy import Column, String, Integer
-from sqlalchemy.orm import backref, relationship
 from hashlib import sha256
 from resolver import app
-from resolver.database import Base
+from resolver.database import db
 
 def hash_password(password):
     m = sha256()
     m.update(app.config['SALT'] + password)
     return m.hexdigest()
 
-class User(Base):
+class User(db.Model):
     __tablename__ = 'user'
-    id = Column(Integer, primary_key=True)
-    username = Column(String(32))
-    password = Column(String(64))
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(32))
+    password = db.Column(db.String(64))
 
     def __init__(self, username, password):
         self.username = username
