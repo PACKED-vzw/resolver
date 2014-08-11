@@ -135,7 +135,7 @@ def admin_csv_import():
         return redirect("/admin/csv")
 
     log("is starting a CSV import session...")
-    # TODO: skip first row if it includes legend (we assume no legend)?
+    # TODO: skip first row if it includes legend (we assume there is a legend)?
 
     reader = UnicodeReader(file)
     # As this feature is mainly used for imports/edits from Excel, it is
@@ -143,6 +143,7 @@ def admin_csv_import():
     if len(reader.next()) != 7:
         file.seek(0)
         reader = UnicodeReader(file, delimiter=';')
+        reader.next() # Skip legend
 
     for id, otype, title, dtype, url, enabled, notes in reader:
         obj = PersistentObject.query.\
@@ -204,8 +205,8 @@ def admin_csv_export():
     file = tempfile.NamedTemporaryFile()
     writer = UnicodeWriter(file)
 
-    #writer.writerow(['PID', 'object type', 'title', 'document type', 'URL',
-    #                 'enabled', 'notes'])
+    writer.writerow(['PID', 'object type', 'title', 'document type', 'URL',
+                     'enabled', 'notes'])
 
     for object in objects:
         for document in object.documents:
