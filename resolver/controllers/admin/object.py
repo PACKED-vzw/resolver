@@ -135,8 +135,15 @@ def admin_csv_import():
         return redirect("/admin/csv")
 
     log("is starting a CSV import session...")
-    # TODO: skip first row if it includes legend?
+    # TODO: skip first row if it includes legend (we assume no legend)?
+
     reader = UnicodeReader(file)
+    # As this feature is mainly used for imports/edits from Excel, it is
+    # possible that Excel uses `;' as a separator instead of `,' ...
+    if len(ur.next()) != 7:
+        file.seek(0)
+        reader = UnicodeReader(file, delimiter=';')
+
     for id, otype, title, dtype, url, enabled, notes in reader:
         obj = PersistentObject.query.\
               filter(PersistentObject.id == id).first()
