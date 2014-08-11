@@ -140,7 +140,7 @@ def admin_csv_import():
     reader = UnicodeReader(file)
     # As this feature is mainly used for imports/edits from Excel, it is
     # possible that Excel uses `;' as a separator instead of `,' ...
-    if len(ur.next()) != 7:
+    if len(reader.next()) != 7:
         file.seek(0)
         reader = UnicodeReader(file, delimiter=';')
 
