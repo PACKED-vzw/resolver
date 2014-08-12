@@ -11,3 +11,4 @@ Werkzeug==0.9.6
 gunicorn==19.1.0
 itsdangerous==0.24
 wsgiref==0.1.2
+psycopg2

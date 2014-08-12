@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, render_template
 from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
@@ -8,12 +9,15 @@ app.config.from_envvar('RESOLVER_SETTINGS', silent=True)
 
 # TODO: Logging in production only?
 # TODO: Add log file to config
+if os.environ.get('HEROKU') == 1:
+    import sys
+    handler = logging.StreamHandler(sys.stdout)
+else:
+    handler = logging.FileHandler("application.log")
 
-import logging
-file_handler = logging.FileHandler("application.log")
-file_handler.setLevel(logging.INFO)
-file_handler.setFormatter(logging.Formatter('[%(levelname)s] %(asctime)s -- %(message)s'))
-app.logger.addHandler(file_handler)
+handler.setLevel(logging.INFO)
+handler.setFormatter(logging.Formatter('[%(levelname)s] %(asctime)s -- %(message)s'))
+app.logger.addHandler(handler)
 
 @app.errorhandler(404)
 @app.errorhandler(NotFoundException)
