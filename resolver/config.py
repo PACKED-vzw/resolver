@@ -3,8 +3,8 @@ class Config(object):
     DATABASE_USER = "root"
     DATABASE_PASS = ""
     DATABASE_NAME = "resolver"
-    SECRET_KEY = "changeme"
-    SALT = "changemetoo"
+    SECRET_KEY = ""
+    SALT = ""
 
     # SIMPLE_URL should only contain %id
     SIMPLE_URL = "collection/%id"
