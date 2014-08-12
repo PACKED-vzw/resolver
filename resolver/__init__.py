@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
 
 app = Flask(__name__)
@@ -26,3 +27,5 @@ def internal_error(e):
                            message='Something went terribly wrong!'), 500
 
 import resolver.controllers
+
+wsgi_app = RemoteUserMiddleware(app.wsgi_app)
