@@ -2,7 +2,7 @@ import os
 from flask.ext.sqlalchemy import SQLAlchemy
 from resolver import app
 
-if os.environ.get('HEROKU') == 1:
+if os.environ.get('HEROKU', False):
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://%s:%s@%s/%s' %\
