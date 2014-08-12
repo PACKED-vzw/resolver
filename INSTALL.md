@@ -24,7 +24,7 @@ $ . venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
-4. Using your text editor of choice, change `resolver/config.py`
+4. Configure the application (see section `Configuration` further on)
 5. Initialize the database (and test if all settings are correct)
 ```
 $ python initialise.py
@@ -48,3 +48,10 @@ docker run -d -p 8080:80 packed/resolver
 Will download the image, create a new container, execute the application, and forward all requests on `localhost:8080` to the resolver. The image is configured to use 4 workers for Gunicorn.
 
 ## Heroku
+
+## Configuration
+Only the `resolver.py` in the `resolver` directory needs to be changed in order to configure the application. Both `secret_key` and `salt` should contain two random strings of characters. The site [random.org](http://random.org) can be used to generate random data. It is important that the value of `salt` remains constant as changing it will invalidate all user passwords!
+
+The `simple_url` and `full_url` values contain the templates for the resolver's generated URLs. The `simple_url` should only contain `%id`, and `full_url` should contain `%otype, %dtype, %id` and preferably `%slug`.
+
+The `DATABASE_*` values are the connection details for MySQL.
