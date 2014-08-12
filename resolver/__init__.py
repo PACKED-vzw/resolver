@@ -4,7 +4,7 @@ from resolver.exception import NotFoundException
 
 app = Flask(__name__)
 app.config.from_object('resolver.config.Config')
-app.config.from_envvar('RESOLVER_SETTINGS')
+app.config.from_envvar('RESOLVER_SETTINGS', silent=True)
 
 # TODO: Logging in production only?
 # TODO: Add log file to config
