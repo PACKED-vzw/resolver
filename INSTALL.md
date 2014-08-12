@@ -10,7 +10,7 @@ The following packages should be installed on your system:
 - Python2
 - python-virtualenv
 
-Additional packages such as `libmysqlclient-dev` (on Debian/Ubuntu) might be required to install some of the required Python packages
+Additional packages such as `libmysqlclient-dev` (on Debian/Ubuntu) might be required to install some of the required Python packages.
 
 ### Installation
 1. Clone the git repository or extract the archive containing the source
@@ -47,10 +47,52 @@ docker run -d -p 8080:80 packed/resolver
 ```
 Will download the image, create a new container, execute the application, and forward all requests on `localhost:8080` to the resolver. The image is configured to use 4 workers for Gunicorn.
 
+### Building your own image
+It is possible to build a resolver image yourself. Just checkout the `docker` branch from the repository (`git checkout docker`) to gain access to the Dockerfile.
+
+The image can be built like any other.
+
 ## Heroku
+The application can be deployed on multiple PaaS services, but as an example instructions for Heroku are given.
+
+1. Make sure you have an Heroku account, you have installed the command line tools, and you are logged in to Heroku using the tools ([more info...](https://devcenter.heroku.com/))
+2. Clone the repository and go to the resolver directory
+```
+$ git clone https://github.com/PACKED-vzw/resolver.git
+$ cd resolver
+```
+3. Create a new Heroku application
+```
+$ heroku create
+```
+4. Optionally, you can change the settings in `resolver/config.py` as explained below. However, we can also set the `SECRET_KEY` and `SALT` values using environment variables. If you do decide to change the settings in `resolver/config.py`, please note that you will have to commit these changes to the repository.
+5. Add a database to the application
+```
+$ heroku addons:add heroku-postgresql
+```
+6. Set the right environment variables
+```
+$ heroku config:set HEROKU=1
+$
+$ # OPTIONAL (see configuration section)
+$ heroku config:set SECRET_KEY=
+$ heroku config:set SALT=
+```
+7. Push the application to heroku
+```
+$ git push heroku master
+```
+8. Initialise the application
+```
+$ heroku run python initialise.py
+```
+9. Configure 1 dyno
+```
+$ heroku ps:scale web=1
+```
 
 ## Configuration
-Only the `resolver.py` in the `resolver` directory needs to be changed in order to configure the application. Both `secret_key` and `salt` should contain two random strings of characters. The site [random.org](http://random.org) can be used to generate random data. It is important that the value of `salt` remains constant as changing it will invalidate all user passwords!
+Only the `resolver.py` in the `resolver` directory needs to be changed in order to configure the application. Both `secret_key` and `salt` should contain two random strings of characters. The site [random.org](http://random.org/strings) can be used to generate random data. It is important that the value of `salt` remains constant as changing it will invalidate all user passwords!
 
 The `simple_url` and `full_url` values contain the templates for the resolver's generated URLs. The `simple_url` should only contain `%id`, and `full_url` should contain `%otype, %dtype, %id` and preferably `%slug`.
 
