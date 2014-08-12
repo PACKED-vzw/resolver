@@ -1,4 +1,4 @@
-import logging
+import os, logging
 from flask import Flask, render_template
 from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
