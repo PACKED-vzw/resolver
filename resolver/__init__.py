@@ -1,8 +1,10 @@
 from flask import Flask, render_template
+from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
 
 app = Flask(__name__)
 app.config.from_object('resolver.config.Config')
+app.config.from_envvar('RESOLVER_SETTINGS')
 
 # TODO: Logging in production only?
 # TODO: Add log file to config
@@ -26,3 +28,5 @@ def internal_error(e):
                            message='Something went terribly wrong!'), 500
 
 import resolver.controllers
+
+wsgi_app = RemoteUserMiddleware(app.wsgi_app)

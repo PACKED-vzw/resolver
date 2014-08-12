@@ -40,7 +40,6 @@ def handler(id=None, slug=None, otype=None, dtype=None):
         if not doc:
             raise NotFoundException()
 
-        # TODO: make sure we get the right IP address from the WSGI host!!!
         # TODO: is it OK to log a hit, even when the document is disabled?
         hit = DocumentHit(doc.id, request.remote_addr, request.referrer)
         db.session.add(hit)
