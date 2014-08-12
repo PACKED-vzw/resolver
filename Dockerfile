@@ -11,7 +11,7 @@ RUN apt-get -y upgrade
 RUN apt-get install -y tar git wget build-essential vim python python-dev python-virtualenv mysql-server python-mysqldb libmysqlclient-dev
 RUN mkdir resolver
 WORKDIR /resolver
-ADD . .
+ADD . /resolver
 RUN pip install -r /resolver/requirements.txt
 RUN service mysql start && echo "create database resolver;" | mysql -u root
 RUN rm -f sentinel
