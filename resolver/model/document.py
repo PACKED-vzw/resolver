@@ -8,7 +8,7 @@ document_types = ('data', 'representation')
 class Document(db.Model):
     __tablename__ = 'document'
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.Enum(*document_types))
+    type = db.Column(db.Enum(*document_types, name='DocumentType'))
     object_id = db.Column(db.String(64), db.ForeignKey("persistentobject.id",
                                                        onupdate="cascade",
                                                        ondelete="cascade"))

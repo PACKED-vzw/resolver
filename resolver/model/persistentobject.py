@@ -21,7 +21,7 @@ object_types = ('work', 'agent', 'concept', 'event')
 class PersistentObject(db.Model):
     __tablename__ = 'persistentobject'
     id = db.Column(db.String(64), primary_key=True)
-    type = db.Column(db.Enum(*object_types))
+    type = db.Column(db.Enum(*object_types, name='ObjectType'))
     _title =  db.Column('title', db.String(TITLE_MAX))
     slug = db.Column(db.String(SLUG_MAX))
 
