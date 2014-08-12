@@ -31,7 +31,7 @@ $ python initialise.py
 ```
 6. The application should now be ready and can be ran by using Gunicorn. `[w]` should be replaced by the preferred amount of worker threads (2-4 should suffice), `[ip]:[port]` should be replaced by the IP and port on which the server should listen.
 ```
-$ gunicorn -w [x] -b [ip]:[port] resolver:app
+$ gunicorn -w [x] -b [ip]:[port] resolver:wsgi_app
 ```
 
 It is highly advisable to use Gunicorn in combination with a webserver such as Apache or Nginx. Example configuration files for both servers can be found in the directories `apache` and `nginx`. When using Apache, Nginx, or any other proxying webserver, make sure the application is bound to the localhost IP only (127.0.0.1:[port]).
