@@ -1,14 +1,14 @@
 {% from "_formhelpers.html" import render_field %}
-{% extends "admin/layout.html" %}
+{% extends "resolver/layout.html" %}
 {% block body %}
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="panel-title">Add object</h3>
+        <h3 class="panel-title">Add entity</h3>
       </div>
       <div class="panel-body">
-        <form action="/admin/object" method="POST" role="form" class="form-horizontal">
+        <form action="/resolver/entity" method="POST" role="form" class="form-horizontal">
           <div class="form-group">
             {{ render_field(form.id, placeholder="ID") }}
           </div>
@@ -34,14 +34,13 @@
   <div class="col-md-8 col-md-offset-2">
     <ul class="list-group">
       <li class="list-group-item disabled">
-        <h3 class="panel-title">Objects</h3>
+        <h3 class="panel-title">Entities</h3>
       </li>
-      {% for object in objects %}
-      <!-- <li>{{ object | safe }}</li> -->
-      <li class="list-group-item"><a href="/admin/object/{{ object.id }}">
-          {% if object.title %}{{ object.title }}
+      {% for entity in entities %}
+      <li class="list-group-item"><a href="/resolver/entity/{{ entity.id }}">
+          {% if entity.title %}{{ entity.title }}
           {% else %}<em>Untitled</em>{% endif %}</a>
-        <a href="/admin/object/delete/{{ object.id }}"><span class="glyphicon glyphicon-remove"></span></a>
+        <a href="/resolver/entity/delete/{{ entity.id }}"><span class="glyphicon glyphicon-remove"></span></a>
       </li>
       {% endfor %}
     </ul>

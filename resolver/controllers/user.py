@@ -13,50 +13,48 @@ def check_privilege(func):
             # TODO: Save request and replay after user is signed in?
             # TODO: Log unauthorized access?
             flash("You need to be signed in for this action", "warning")
-            return redirect("/admin/signin")
+            return redirect("/resolver/signin")
         else:
             return func(*args, **kwargs)
     #func.provide_automatic_options = False
     return update_wrapper(inner, func)
 
-@app.route('/admin/signin', methods=["POST", "GET"])
+@app.route('/resolver/signin', methods=["POST", "GET"])
 def admin_signin():
     form = SigninForm()
     if session.get('username'):
         flash("You are already logged in", "info")
-        return redirect('/admin')
+        return redirect('/resolver')
     if form.validate_on_submit():
         # TODO: form validation
         user = User.query.filter(User.username ==  form.username.data).first()
         if not user:
             flash("Username incorrect", "danger")
-            return render_template('admin/signin.html', title='Admin',
+            return render_template('resolver/signin.html', title='Sign in',
                                    form=form)
         if not user.verify_password(form.password.data):
             flash("Password incorrect", "danger")
-            return render_template('admin/signin.html', title='Admin',
+            return render_template('resolver/signin.html', title='Sign in',
                                        form=form)
         session['username'] = form.username.data
-        flash("Success!", "success")
-        return redirect('/admin')
-    return render_template('admin/signin.html', title='Admin', form=form)
+        return redirect('/resolver')
+    return render_template('resolver/signin.html', title='Sign in', form=form)
 
-@app.route('/admin/signout')
+@app.route('/resolver/signout')
 @check_privilege
 def admin_signout():
     session.pop('username', None)
-    flash("Goodbye", "success")
-    return redirect("/admin/signin")
+    return redirect("/resolver/signin")
 
-@app.route('/admin/user')
+@app.route('/resolver/user')
 @check_privilege
 def admin_list_users(form=None):
     users = User.query.all()
     form = form if form else UserForm()
-    return render_template("admin/users.html", title="Admin",
+    return render_template("resolver/users.html", title="Users",
                            users=users, form=form)
 
-@app.route('/admin/user', methods=["POST"])
+@app.route('/resolver/user', methods=["POST"])
 @check_privilege
 def admin_new_user():
     form = UserForm()
@@ -78,42 +76,43 @@ def admin_new_user():
         return admin_list_users()
     return admin_list_users(form=form)
 
-@app.route('/admin/user/delete/<username>')
+@app.route('/resolver/user/delete/<username>')
 @check_privilege
 def admin_delete_user(username):
     # TODO: Maybe a user shouldn't be able to remove himself?
     if username == "admin":
         flash("The administrator cannot be removed!", "danger")
-        return redirect("/admin/user")
+        return redirect("/resolver/user")
     user = User.query.filter(User.username == username).first()
     if not user:
         flash("User not found", "warning")
-        return redirect("/admin/user")
+        return redirect("/resolver/user")
     db.session.delete(user)
     db.session.commit()
     log("removed user `%s' from the system" % user.username)
     flash("User removed succesfully", "success")
-    return redirect("/admin/user")
+    return redirect("/resolver/user")
 
-@app.route('/admin/user/<username>')
+@app.route('/resolver/user/<username>')
 @check_privilege
 def admin_view_user(username):
     user = User.query.filter(User.username == username).first()
     if not user:
         flash("User not found", "warning")
-        return redirect("/admin/user")
-    return render_template("admin/user.html", title="Admin", user=user)
+        return redirect("/resolver/user")
+    return render_template("resolver/user.html", title="Edit user", user=user)
 
-@app.route('/admin/user/<username>', methods=["POST"])
+@app.route('/resolver/user/<username>', methods=["POST"])
 @check_privilege
 def admin_change_user_password(username):
     user = User.query.filter(User.username == username).first()
     if not user:
         flash("User not found", "warning")
-        return redirect("/admin/user")
+        return redirect("/resolver/user")
     if request.form['password'] == "":
         flash("Password can not be empty", "warning")
-        return render_template("admin/user.html", title="Admin", user=user)
+        return render_template("resolver/user.html", title="Edit user",
+                               user=user)
     user.change_password(request.form['password'])
     db.session.commit()
     log("changed the password of user `%s'" % user.username)

@@ -1,15 +1,15 @@
 {% from "_formhelpers.html" import render_field %}
-{% extends "admin/layout.html" %}
+{% extends "resolver/layout.html" %}
 {% block body %}
 
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="panel-title">Edit object</h3>
+        <h3 class="panel-title">Edit entity</h3>
       </div>
       <div class="panel-body">
-        <form action="/admin/object/edit/{{ object.id }}" method="POST" role="form" class="form-horizontal">
+        <form action="/resolver/entity/edit/{{ entity.id }}" method="POST" role="form" class="form-horizontal">
           <div class="form-group">
             {{ render_field(form.id, placeholder="ID") }}
           </div>

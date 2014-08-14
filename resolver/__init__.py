@@ -1,5 +1,6 @@
 import os, logging
 from flask import Flask, render_template
+from flask_wtf.csrf import CsrfProtect
 from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
 
@@ -37,5 +38,8 @@ def internal_error(e):
                            message='Something went terribly wrong!'), 500
 
 import resolver.controllers
+
+csrf = CsrfProtect()
+csrf.init_app(app)
 
 wsgi_app = RemoteUserMiddleware(app.wsgi_app)

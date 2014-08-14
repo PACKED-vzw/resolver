@@ -15,17 +15,17 @@ def slugify(text, delim=u'-', lower=True):
         result.extend(unidecode(word).split())
     return unicode(delim.join(result))
 
-# TODO: make types a property of PersistentObject?
-object_types = ('work', 'agent', 'concept', 'event')
+# TODO: make types a property of Entity?
+entity_types = ('work', 'agent', 'concept', 'event')
 
-class PersistentObject(db.Model):
-    __tablename__ = 'persistentobject'
+class Entity(db.Model):
+    __tablename__ = 'entity'
     id = db.Column(db.String(64), primary_key=True)
-    type = db.Column(db.Enum(*object_types, name='ObjectType'))
+    type = db.Column(db.Enum(*entity_types, name='EntityType'))
     _title =  db.Column('title', db.String(TITLE_MAX))
     slug = db.Column(db.String(SLUG_MAX))
 
-    documents = db.relationship("Document", backref="persistentobject")
+    documents = db.relationship("Document", backref="Entity")
 
     def __init__(self, id, type='work', title=None):
         # Slugify the ID to make sure it causes no problems in URLs
@@ -35,12 +35,8 @@ class PersistentObject(db.Model):
         self.slug = slugify(title)[:64] if title else ""
 
     def __repr__(self):
-        return '<Object(%s), id=%s, title=%s>' %\
+        return '<Entity(%s), id=%s, title=%s>' %\
             (self.type, self.id, self.title)
-
-    @property
-    def documents_by_type(self):
-        return {d.type: d for d in self.documents}
 
     @property
     def title(self):

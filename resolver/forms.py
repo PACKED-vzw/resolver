@@ -1,18 +1,17 @@
 from flask_wtf import Form
 from wtforms import StringField, SelectField, BooleanField,\
     PasswordField, TextAreaField, validators
-from resolver.model import object_types, document_types
+from resolver.model import entity_types, document_types
 
-class ObjectForm(Form):
+class EntityForm(Form):
     id = StringField('ID', [validators.required()])
     title = StringField('Title', [validators.optional()])
     type = SelectField('Type', [validators.required()],
-                       choices=zip(object_types,
+                       choices=zip(entity_types,
                                    map(lambda c: c.capitalize(),
-                                       object_types)))
+                                       entity_types)))
 
 class DocumentForm(Form):
-    # TODO: URL not required
     url = StringField('URL', [validators.optional(), validators.URL()])
     type = SelectField('Type', [validators.required()],
                        choices=zip(document_types,

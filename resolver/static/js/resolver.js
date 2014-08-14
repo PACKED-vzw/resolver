@@ -2,7 +2,7 @@ var current_document;
 
 function showDocument(id) {
     $.ajax({
-        url:"/admin/document/"+id+".json",
+        url:"/resolver/document/"+id+".json",
         dataType:"json",
         success: function (data) {
             if(!data.errors) {
@@ -37,12 +37,12 @@ $("#btnEdit").click(toggleForm);
 $("#btnCancel").click(toggleForm);
 
 $("#btnDelete").click(function(event){
-    window.location.href = '/admin/document/delete/'+current_document;
+    window.location.href = '/resolver/document/delete/'+current_document;
 });
 
 $("#docEditForm").submit(function(event){
     $("#editErrors").empty();
-    $.post('/admin/document/edit/'+current_document+'.json',
+    $.post('/resolver/document/edit/'+current_document+'.json',
            $("#docEditForm").serialize(),
            function(data){
                if(data.errors) {

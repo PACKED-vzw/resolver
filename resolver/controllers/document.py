@@ -1,14 +1,13 @@
 import json
 from resolver import app
 from resolver.util import log
-from resolver.model import PersistentObject, Document,\
-    object_types, document_types
+from resolver.model import Entity, Document, entity_types, document_types
+from resolver.forms import DocumentForm
 from resolver.database import db
-from resolver.controllers.admin.user import check_privilege
-from resolver.controllers.admin.object import *
+from resolver.controllers.user import check_privilege
 from flask import redirect, request, render_template, flash
 
-@app.route('/admin/document/<int:id>.json')
+@app.route('/resolver/document/<int:id>.json')
 @check_privilege
 def admin_view_document_json(id):
     doc = Document.query.filter(Document.id == id).first()
@@ -19,27 +18,27 @@ def admin_view_document_json(id):
     return json.dumps({'id':doc.id,
                        'type':doc.type,
                        'url':doc.url,
-                       'object':{'id':doc.object_id},
+                       'entity':{'id':doc.entity_id},
                        'enabled':doc.enabled,
                        'notes':doc.notes,
                        'persistent_uri':doc.persistent_uri})
 
-@app.route('/admin/document/delete/<int:id>')
+@app.route('/resolver/document/delete/<int:id>')
 @check_privilege
 def admin_delete_document(id):
     doc = Document.query.filter(Document.id == id).first()
-    object_id = doc.object_id
+    entity_id = doc.entity_id
     if not doc:
         flash("Document not found", "warning")
-        return redirect("/admin/object")
-    log("removed the document `%s' from object `%s'" %
-        (doc, doc.persistent_object))
+        return redirect("/resolver/entity")
+    log("removed the document `%s' from entity `%s'" %
+        (doc, doc.entity))
     db.session.delete(doc)
     db.session.commit()
     flash("Document deleted succesfully", "success")
-    return redirect("/admin/object/%s" % object_id)
+    return redirect("/resolver/entity/%s" % entity_id)
 
-@app.route('/admin/document/edit/<int:id>.json', methods=["POST"])
+@app.route('/resolver/document/edit/<int:id>.json', methods=["POST"])
 @check_privilege
 def admin_edit_document_json(id):
     doc = Document.query.filter(Document.id == id).first()
@@ -52,8 +51,8 @@ def admin_edit_document_json(id):
 
     if form.validate():
         if (form.type.data != doc.type) and\
-           (form.type.data in map(lambda obj: obj.type,
-                                  doc.persistent_object.documents)):
+           (form.type.data in map(lambda ent: ent.type,
+                                  doc.entity.documents)):
             return json.dumps({'errors':[{'title':'Type not unique',
                                           'detail':'There already is a document\
                                           of this type'}]})
