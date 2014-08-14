@@ -13,6 +13,9 @@ class Document(db.Model):
     url = db.Column(db.String(512))
     enabled = db.Column(db.Boolean)
     notes = db.Column(db.Text)
+    hits = db.relationship("DocumentHit",
+                           cascade='all,delete',
+                           backref='document')
 
     def __init__(self, entity_id, type, url=None, enabled=True, notes=None):
         self.entity_id = entity_id

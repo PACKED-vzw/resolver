@@ -24,6 +24,7 @@ class Entity(db.Model):
     type = db.Column(db.Enum(*entity_types, name='EntityType'))
     _title =  db.Column('title', db.String(TITLE_MAX))
     slug = db.Column(db.String(SLUG_MAX))
+
     documents = db.relationship("Document",
                                 cascade='all,delete',
                                 backref="entity")
