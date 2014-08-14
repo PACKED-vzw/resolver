@@ -1,7 +1,7 @@
 import csv, tempfile
 from flask import redirect, request, render_template, flash, make_response
 from resolver import app
-from resolver.model import Entity, Document
+from resolver.model import Entity, Document, document_types
 from resolver.database import db
 from resolver.controllers.user import check_privilege
 from resolver.forms import EntityForm
@@ -29,7 +29,13 @@ def admin_new_entity():
                      title=form.title.data,
                      id=form.id.data)
         db.session.add(ent)
+        db.session.flush()
+
+        for type in document_types:
+            db.session.add(Document(ent.id, type))
+
         db.session.commit()
+
         log("added a new entity to the system: %s" % ent)
         # TODO: to flash or not to flash (UX)
         return redirect("/resolver/entity/%s" % ent.id)

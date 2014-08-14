@@ -24,8 +24,9 @@ class Entity(db.Model):
     type = db.Column(db.Enum(*entity_types, name='EntityType'))
     _title =  db.Column('title', db.String(TITLE_MAX))
     slug = db.Column(db.String(SLUG_MAX))
-
-    documents = db.relationship("Document", backref="Entity")
+    documents = db.relationship("Document",
+                                cascade='all,delete',
+                                backref="entity")
 
     def __init__(self, id, type='work', title=None):
         # Slugify the ID to make sure it causes no problems in URLs
@@ -37,6 +38,15 @@ class Entity(db.Model):
     def __repr__(self):
         return '<Entity(%s), id=%s, title=%s>' %\
             (self.type, self.id, self.title)
+
+    @property
+    def active_types(self):
+        types = []
+        for doc in self.documents:
+            if doc.enabled and doc.url:
+                types.append(doc.type)
+
+        return types
 
     @property
     def title(self):

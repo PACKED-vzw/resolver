@@ -48,18 +48,33 @@
       </div>
     </div>
 
-    <ul class="list-group">
-      <li class="list-group-item disabled">
+    <div class="panel panel-default">
+      <div class="panel-heading">
         <h3 class="panel-title">Entities</h3>
-      </li>
-      {% for entity in entities %}
-      <li class="list-group-item"><a href="/resolver/entity/{{ entity.id }}">
-          {% if entity.title %}{{ entity.title }}
-          {% else %}<em>Untitled</em>{% endif %}</a>
-        <a href="/resolver/entity/delete/{{ entity.id }}"><span class="glyphicon glyphicon-remove"></span></a>
-      </li>
-      {% endfor %}
-    </ul>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>PID</th>
+            <th>Title</th>
+            <th>Active documents</th>
+            <th>Remove</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entity in entities %}
+          <tr>
+            <td>{{ entity.type | capitalize }}</td>
+            <td>{{ entity.id }}</td>
+            <td><a href="/resolver/entity/{{ entity.id }}">{% if entity.title %}{{ entity.title }}{% else %}<em>Untitled</em>{% endif %}</a></td>
+            <td>{{ ', '.join(entity.active_types) }}</td>
+            <td><a href="/resolver/entity/delete/{{ entity.id }}"><span class="glyphicon glyphicon-remove"></span></a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 {% endblock %}

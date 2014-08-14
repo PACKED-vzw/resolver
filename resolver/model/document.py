@@ -9,14 +9,10 @@ class Document(db.Model):
     __tablename__ = 'document'
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.Enum(*document_types, name='DocumentType'))
-    entity_id = db.Column(db.String(64), db.ForeignKey("entity.id",
-                                                       onupdate="cascade",
-                                                       ondelete="cascade"))
+    entity_id = db.Column(db.String(64), db.ForeignKey("entity.id"))
     url = db.Column(db.String(512))
     enabled = db.Column(db.Boolean)
     notes = db.Column(db.Text)
-
-    entity = db.relationship("Entity", backref=db.backref(''))
 
     def __init__(self, entity_id, type, url=None, enabled=True, notes=None):
         self.entity_id = entity_id
