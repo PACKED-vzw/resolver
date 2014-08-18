@@ -44,17 +44,18 @@ def admin_new_entity():
 
 @app.route('/resolver/entity/<id>')
 @check_privilege
-def admin_view_entity(id):
+def admin_view_entity(id, form=None):
     ent = Entity.query.filter(Entity.id == id).first()
     if ent:
+        form = form if form else EntityForm(obj=ent)
         documents = ent.documents
         return render_template("resolver/entity.html", title="Entity",
-                               entity=ent, documents=documents)
+                               entity=ent, documents=documents, form=form)
     else:
         flash("Entity not found!", "danger")
         return redirect("/resolver/entity")
 
-@app.route('/resolver/entity/edit/<id>', methods=["GET", "POST"])
+@app.route('/resolver/entity/edit/<id>', methods=["POST"])
 @check_privilege
 def admin_edit_entity(id):
     ent = Entity.query.filter(Entity.id == id).first()
@@ -63,22 +64,18 @@ def admin_edit_entity(id):
         flash("Entity not found", "warning")
         return redirect("/resolver/entity")
 
-    if request.method == 'POST':
-        form = EntityForm()
+    form = EntityForm()
 
-        if not form.validate():
-            return render_template("resolver/edit_entity.html",
-                                   title="Edit entity", entity=ent, form=form)
-        old = str(ent)
-        ent.title = form.title.data
-        ent.type = form.type.data
-        ent.id = form.id.data
-        db.session.commit() #commit changes to DB
-        log("changed entity `%s' to `%s'" % (old, ent))
-        return redirect('/resolver/entity/%s' % ent.id)
-    form = EntityForm(request.form, ent)
-    return render_template("resolver/edit_entity.html", title="Edit entity",
-                           entity=ent, form=form)
+    if not form.validate():
+        return admin_view_entity(id, form=form)
+
+    old = str(ent)
+    ent.title = form.title.data
+    ent.type = form.type.data
+    ent.id = form.id.data
+    db.session.commit() #commit changes to DB
+    log("changed entity `%s' to `%s'" % (old, ent))
+    return redirect('/resolver/entity/%s' % ent.id)
 
 @app.route('/resolver/entity/delete/<id>')
 @check_privilege
