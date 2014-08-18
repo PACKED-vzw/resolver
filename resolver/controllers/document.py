@@ -15,13 +15,15 @@ def admin_view_document_json(id):
     if not doc:
         return json.dumps({'errors':[{'detail':'Document ID invalid'}]})
 
+    # TODO: add method to Document to create dict?
     return json.dumps({'id':doc.id,
                        'type':doc.type,
                        'url':doc.url,
                        'entity':{'id':doc.entity_id},
                        'enabled':doc.enabled,
                        'notes':doc.notes,
-                       'persistent_uri':doc.persistent_uri})
+                       'persistent_uri':doc.persistent_uri,
+                       'resolves':doc.resolves})
 
 @app.route('/resolver/document/delete/<int:id>')
 @check_privilege

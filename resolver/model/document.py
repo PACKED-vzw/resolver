@@ -1,4 +1,5 @@
-import re
+import re, requests
+from urlparse import urlparse, urlunparse
 from resolver import app
 from resolver.database import db
 
@@ -18,9 +19,14 @@ class Document(db.Model):
                            backref='document')
 
     def __init__(self, entity_id, type, url=None, enabled=True, notes=None):
+        u = urlparse(url)
+        if u.scheme:
+            self.url = url
+        else:
+            self.url = urlunparse(('http',)+u[1:])
+
         self.entity_id = entity_id
         self.type = type
-        self.url = url
         self.enabled = enabled
         self.notes = notes
 
@@ -36,3 +42,14 @@ class Document(db.Model):
                        ('%dtype', self.type),
                        ('%slug', self.entity.slug)],
                       '/'+app.config['FULL_URL'])
+
+    @property
+    def resolves(self):
+        if self.url:
+            r = requests.head(self.url, allow_redirects=True)
+            if r.status_code == 200:
+                return True
+            else:
+                return False
+        else:
+            return False

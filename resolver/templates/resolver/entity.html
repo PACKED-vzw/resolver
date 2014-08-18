@@ -9,8 +9,9 @@
         <h3 class="panel-title">About entity</h3>
       </div>
       <div class="panel-body">
-        Title: {% if entity.title %}{{ entity.title }}{% else %}<em>Untitled</em>{% endif %}<br>
-        Type: {{ entity.type|capitalize }}
+        <strong>PID:</strong> {{ entity.id }}<br>
+        <strong>Title:</strong> {% if entity.title %}{{ entity.title }}{% else %}<em>Untitled</em>{% endif %}<br>
+        <strong>Type:</strong> {{ entity.type|capitalize }}
       </div>
     </div>
 
@@ -20,7 +21,7 @@
       </div>
       <div class="list-group">
         {% for document in documents %}
-        <a href="javascript:void(0);" onclick="showDocument('{{ document.id }}');" class="list-group-item">{{ document.type }}</a>
+        <a href="javascript:void(0);" onclick="showDocument('{{ document.id }}');" class="list-group-item">{% if document.url %}{% if document.resolves %}<span class="glyphicon glyphicon-ok green"></span>{% else %}<span class="glyphicon glyphicon-warning-sign red"></span>{% endif %}{% else %}<span class="glyphicon glyphicon-remove red"></span>{% endif %} {{ document.type }}</a>
         {% endfor %}
       </div>
     </div>
@@ -43,11 +44,14 @@
             <h4 class="modal-title">Document details</h4>
           </div>
           <div id="docModalDetails" class="modal-body">
-            Type: <span id="docModalType"></span><br>
-            Enabled: <span id="docModalEnabled"></span><br>
-            Linked URL: <span id="docModalURL"></span><br>
-            Persistent URL: <span id="docModalPURI"></span><br>
-            Notes: <span id="docModalNotes"></span><br>
+            <div id="resolveAlert" class="alert alert-warning">
+              The system indicates that the current URL might not be available!
+            </div>
+            <strong>Type</strong>: <span id="docModalType"></span><br>
+            <strong>Enabled</strong>: <span id="docModalEnabled"></span><br>
+            <strong>Linked URL</strong>: <span id="docModalURL"></span><br>
+            <strong>Persistent URL</strong>: <span id="docModalPURI"></span><br>
+            <strong>Notes</strong>: <span id="docModalNotes"></span><br>
           </div>
           <div id="docModalForm" class="modal-body" style="display:none;">
             <div id="editErrors"></div>

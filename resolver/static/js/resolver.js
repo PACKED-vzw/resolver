@@ -23,6 +23,12 @@ function showDocument(id) {
                 $("#docModalForm").hide();
                 $("#btnEdit").show();
                 $("#docModal").modal('show');
+
+                if(data.url && !data.resolves) {
+                    $("#resolveAlert").show();
+                } else {
+                    $("#resolveAlert").hide();
+                }
             }}});
 }
 
