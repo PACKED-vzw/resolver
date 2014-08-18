@@ -18,4 +18,5 @@ RUN rm -f sentinel
 RUN rm -f docker_config.py
 
 EXPOSE 80
+ENV GUNICORN_WORKERS 4
 CMD ./run_docker.sh
