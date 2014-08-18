@@ -4,71 +4,85 @@
 
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-            Edit entity ...
-          </a>
-        </h3>
-      </div>
-      <div class="panel-collapse collapse" id="collapseOne">
-        <div class="panel-body">
-          <form action="/resolver/entity/edit/{{ entity.id }}" method="POST" role="form" class="form-horizontal">
-            <div class="form-group">
-              {{ render_field(form.id, placeholder="ID") }}
-            </div>
-            <div class="form-group">
-              {{ render_field(form.title, placeholder="Title") }}
-            </div>
-            <div class="form-group">
-              {{ render_field(form.type) }}
-            </div>
-            <div class="form-group">
-              <div class="col-sm-offset-2 col-sm-10">
-                {{ form.csrf_token }}
-                <button type="submit" class="btn btn-default">Edit</button>
-              </div>
-            </div>
-          </form>
+    <div class="panel-group" id="accordion">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">
+            <a data-toggle="collapse" data-parent="#accordion" href="#collapseDocs">
+              Documents
+            </a>
+          </h3>
+        </div>
+        <div class="panel-collapse collapse in" id="collapseDocs">
+          <div class="list-group">
+            {% for document in documents %}
+            <a href="javascript:void(0);" onclick="showDocument('{{ document.id }}');" class="list-group-item">{% if document.url %}{% if document.resolves %}<span class="glyphicon glyphicon-ok green"></span>{% else %}<span class="glyphicon glyphicon-warning-sign red"></span>{% endif %}{% else %}<span class="glyphicon glyphicon-remove red"></span>{% endif %} {{ document.type }}</a>
+            {% endfor %}
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
-            Show persistent URIs ...
-          </a>
-        </h3>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">
+            <a data-toggle="collapse" data-parent="#accordion" href="#collapseForm">
+              Edit entity
+            </a>
+          </h3>
+        </div>
+        <div class="panel-collapse collapse" id="collapseForm">
+          <div class="panel-body">
+            <form action="/resolver/entity/edit/{{ entity.id }}" method="POST" role="form" class="form-horizontal">
+              <div class="form-group">
+                {{ render_field(form.id, placeholder="ID") }}
+              </div>
+              <div class="form-group">
+                {{ render_field(form.title, placeholder="Title") }}
+              </div>
+              <div class="form-group">
+                {{ render_field(form.type) }}
+              </div>
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                  {{ form.csrf_token }}
+                  <button type="submit" class="btn btn-default">Edit</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
-      <div class="panel-collapse collapse" id="collapseTwo">
-        <ul class="list-group">
-          {% for uri in entity.persistent_uris %}
-          <a class="list-group-item" href="{{uri}}" target="_blank">{{uri}}</a>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Documents</h3>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">
+            <a data-toggle="collapse" data-parent="#accordion" href="#collapseURIs">
+              Show persistent URIs
+            </a>
+          </h3>
+        </div>
+        <div class="panel-collapse collapse" id="collapseURIs">
+          <div class="list-group">
+            {% for uri in entity.persistent_uris %}
+            <a class="list-group-item" href="{{uri}}" target="_blank">{{uri}}</a>
+            {% endfor %}
+          </div>
+        </div>
       </div>
-      <div class="list-group">
-        {% for document in documents %}
-        <a href="javascript:void(0);" onclick="showDocument('{{ document.id }}');" class="list-group-item">{% if document.url %}{% if document.resolves %}<span class="glyphicon glyphicon-ok green"></span>{% else %}<span class="glyphicon glyphicon-warning-sign red"></span>{% endif %}{% else %}<span class="glyphicon glyphicon-remove red"></span>{% endif %} {{ document.type }}</a>
-        {% endfor %}
-      </div>
-    </div>
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Delete</h3>
-      </div>
-      <div class="panel-body">
-        <a href="/resolver/entity/delete/{{ entity.id }}" class="btn btn-danger">Delete</a>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">
+            <a data-toggle="collapse" data-parent="#accordion" href="#collapseDelete">
+              Delete
+            </a>
+          </h3>
+        </div>
+        <div class="panel-collapse collapse" id="collapseDelete">
+          <div class="panel-body">
+            <a href="/resolver/entity/delete/{{ entity.id }}" class="btn btn-danger">Delete</a>
+          </div>
+        </div>
       </div>
     </div>
 
