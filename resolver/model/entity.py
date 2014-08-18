@@ -5,6 +5,7 @@ from resolver.database import db
 
 SLUG_MAX = 64
 TITLE_MAX = 512
+SLUG_DEFAULT = "untitled"
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
 _clean_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|}]+')
@@ -43,7 +44,7 @@ class Entity(db.Model):
         self.id = cleanID(id)
         self.type = type
         self.title = title
-        self.slug = slugify(title)[:64] if title else "untitled"
+        self.slug = slugify(title)[:64] if title else SLUG_DEFAULT
 
     def __repr__(self):
         return '<Entity(%s), id=%s, title=%s>' %\
@@ -81,6 +82,6 @@ class Entity(db.Model):
     @title.setter
     def title(self, value):
         self._title = value
-        self.slug = slugify(value)[:64] if value else ""
+        self.slug = slugify(value)[:64] if value else SLUG_DEFAULT
 
     title = db.synonym('_title', descriptor=title)
