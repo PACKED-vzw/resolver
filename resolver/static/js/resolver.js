@@ -8,20 +8,11 @@ function showDocument(id) {
             if(!data.errors) {
                 current_document = id;
 
-                $("#docModalType").text(data.type);
-                $("#docModalEnabled").text(data.enabled);
-                $("#docModalURL").text(data.url);
-                $("#docModalPURI").text(data.persistent_uri);
-                $("#docModalNotes").text(data.notes);
-
                 $("#editUrl").val(data.url);
                 $("#editType").val(data.type);
                 $("#editEnabled").prop('checked', data.enabled);
                 $("#editNotes").val(data.notes);
 
-                $("#docModalDetails").show();
-                $("#docModalForm").hide();
-                $("#btnEdit").show();
                 $("#docModal").modal('show');
 
                 if(data.url && !data.resolves) {
@@ -31,16 +22,6 @@ function showDocument(id) {
                 }
             }}});
 }
-
-function toggleForm() {
-    $("#editErrors").empty();
-    $("#docModalDetails").toggle();
-    $("#docModalForm").toggle();
-    $("#btnEdit").toggle();
-}
-
-$("#btnEdit").click(toggleForm);
-$("#btnCancel").click(toggleForm);
 
 $("#btnDelete").click(function(event){
     window.location.href = '/resolver/document/delete/'+current_document;

@@ -62,17 +62,10 @@
             <button type="button" class="close" data-dismiss="modal"><span>&times;</span><span class="sr-only">Close</span></button>
             <h4 class="modal-title">Document details</h4>
           </div>
-          <div id="docModalDetails" class="modal-body">
+          <div id="docModalForm" class="modal-body">
             <div id="resolveAlert" class="alert alert-warning">
               The system indicates that the current URL might not be available!
             </div>
-            <strong>Type</strong>: <span id="docModalType"></span><br>
-            <strong>Enabled</strong>: <span id="docModalEnabled"></span><br>
-            <strong>Linked URL</strong>: <span id="docModalURL"></span><br>
-            <strong>Persistent URL</strong>: <span id="docModalPURI"></span><br>
-            <strong>Notes</strong>: <span id="docModalNotes"></span><br>
-          </div>
-          <div id="docModalForm" class="modal-body" style="display:none;">
             <div id="editErrors"></div>
             <form role="form" class="form-horizontal" id="docEditForm" action="javascript:void(0);">
               <div class="form-group">
@@ -106,13 +99,11 @@
                 <div class="col-sm-offset-2 col-sm-10">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                   <button type="submit" class="btn btn-primary">Edit</button>
-                  <button type="button" class="btn btn-default" id="btnCancel">Cancel</button>
                 </div>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" id="btnEdit">Edit</button>
             <button type="button" class="btn btn-danger" id="btnDelete">Delete</button>
             <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
           </div>
