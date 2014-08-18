@@ -44,7 +44,7 @@ class Document(db.Model):
                        ('%etype', self.entity.type),
                        ('%dtype', self.type),
                        ('%slug', self.entity.slug)],
-                      '/'+app.config['FULL_URL'])
+                      app.config['BASE_URL']+'/'+app.config['FULL_URL'])
 
     @property
     def resolves(self):

@@ -1,5 +1,6 @@
 import re
 from unidecode import unidecode
+from resolver import app
 from resolver.database import db
 
 SLUG_MAX = 64
@@ -56,6 +57,22 @@ class Entity(db.Model):
                 types.append(doc.type)
 
         return types
+
+    @property
+    def persistent_uri(self):
+        return reduce(lambda str, t: re.sub(t[0], t[1], str),
+                      [('%id', self.id),
+                       ('%slug', self.slug)],
+                      app.config['BASE_URL']+'/'+app.config['SIMPLE_URL'])
+
+    @property
+    def persistent_uris(self):
+        uris = [self.persistent_uri]
+        for doc in self.documents:
+            if doc.enabled and doc.url:
+                uris.append(doc.persistent_uri)
+
+        return uris
 
     @property
     def title(self):
