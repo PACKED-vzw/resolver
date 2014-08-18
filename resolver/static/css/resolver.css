@@ -6,3 +6,25 @@ body {
 .navbar {
     margin-bottom: 20px;
 }
+
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}
+
+.panel-collapse .list-group {
+	margin-bottom: 0;
+}
+
+.panel-collapse .list-group .list-group-item {
+	border-radius: 0;
+	border-left: none;
+	border-right: none;
+}
+
+.panel-collapse .list-group .list-group-item:last-child {
+	border-bottom: none;
+}

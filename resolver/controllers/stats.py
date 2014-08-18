@@ -2,11 +2,12 @@ from flask import redirect, render_template, flash
 from datetime import datetime
 from calendar import monthrange
 from resolver import app
-from resolver.model import PersistentObject, Document, DocumentHit, document_types, object_types
-from resolver.controllers.admin.user import check_privilege
+from resolver.model import Entity, Document, DocumentHit, document_types,\
+    entity_types
+from resolver.controllers.user import check_privilege
 
-@app.route('/admin/stats')
-@app.route('/admin/stats/<int:year>/<int:month>')
+@app.route('/resolver/stats')
+@app.route('/resolver/stats/<int:year>/<int:month>')
 @check_privilege
 def admin_stats_index(year=None, month=None):
     if year == None:
@@ -17,11 +18,11 @@ def admin_stats_index(year=None, month=None):
         # Check if given year and month are sane
         if not (2000 <= year <= 2064):
             flash("Year out of range", "warning")
-            return redirect("/admin/stats")
+            return redirect("/resolver/stats")
 
         if not (1 <= month <= 12):
             flash("Month out of range", "warning")
-            return redirect("/admin/stats")
+            return redirect("/resolver/stats")
 
     start = datetime(year, month, 1, 0, 0, 0)
     end = datetime(year, month, monthrange(year, month)[1], 23, 59, 59)
@@ -30,13 +31,13 @@ def admin_stats_index(year=None, month=None):
                                filter(DocumentHit.document.has(type=type)).\
                                count())
                               for type in document_types]
-    hits_per_object_type = [(type, DocumentHit.query.\
+    hits_per_entity_type = [(type, DocumentHit.query.\
                              join(Document).\
-                             join(PersistentObject).\
+                             join(Entity).\
                              filter(DocumentHit.timestamp.between(start, end)).\
-                             filter(PersistentObject.type == type).\
+                             filter(Entity.type == type).\
                              count())
-                            for type in object_types]
+                            for type in entity_types]
 
     referrers = {}
     for h in DocumentHit.query.filter(DocumentHit.timestamp.between(start, end)):
@@ -48,7 +49,7 @@ def admin_stats_index(year=None, month=None):
 
     total_hits = reduce(lambda a, t: a + t[1], referrers, 0)
 
-    return render_template("admin/stats.html", title='Admin',
-                           object_hits=hits_per_object_type,
+    return render_template("resolver/stats.html", title='Statistics',
+                           entity_hits=hits_per_entity_type,
                            document_hits=hits_per_document_type,
                            referrers=referrers, hits=total_hits)

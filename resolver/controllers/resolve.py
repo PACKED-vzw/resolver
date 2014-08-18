@@ -1,5 +1,5 @@
 from resolver import app
-from resolver.model import PersistentObject, Document, DocumentHit
+from resolver.model import Entity, Document, DocumentHit
 from resolver.database import db
 from resolver.exception import NotFoundException
 from resolver.matcher import matcher
@@ -9,33 +9,32 @@ from flask import redirect, request, render_template
 def catch_all(path):
     return handler(**matcher.match(path))
 
-def handler(id=None, slug=None, otype=None, dtype=None):
-    po = PersistentObject.query.filter(PersistentObject.id == id).first()
+def handler(id=None, slug=None, etype=None, dtype=None):
+    ent = Entity.query.filter(Entity.id == id).first()
 
-    if not po:
-        return render_template('notice.html', title='Object Not Found',
-                               message='No object is associated with \'%s\''%id),\
+    if not ent:
+        return render_template('notice.html', title='Entity Not Found',
+                               message='No entity is associated with \'%s\''%id),\
             404
+
+    # TODO: Complain about wrong slug?
+    if slug and slug != ent.slug:
+        raise NotFoundException()
+
+    # TODO: Complain about wrong entity type?
+    if etype and etype != ent.type:
+        raise NotFoundException()
 
     if not dtype:
         # TODO: Default redirect instead of landing page?
         # TODO: List both enabled and disabled links, or only enabled ones?
-        docs = po.documents
+        docs = ent.documents
         docs = filter(lambda doc: doc.enabled, docs)
         return render_template('landing.html',
-                               title=po.title if po.title else 'Untitled',
+                               title=ent.title if ent.title else 'Untitled',
                                documents=docs)
     else:
-        # having dtype implies having otype
-        # TODO: complain about wrong object type or not?
-        if not otype == po.type:
-            return render_template('notice.html', title='Wrong object type',
-                                   message="Wrong object type provided")
-        # TODO: complain about wrong slug or not?
-        if slug and not slug == po.slug:
-            raise NotFoundException()
-
-        doc = Document.query.filter(Document.object_id == id,
+        doc = Document.query.filter(Document.entity_id == id,
                                     Document.type == dtype).first()
         if not doc:
             raise NotFoundException()
@@ -51,7 +50,7 @@ def handler(id=None, slug=None, otype=None, dtype=None):
             else:
                 title = "No link"
                 # TODO: Configuration for default messages
-                message = "No link is available for this document."
+                message = "No link is available for this entity."
         else:
             title = "Link disabled"
             # TODO: Configuration for default messages

@@ -1,0 +1,80 @@
+{% from "_formhelpers.html" import render_field %}
+{% extends "resolver/layout.html" %}
+{% block body %}
+<!--<div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+          Collapsible Group Item #1
+        </a>
+      </h4>
+    </div>
+    <div id="collapseOne" class="panel-collapse collapse in">
+      <div class="panel-body">-->
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <div class="panel-group" id="accordion">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+              Add entity ...
+            </a>
+          </h4>
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse">
+          <div class="panel-body">
+            <form action="/resolver/entity" method="POST" role="form" class="form-horizontal">
+              <div class="form-group">
+                {{ render_field(form.id, placeholder="ID") }}
+              </div>
+              <div class="form-group">
+                {{ render_field(form.title, placeholder="Title") }}
+              </div>
+              <div class="form-group">
+                {{ render_field(form.type) }}
+              </div>
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                  {{ form.csrf_token }}
+                  <button type="submit" class="btn btn-default">Add</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Entities</h3>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>PID</th>
+            <th>Title</th>
+            <th>Active documents</th>
+            <th>Remove</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entity in entities %}
+          <tr>
+            <td>{{ entity.type | capitalize }}</td>
+            <td>{{ entity.id }}</td>
+            <td><a href="/resolver/entity/{{ entity.id }}">{% if entity.title %}{{ entity.title }}{% else %}<em>Untitled</em>{% endif %}</a></td>
+            <td>{{ ', '.join(entity.active_types) }}</td>
+            <td><a href="/resolver/entity/delete/{{ entity.id }}"><span class="glyphicon glyphicon-remove"></span></a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

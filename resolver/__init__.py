@@ -1,4 +1,6 @@
+import os, logging
 from flask import Flask, render_template
+from flask_wtf.csrf import CsrfProtect
 from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
 
@@ -6,14 +8,22 @@ app = Flask(__name__)
 app.config.from_object('resolver.config.Config')
 app.config.from_envvar('RESOLVER_SETTINGS', silent=True)
 
+if os.environ.get('HEROKU', False):
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY',
+                                              app.config['SECRET_KEY'])
+    app.config['SALT'] = os.environ.get('SALT', app.config['SALT'])
+
 # TODO: Logging in production only?
 # TODO: Add log file to config
+if os.environ.get('HEROKU', False):
+    import sys
+    handler = logging.StreamHandler(sys.stdout)
+else:
+    handler = logging.FileHandler("application.log")
 
-import logging
-file_handler = logging.FileHandler("application.log")
-file_handler.setLevel(logging.INFO)
-file_handler.setFormatter(logging.Formatter('[%(levelname)s] %(asctime)s -- %(message)s'))
-app.logger.addHandler(file_handler)
+handler.setLevel(logging.INFO)
+handler.setFormatter(logging.Formatter('[%(levelname)s] %(asctime)s -- %(message)s'))
+app.logger.addHandler(handler)
 
 @app.errorhandler(404)
 @app.errorhandler(NotFoundException)
@@ -28,5 +38,8 @@ def internal_error(e):
                            message='Something went terribly wrong!'), 500
 
 import resolver.controllers
+
+csrf = CsrfProtect()
+csrf.init_app(app)
 
 wsgi_app = RemoteUserMiddleware(app.wsgi_app)
