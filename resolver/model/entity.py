@@ -6,14 +6,22 @@ SLUG_MAX = 64
 TITLE_MAX = 512
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
+_clean_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|}]+')
 
-def slugify(text, delim=u'-', lower=True):
+def slugify(text):
     """Generates an ASCII-only slug.
        Written by Armin Ronacher."""
     result = []
-    for word in _punct_re.split(text.lower() if lower else text):
+    for word in _punct_re.split(text.lower()):
         result.extend(unidecode(word).split())
-    return unicode(delim.join(result))
+    return unicode('-'.join(result))
+
+def cleanID(ID):
+    """Adapted from slugify, but allows [,.]"""
+    result = []
+    for word in _clean_re.split(ID):
+        result.extend(unidecode(word).split())
+    return unicode(''.join(result))
 
 # TODO: make types a property of Entity?
 entity_types = ('work', 'agent', 'concept', 'event')
@@ -30,11 +38,11 @@ class Entity(db.Model):
                                 backref="entity")
 
     def __init__(self, id, type='work', title=None):
-        # Slugify the ID to make sure it causes no problems in URLs
-        self.id = slugify(id, lower=False, delim=u'')
+        # TODO: error if id != cleanID(id) ?
+        self.id = cleanID(id)
         self.type = type
         self.title = title
-        self.slug = slugify(title)[:64] if title else ""
+        self.slug = slugify(title)[:64] if title else "untitled"
 
     def __repr__(self):
         return '<Entity(%s), id=%s, title=%s>' %\

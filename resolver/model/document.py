@@ -19,11 +19,14 @@ class Document(db.Model):
                            backref='document')
 
     def __init__(self, entity_id, type, url=None, enabled=True, notes=None):
-        u = urlparse(url)
-        if u.scheme:
-            self.url = url
+        if url:
+            u = urlparse(url)
+            if u.scheme:
+                self.url = url
+            else:
+                self.url = urlunparse(('http',)+u[1:])
         else:
-            self.url = urlunparse(('http',)+u[1:])
+            self.url = None
 
         self.entity_id = entity_id
         self.type = type
