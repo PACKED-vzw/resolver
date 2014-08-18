@@ -10,5 +10,5 @@ WTForms==2.0.1
 Werkzeug==0.9.6
 gunicorn==19.1.0
 itsdangerous==0.24
+requests==2.3.0
 wsgiref==0.1.2
-psycopg2

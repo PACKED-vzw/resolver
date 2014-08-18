@@ -8,8 +8,8 @@ class Config(object):
     DATABASE_PASS = ""
     DATABASE_NAME = "resolver"
 
-    SECRET_KEY = "a"
-    SALT = "a"
+    SECRET_KEY = ""
+    SALT = ""
 
     # SIMPLE_URL should contain %id, may contain %slug
     SIMPLE_URL = "collection/%id"
