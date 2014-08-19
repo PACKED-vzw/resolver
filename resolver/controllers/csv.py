@@ -1,7 +1,8 @@
 import csv, tempfile
 from flask import request, render_template, flash, make_response, redirect
 from resolver import app
-from resolver.model import Entity, Document, entity_types, document_types
+from resolver.model import Entity, Document, entity_types, document_types,\
+    cleanID
 from resolver.database import db
 from resolver.controllers.user import check_privilege
 from resolver.util import log, UnicodeWriter, UnicodeReader
@@ -40,6 +41,8 @@ def admin_csv_import():
         reader.next() # Skip legend
 
     for id, etype, title, dtype, url, enabled, notes in reader:
+        id = cleanID(id)
+
         ent = Entity.query.\
               filter(Entity.id == id).first()
         doc = Document.query.\
@@ -62,6 +65,7 @@ def admin_csv_import():
             ent.id = id
             ent.type = etype
             ent.title = title
+            db.session.flush()
             log("%s to `%s'" % (str, ent))
         else:
             ent = Entity(id, type=etype, title=title)

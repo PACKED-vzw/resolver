@@ -1,7 +1,7 @@
 import csv, tempfile
 from flask import redirect, request, render_template, flash, make_response
 from resolver import app
-from resolver.model import Entity, Document, document_types
+from resolver.model import Entity, Document, document_types, cleanID
 from resolver.database import db
 from resolver.controllers.user import check_privilege
 from resolver.forms import EntityForm
@@ -72,7 +72,7 @@ def admin_edit_entity(id):
     old = str(ent)
     ent.title = form.title.data
     ent.type = form.type.data
-    ent.id = form.id.data
+    ent.id = cleanID(form.id.data)
     db.session.commit() #commit changes to DB
     log("changed entity `%s' to `%s'" % (old, ent))
     return redirect('/resolver/entity/%s' % ent.id)
