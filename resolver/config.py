@@ -10,8 +10,3 @@ class Config(object):
 
     SECRET_KEY = ""
     SALT = ""
-
-    # SIMPLE_URL should contain %id, may contain %slug
-    SIMPLE_URL = "collection/%id"
-    # FULL_URL should contain %dtype and %id, preferably also %slug and %etype
-    FULL_URL = "collection/%etype/%dtype/%id/%slug"

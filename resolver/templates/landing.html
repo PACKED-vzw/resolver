@@ -27,7 +27,7 @@
             </div>
             <div class="list-group">
               {% for doc in documents %}
-              <a href="{{ doc.persistent_uri }}" class="list-group-item">{{ doc.type }}</a>
+              <a href="{{ doc.persistent_uri[-1] }}" class="list-group-item">{{ doc.type }}</a>
               {% endfor %}
             </ul>
           </div>

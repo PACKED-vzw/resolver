@@ -2,6 +2,7 @@ import re
 from unidecode import unidecode
 from resolver import app
 from resolver.database import db
+import resolver.kvstore as kvstore
 
 SLUG_MAX = 64
 TITLE_MAX = 512
@@ -61,17 +62,18 @@ class Entity(db.Model):
 
     @property
     def persistent_uri(self):
-        return reduce(lambda str, t: re.sub(t[0], t[1], str),
-                      [('%id', self.id),
-                       ('%slug', self.slug)],
-                      app.config['BASE_URL']+'/'+app.config['SIMPLE_URL'])
+        url = app.config['BASE_URL']+'/collection/%s' % self.id
+
+        if kvstore.get('title_enabled'):
+            return [url, url+'/%s'%self.slug]
+        else:
+            return [url]
 
     @property
     def persistent_uris(self):
-        uris = [self.persistent_uri]
+        uris = self.persistent_uri
         for doc in self.documents:
-            if doc.enabled and doc.url:
-                uris.append(doc.persistent_uri)
+            uris += doc.persistent_uri
 
         return uris
 

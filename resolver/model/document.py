@@ -2,6 +2,7 @@ import re, requests
 from urlparse import urlparse, urlunparse
 from resolver import app
 from resolver.database import db
+import resolver.kvstore as kvstore
 
 # TODO: make types a property of Document?
 document_types = ('data', 'representation')
@@ -39,12 +40,13 @@ class Document(db.Model):
 
     @property
     def persistent_uri(self):
-        return reduce(lambda str, t: re.sub(t[0], t[1], str),
-                      [('%id', self.entity_id),
-                       ('%etype', self.entity.type),
-                       ('%dtype', self.type),
-                       ('%slug', self.entity.slug)],
-                      app.config['BASE_URL']+'/'+app.config['FULL_URL'])
+        url = app.config['BASE_URL']+'/collection/%s/%s/%s' %\
+              (self.entity.type, self.type, self.entity_id)
+
+        if kvstore.get('title_enabled'):
+            return [url, url+'/%s'%self.entity.slug]
+        else:
+            return [url]
 
     @property
     def resolves(self):

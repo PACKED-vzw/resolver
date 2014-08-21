@@ -100,6 +100,7 @@ def admin_csv_export():
     # I'd rather write all data to a memory stream than a file, but streams
     # require unicode and Python's csv/UnicodeWriter don't like unicode that
     # much
+    # TODO: use cStringIO ?
     file = tempfile.NamedTemporaryFile()
     writer = UnicodeWriter(file)
 
