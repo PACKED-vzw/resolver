@@ -1,19 +1,22 @@
 import csv, tempfile
 from flask import redirect, request, render_template, flash, make_response
 from resolver import app
-from resolver.model import Entity, Document, document_types, cleanID
+from resolver.model import Entity, Document, Data, Representation,\
+    document_types, data_formats
 from resolver.database import db
 from resolver.controllers.user import check_privilege
 from resolver.forms import EntityForm
 from resolver.util import log
+import resolver.kvstore as kvstore
 
 @app.route('/resolver/entity')
 @check_privilege
 def admin_list_entities(form=False):
     entities = Entity.query.all()
     form = form if form else EntityForm()
-    return render_template("resolver/entities.html", title="Entities",\
-                           entities=entities, form=form)
+    return render_template("resolver/entities.html", title="Entities",
+                           entities=entities, form=form,
+                           title_enabled=kvstore.get('title_enabled'))
 
 @app.route('/resolver/entity', methods=["POST"])
 @check_privilege
@@ -31,8 +34,8 @@ def admin_new_entity():
         db.session.add(ent)
         db.session.flush()
 
-        for type in document_types:
-            db.session.add(Document(ent.id, type))
+        db.session.add(Data(ent.id, 'html'))
+        db.session.add(Representation(ent.id, 1, reference=True))
 
         db.session.commit()
 
@@ -45,12 +48,20 @@ def admin_new_entity():
 @app.route('/resolver/entity/<id>')
 @check_privilege
 def admin_view_entity(id, form=None):
+    def sort_help(a, b):
+        # Helper function for sorting the documents list
+        if (type(a)==Data) or (type(b)==Data):
+            return 0
+        else:
+            return -1 if a.order < b.order else 1
+
     ent = Entity.query.filter(Entity.id == id).first()
     if ent:
         form = form if form else EntityForm(obj=ent)
-        documents = ent.documents
+        documents = sorted(ent.documents, sort_help)
         return render_template("resolver/entity.html", title="Entity",
-                               entity=ent, documents=documents, form=form)
+                               entity=ent, documents=documents, form=form,
+                               data_formats=data_formats)
     else:
         flash("Entity not found!", "danger")
         return redirect("/resolver/entity")
@@ -72,7 +83,7 @@ def admin_edit_entity(id):
     old = str(ent)
     ent.title = form.title.data
     ent.type = form.type.data
-    ent.id = cleanID(form.id.data)
+    ent.id = form.id.data
     db.session.commit() #commit changes to DB
     log("changed entity `%s' to `%s'" % (old, ent))
     return redirect('/resolver/entity/%s' % ent.id)

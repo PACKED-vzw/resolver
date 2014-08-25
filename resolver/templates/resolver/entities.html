@@ -1,18 +1,6 @@
 {% from "_formhelpers.html" import render_field %}
 {% extends "resolver/layout.html" %}
 {% block body %}
-<!--<div class="panel-group" id="accordion">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-          Collapsible Group Item #1
-        </a>
-      </h4>
-    </div>
-    <div id="collapseOne" class="panel-collapse collapse in">
-      <div class="panel-body">-->
-
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
     <div class="panel-group" id="accordion">
@@ -57,7 +45,7 @@
           <tr>
             <th>Type</th>
             <th>PID</th>
-            <th>Title</th>
+            {% if title_enabled %}<th>Title</th>{% endif %}
             <th>Active documents</th>
             <th>Remove</th>
           </tr>
@@ -66,9 +54,9 @@
           {% for entity in entities %}
           <tr>
             <td>{{ entity.type | capitalize }}</td>
-            <td>{{ entity.id }}</td>
-            <td><a href="/resolver/entity/{{ entity.id }}">{% if entity.title %}{{ entity.title }}{% else %}<em>Untitled</em>{% endif %}</a></td>
-            <td>{{ ', '.join(entity.active_types) }}</td>
+            <td><a href="/resolver/entity/{{ entity.id }}">{{ entity.id }}</a></td>
+            {% if title_enabled %}<td>{% if entity.title %}{{ entity.title }}{% else %}<em>Untitled</em>{% endif %}</td>{% endif %}
+            <td>---</td>
             <td><a href="/resolver/entity/delete/{{ entity.id }}"><span class="glyphicon glyphicon-remove"></span></a></td>
           </tr>
           {% endfor %}

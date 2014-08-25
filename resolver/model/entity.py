@@ -31,34 +31,26 @@ entity_types = ('work', 'agent', 'concept', 'event')
 
 class Entity(db.Model):
     __tablename__ = 'entity'
-    id = db.Column(db.String(64), primary_key=True)
+    # TODO: make maximum ID length a global var?
+    # it's also used in other classes, so it might not be a bad idea
+    _id = db.Column('id', db.String(64), primary_key=True)
     type = db.Column(db.Enum(*entity_types, name='EntityType'))
     _title =  db.Column('title', db.String(TITLE_MAX))
     slug = db.Column(db.String(SLUG_MAX))
 
     documents = db.relationship("Document",
                                 cascade='all,delete',
-                                backref="entity")
+                                backref='entity',
+                                order_by='Document.type')
 
     def __init__(self, id, type='work', title=None):
-        # TODO: error if id != cleanID(id) ?
-        self.id = cleanID(id)
+        self.id = id
         self.type = type
         self.title = title
-        self.slug = slugify(title)[:64] if title else SLUG_DEFAULT
 
     def __repr__(self):
         return '<Entity(%s), id=%s, title=%s>' %\
             (self.type, self.id, self.title)
-
-    @property
-    def active_types(self):
-        types = []
-        for doc in self.documents:
-            if doc.enabled and doc.url:
-                types.append(doc.type)
-
-        return types
 
     @property
     def persistent_uri(self):
@@ -86,4 +78,14 @@ class Entity(db.Model):
         self._title = value
         self.slug = slugify(value)[:64] if value else SLUG_DEFAULT
 
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        # TODO: error if id != cleanID(id) ?
+        self._id = cleanID(value)
+
     title = db.synonym('_title', descriptor=title)
+    id = db.synonym('_id', descriptor=id)

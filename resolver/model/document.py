@@ -4,49 +4,43 @@ from resolver import app
 from resolver.database import db
 import resolver.kvstore as kvstore
 
-# TODO: make types a property of Document?
 document_types = ('data', 'representation')
 
 class Document(db.Model):
     __tablename__ = 'document'
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.Enum(*document_types, name='DocumentType'))
     entity_id = db.Column(db.String(64), db.ForeignKey("entity.id"))
-    url = db.Column(db.String(512))
     enabled = db.Column(db.Boolean)
     notes = db.Column(db.Text)
-    hits = db.relationship("DocumentHit",
-                           cascade='all,delete',
-                           backref='document')
+    _url = db.Column('url', db.String(512))
+    type = db.Column(db.String(50))
 
-    def __init__(self, entity_id, type, url=None, enabled=True, notes=None):
-        if url:
-            u = urlparse(url)
-            if u.scheme:
-                self.url = url
-            else:
-                self.url = urlunparse(('http',)+u[1:])
-        else:
-            self.url = None
+    __mapper_args__ = {
+        'polymorphic_identity':'document',
+        'polymorphic_on':type
+    }
 
+    def __init__(self, entity_id, url=None, enabled=True, notes=None):
+        self.url = url
         self.entity_id = entity_id
-        self.type = type
         self.enabled = enabled
         self.notes = notes
 
     def __repr__(self):
-        return '<Document(%s), enabled=%s, url=%s>' %\
-            (self.type, self.enabled,self.url)
+        raise Exception("Implement me")
+
+    def to_dict(self):
+        return {'url':self.url,
+                'enabled':self.enabled,
+                'id':self.id,
+                'type':self.type,
+                'notes':self.notes,
+                'resolves':self.resolves,
+                'entity':self.entity_id}
 
     @property
     def persistent_uri(self):
-        url = app.config['BASE_URL']+'/collection/%s/%s/%s' %\
-              (self.entity.type, self.type, self.entity_id)
-
-        if kvstore.get('title_enabled'):
-            return [url, url+'/%s'%self.entity.slug]
-        else:
-            return [url]
+        raise Exception("Implement me")
 
     @property
     def resolves(self):
@@ -58,3 +52,20 @@ class Document(db.Model):
                 return False
         else:
             return False
+
+    @property
+    def url(self):
+        return self._url
+
+    @url.setter
+    def url(self, url):
+        if url:
+            u = urlparse(url)
+            if u.scheme:
+                self._url = url
+            else:
+                self._url = urlunparse(('http',)+u[1:])
+        else:
+            self._url = None
+
+    url = db.synonym('_url', descriptor=url)

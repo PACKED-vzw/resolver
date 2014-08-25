@@ -1,8 +1,9 @@
 import json
 from resolver import app
 from resolver.util import log
-from resolver.model import Entity, Document, entity_types, document_types
-from resolver.forms import DocumentForm
+from resolver.model import Entity, Document, Data, Representation,\
+    entity_types, document_types, data_formats
+from resolver.forms import DataForm, RepresentationForm
 from resolver.database import db
 from resolver.controllers.user import check_privilege
 from flask import redirect, request, render_template, flash
@@ -15,15 +16,7 @@ def admin_view_document_json(id):
     if not doc:
         return json.dumps({'errors':[{'detail':'Document ID invalid'}]})
 
-    # TODO: add method to Document to create dict?
-    return json.dumps({'id':doc.id,
-                       'type':doc.type,
-                       'url':doc.url,
-                       'entity':{'id':doc.entity_id},
-                       'enabled':doc.enabled,
-                       'notes':doc.notes,
-                       'persistent_uri':doc.persistent_uri,
-                       'resolves':doc.resolves})
+    return json.dumps(doc.to_dict())
 
 @app.route('/resolver/document/delete/<int:id>')
 @check_privilege
@@ -33,12 +26,137 @@ def admin_delete_document(id):
     if not doc:
         flash("Document not found", "warning")
         return redirect("/resolver/entity")
+
+    if type(doc) == Representation:
+        if doc.reference:
+            count = Representation.query.\
+                    filter(Document.entity_id == entity_id).count()
+            if count > 1:
+                flash("Please select another representation to be reference first",
+                      'warning')
+                return redirect("/resolver/entity/%s" % entity_id)
+
+        db.session.delete(doc)
+        db.session.flush()
+
+        i = 1
+        reps = Representation.query.\
+               filter(Document.entity_id == entity_id).\
+               order_by(Representation.order.asc()).all()
+        for rep in reps:
+            rep.order = i
+            i += 1
+    else:
+        db.session.delete(doc)
+
     log("removed the document `%s' from entity `%s'" %
         (doc, doc.entity))
-    db.session.delete(doc)
     db.session.commit()
     flash("Document deleted succesfully", "success")
     return redirect("/resolver/entity/%s" % entity_id)
+
+@app.route('/resolver/document/representation/up/<int:id>')
+@check_privilege
+def admin_representation_up(id):
+    doc = Document.query.filter(Document.id == id).first()
+    if (not doc) or (doc.type != 'representation'):
+        flash('Document not found or wrong type', 'danger')
+        return redirect("/resolver/entity/%s" % doc.entity_id)\
+            if doc else redirect("/resolver/entity")
+
+    if doc.order != 1:
+        up = Representation.query.filter(Document.entity_id == doc.entity_id,
+                                         Representation.order == (doc.order-1)).\
+            first()
+        if up:
+            doc.order = doc.order - 1
+            up.order = up.order + 1
+            db.session.commit()
+
+    return redirect("/resolver/entity/%s" % doc.entity_id)
+
+@app.route('/resolver/document/representation/down/<int:id>')
+@check_privilege
+def admin_representation_down(id):
+    doc = Document.query.filter(Document.id == id).first()
+    if (not doc) or (doc.type != 'representation'):
+        flash('Document not found or wrong type', 'danger')
+        return redirect("/resolver/entity/%s" % doc.entity_id)\
+            if doc else redirect("/resolver/entity")
+
+    next = Representation.query.filter(Document.entity_id == doc.entity_id,
+                                       Representation.order == (doc.order + 1)).\
+        first()
+    if next:
+        doc.order = doc.order + 1
+        next.order = next.order - 1
+        db.session.commit()
+
+    return redirect("/resolver/entity/%s" % doc.entity_id)
+
+@app.route('/resolver/document/data/<entity_id>', methods=["POST"])
+@check_privilege
+def admin_add_data_json(entity_id):
+    # TODO: logging
+    ent = Entity.query.filter(Entity.id == entity_id).first()
+    if not ent:
+        return json.dumps({'errors':[{'detail':'Entity not found'}]})
+
+    form = DataForm()
+
+    if not form.validate():
+        return form_errors_json(form)
+
+    docs = Data.query.filter(Document.entity_id == ent.id,
+                             Data.format == form.format.data).all()
+    if len(docs) != 0:
+        return json.dumps({'errors':[{'title':'Wrong format',
+                                      'detail':'Duplicate format'}]})
+
+    doc = Data(ent.id, form.format.data, url=form.url.data,
+               enabled=form.enabled.data, notes=form.notes.data)
+    db.session.add(doc)
+    db.session.commit()
+
+    return json.dumps({'success':True})
+
+@app.route('/resolver/document/representation/<entity_id>', methods=["POST"])
+@check_privilege
+def admin_add_representation_json(entity_id):
+    # TODO: logging
+    ent = Entity.query.filter(Entity.id == entity_id).first()
+    if not ent:
+        return json.dumps({'errors':[{'detail':'Entity not found'}]})
+
+    form = RepresentationForm()
+
+    if not form.validate():
+        return form_errors_json(form)
+
+    ref = Representation.query.filter(Document.entity_id == ent.id,
+                                      Representation.reference == True).first()
+    if form.reference.data:
+        if ref:
+            ref.reference = False
+    elif not ref:
+        return json.dumps({'errors':[{'title':'Reference error',
+                                      'detail':'At least one representation has to be the reference image.'}]})
+
+    highest = Representation.query.\
+              filter(Document.entity_id == ent.id).\
+              order_by(Representation.order.desc()).first()
+    if highest:
+        order = highest.order + 1
+    else:
+        order = 1
+
+    rep = Representation(ent.id, order, url=form.url.data,
+                         enabled=form.enabled.data, notes=form.notes.data,
+                         reference=form.reference.data)
+    db.session.add(rep)
+    db.session.commit()
+
+    return json.dumps({'success':True})
 
 @app.route('/resolver/document/edit/<int:id>.json', methods=["POST"])
 @check_privilege
@@ -46,30 +164,58 @@ def admin_edit_document_json(id):
     doc = Document.query.filter(Document.id == id).first()
 
     if not doc:
-        return "Document not found"
+        return json.dumps({'errors':[{'detail':'Document not found'}]})
 
     # We can still parse the form from the request data
-    form = DocumentForm()
+    if type(doc) == Data:
+        form = DataForm()
+    else:
+        form = RepresentationForm()
 
     if form.validate():
-        if (form.type.data != doc.type) and\
-           (form.type.data in map(lambda ent: ent.type,
-                                  doc.entity.documents)):
-            return json.dumps({'errors':[{'title':'Type not unique',
-                                          'detail':'There already is a document\
-                                          of this type'}]})
-
         old = str(doc)
+
         doc.enabled = form.enabled.data
-        doc.type = form.type.data
         doc.url = form.url.data
         doc.notes = form.notes.data
+
+        if doc.type == 'data':
+            docs = Data.query.filter(Document.entity_id == doc.entity_id,
+                                     Data.format == form.format.data,
+                                     Document.id != doc.id).all()
+            if len(docs) != 0:
+                db.session.rollback()
+                return json.dumps({'errors':[{'title':'Wrong format',
+                                              'detail':'Duplicate format'}]})
+
+            doc.format = form.format.data
+        else:
+            # Representation
+            # Reference bookkeeping
+            ref = Representation.query.\
+                  filter(Document.entity_id == doc.entity_id,
+                         Document.id != doc.id,
+                         Representation.reference == True).first()
+            if form.reference.data:
+                if ref:
+                    ref.reference = False
+
+                doc.reference = True
+            elif not ref:
+                db.session.rollback()
+                return json.dumps({'errors':[{'title':'Reference error',
+                                              'detail':'At least one representation has to be the reference image.'}]})
+
         db.session.commit() #commit changes to DB
         log("changed document `%s' to `%s'" % (old, doc))
         return json.dumps({'success':True})
     else:
-        errors = []
-        for type, msgs in form.errors.iteritems():
-            for msg in msgs:
-                errors.append({'title':type, 'detail':msg})
-        return json.dumps({'errors':errors})
+        return form_errors_json(form)
+
+def form_errors_json(form):
+    errors = []
+    for t, msgs in form.errors.iteritems():
+        for msg in msgs:
+            errors.append({'title':t, 'detail':msg})
+
+    return json.dumps({'errors':errors})

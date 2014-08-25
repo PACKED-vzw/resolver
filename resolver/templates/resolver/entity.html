@@ -2,6 +2,8 @@
 {% extends "resolver/layout.html" %}
 {% block body %}
 
+<script type="text/javascript">var entity_id="{{entity.id}}";</script>
+
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
     <div class="panel-group" id="accordion">
@@ -14,10 +16,67 @@
           </h3>
         </div>
         <div class="panel-collapse collapse in" id="collapseDocs">
-          <div class="list-group">
-            {% for document in documents %}
-            <a href="javascript:void(0);" onclick="showDocument('{{ document.id }}');" class="list-group-item">{% if document.url %}{% if document.resolves %}<span class="glyphicon glyphicon-ok green"></span>{% else %}<span class="glyphicon glyphicon-warning-sign red"></span>{% endif %}{% else %}<span class="glyphicon glyphicon-remove red"></span>{% endif %} {{ document.type }}</a>
-            {% endfor %}
+          {% if documents %}
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Options</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for document in documents %}
+              <tr>
+                <td>
+                  {% if document.url %}
+                  {% if document.resolves %}
+                  <span class="glyphicon glyphicon-ok green"></span>
+                  {% else %}
+                  <span class="glyphicon glyphicon-warning-sign red"></span>
+                  {% endif %}
+                  {% else %}
+                  <span class="glyphicon glyphicon-remove red"></span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="javascript:void(0);" onclick="showDocument('{{ document.id }}');">
+                  {% if document.type == 'data' %}
+                  Data ({{document.format}})
+                  {% else %}
+                  {% if document.reference %}
+                  <strong>Representation ({{document.order}})</strong>
+                  {% else %}
+                  Representation ({{document.order}})
+                  {% endif %}
+                  {% endif %}
+                  </a>
+                </td>
+                <td>
+                  {% if document.type == 'data' %}
+                  {% else %}
+                  <a href="/resolver/document/representation/up/{{document.id}}">
+                    <span class="glyphicon glyphicon-chevron-up"></span>
+                  </a>
+                  <a href="/resolver/document/representation/down/{{document.id}}">
+                    <span class="glyphicon glyphicon-chevron-down"></span>
+                  </a>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="panel-body">
+            No documents yet
+          </div>
+          {% endif %}
+          <div class="panel-footer clearfix">
+            <div class="pull-right">
+              <button type="button" class="btn btn-primary" id="btnDataAdd">Add data</button>
+              <button type="button" class="btn btn-primary" id="btnRepresentationAdd">Add representation</button>
+            </div>
           </div>
         </div>
       </div>
@@ -106,18 +165,9 @@
                 </div>
               </div>
               <div class="form-group">
-                <label for="type" class="col-sm-2 control-label">Type</label>
-                <div class="col-sm-10">
-                  <select class="form-control" id="editType" name="type">
-                    <option value="data">Data</option>
-                    <option value="representation">Representation</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
                 <label for="enabled" class="col-sm-2 control-label">Enabled</label>
                 <div class="col-sm-10">
-                  <input class="form-control" id="editEnabled" name="enabled" type="checkbox" value="y">
+                  <input id="editEnabled" name="enabled" type="checkbox" value="y">
                 </div>
               </div>
               <div class="form-group">
@@ -126,15 +176,38 @@
                   <textarea class="form-control" id="editNotes" name="notes"></textarea>
                 </div>
               </div>
+              <span id="dataInputs">
+                <!-- format -->
+                <div class="form-group">
+                  <label for="dataFormat" class="col-sm-2 control-label">Format</label>
+                  <div class="col-sm-10">
+                    <select class="form-control" id="dataFormat" name="format">
+                      {% for format in data_formats %}
+                      <option value="{{ format }}">{{ format }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </span>
+              <span id="representationInputs">
+                <!-- order/reference -->
+                <div class="form-group">
+                  <label for="representationReference" class="col-sm-2 control-label">Reference image</label>
+                  <div class="col-sm-10">
+                    <input id="representationReference" name="reference" type="checkbox" value="y">
+                  </div>
+                </div>
+              </span>
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                  <button type="submit" class="btn btn-primary">Edit</button>
+                  <!--<button type="submit" class="btn btn-primary">Edit</button>-->
                 </div>
               </div>
             </form>
           </div>
           <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="btnSubmit"></button>
             <button type="button" class="btn btn-danger" id="btnDelete">Delete</button>
             <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
           </div>

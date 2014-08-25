@@ -1,4 +1,5 @@
 var current_document;
+var action;
 
 function showDocument(id) {
     $.ajax({
@@ -7,29 +8,74 @@ function showDocument(id) {
         success: function (data) {
             if(!data.errors) {
                 current_document = id;
+                action = base_url + '/resolver/document/edit/'+id+'.json';
+
+                $("#btnSubmit").html('Edit');
+                $("#btnDelete").show();
 
                 $("#editUrl").val(data.url);
-                $("#editType").val(data.type);
                 $("#editEnabled").prop('checked', data.enabled);
                 $("#editNotes").val(data.notes);
 
-                $("#docModal").modal('show');
+                if(data.type == 'data') {
+                    $("#dataInputs").show();
+                    $("#representationInputs").hide();
+                    $("#dataFormat").val(data.format);
+                } else {
+                    $("#dataInputs").hide();
+                    $("#representationInputs").show();
+                    $("#representationReference").prop('checked', data.reference);
+                }
 
                 if(data.url && !data.resolves) {
                     $("#resolveAlert").show();
                 } else {
                     $("#resolveAlert").hide();
                 }
+
+                $("#docModal").modal('show');
             }}});
 }
 
 $("#btnDelete").click(function(event){
-    window.location.href = '/resolver/document/delete/'+current_document;
+    if(current_document){
+        window.location.href = '/resolver/document/delete/'+current_document;
+    }
+});
+
+function prepForm(){
+    $("#resolveAlert").hide();
+    $("#btnSubmit").html('Add');
+    $("#editErrors").empty();
+    $("#btnDelete").hide();
+    $("#docEditForm")[0].reset();
+}
+
+$("#btnDataAdd").click(function(event){
+    edit_mode=false;
+    prepForm();
+    $("#dataInputs").show();
+    $("#representationInputs").hide();
+    $("#docModal").modal('show');
+    action = base_url + '/resolver/document/data/'+entity_id;
+});
+
+$("#btnRepresentationAdd").click(function(event){
+    edit_mode=false;
+    prepForm();
+    $("#dataInputs").hide();
+    $("#representationInputs").show();
+    $("#docModal").modal('show');
+    action = base_url + '/resolver/document/representation/'+entity_id;
+});
+
+$("#btnSubmit").click(function(event){
+    $("#docEditForm").submit();
 });
 
 $("#docEditForm").submit(function(event){
     $("#editErrors").empty();
-    $.post('/resolver/document/edit/'+current_document+'.json',
+    $.post(action,
            $("#docEditForm").serialize(),
            function(data){
                if(data.errors) {
