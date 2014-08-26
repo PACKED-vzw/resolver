@@ -1,8 +1,8 @@
-import csv, tempfile
+import csv, tempfile, cStringIO
 from flask import request, render_template, flash, make_response, redirect
 from resolver import app
-from resolver.model import Entity, Document, entity_types, document_types,\
-    cleanID
+from resolver.model import Entity, Document, Data, Representation,\
+    entity_types, document_types, cleanID
 from resolver.database import db
 from resolver.controllers.user import check_privilege
 from resolver.util import log, UnicodeWriter, UnicodeReader
@@ -15,6 +15,7 @@ def admin_csv():
 @app.route('/resolver/csv/import', methods=["POST"])
 @check_privilege
 def admin_csv_import():
+    # TODO: logging
     def allowed(filename):
         return ('.' in filename) and\
             (filename.rsplit('.', 1)[1].lower() == 'csv')
@@ -30,95 +31,125 @@ def admin_csv_import():
         return redirect("/resolver/csv")
 
     log("is starting a CSV import session...")
-    # TODO: skip first row if it includes legend (we assume there is a legend)?
 
     reader = UnicodeReader(file)
+    # NOTE: we always assume the first row is a header
     # As this feature is mainly used for imports/edits from Excel, it is
     # possible that Excel uses `;' as a separator instead of `,' ...
-    if len(reader.next()) != 7:
+    if len(reader.next()) != 10:
         file.seek(0)
         reader = UnicodeReader(file, delimiter=';')
-        reader.next() # Skip legend
+        reader.next() # Skip header again
 
-    for id, etype, title, dtype, url, enabled, notes in reader:
-        id = cleanID(id)
+    records = {}
+    for record in reader:
+        id = cleanID(record[0])
 
+        # Skip wrong types now
+        if (not record[1] in entity_types) or (not record[3] in document_types):
+            continue
+
+        if records.get(id, False):
+            records[id].append(record)
+        else:
+            records[id] = [record]
+
+    for id, record_list in records.iteritems():
         ent = Entity.query.\
               filter(Entity.id == id).first()
-        doc = Document.query.\
-              filter(Document.entity_id == id).\
-              filter(Document.type == dtype).\
-              first()
-
-        if not etype in entity_types:
-            flash("An entity was encountered with an incorrect type\
-            (ID: %s)" % id, "warning")
-            continue
-
-        if not dtype in document_types:
-            flash("A document was encountered with an incorrect type\
-            (Entity ID: %s)" % id, "warning")
-            continue
-
-        if ent:
-            str = "modified `%s'" % ent
-            ent.id = id
-            ent.type = etype
-            ent.title = title
-            db.session.flush()
-            log("%s to `%s'" % (str, ent))
-        else:
-            ent = Entity(id, type=etype, title=title)
+        if not ent:
+            ent = Entity(id)
             db.session.add(ent)
-            log("imported a new entity to the system: %s" % ent)
+            db.session.flush()
 
-        if doc:
-            str = "modified `%s'" % doc
-            doc.enabled = (enabled == '1')
-            doc.type = dtype
-            doc.url = url
-            doc.notes = notes
-            log("%s to `%s'" % (str, doc))
-        else:
-            # TODO: Make enabled more idiot-proof
-            doc = Document(id, dtype, url, enabled=='1', notes)
-            db.session.add(doc)
-            log("imported a new document `%s' for the entity `%s'" %
-                (doc, ent))
+        for record in record_list:
+            ent.title = record[2]
+            ent.type = record[1]
+            url = record[4] if record[4]!='None' else ''
 
-        db.session.commit()
+            if record[3] == 'data':
+                doc = Data.query.filter(Data.format == record[7],
+                                        Document.entity_id == id).first()
+                if doc:
+                    doc.url = url
+                    doc.enabled = record[5]
+                    doc.notes = record[6]
+                else:
+                    doc = Data(id, record[7], url=url, enabled=record[5],
+                               notes=record[6])
+                    db.session.add(doc)
+            elif record[3] == 'representation':
+                doc = Representation.query.\
+                      filter(Document.entity_id == id,
+                             Representation.order == record[9]).first()
+                if doc:
+                    doc.url = url
+                    doc.enabled = record[5]
+                    doc.notes = record[6]
+                else:
+                    doc = Representation(id, record[9], url=url,
+                                         enabled=record[5], notes=record[6])
+                    db.session.add(doc)
 
-    log("finished a CSV import session.")
-    # TODO: redirect to objects page after import?
-    flash("Data imported", "success")
-    return redirect("/resolver/csv")
+                reference = True if record[8] == '1' else False
+                if reference:
+                    ref = Representation.query.\
+                          filter(Document.entity_id == id,
+                                 Representation.reference == True).first()
+                    if ref:
+                        ref.reference = False
+
+                    doc.reference = True
+
+            db.session.flush()
+
+    for id in records:
+        reps = Representation.query.\
+               filter(Document.entity_id == id).\
+               order_by(Representation.order.asc()).all()
+        i = 1
+        has_reference = False
+        for rep in reps:
+            rep.order = i
+            i += 1
+            has_reference = rep.reference
+
+        if (not has_reference) and i>1:
+            reps[0].reference = True
+
+    db.session.commit()
+    flash("Import succesful", 'success')
+    return redirect("/resolver/entity")
 
 @app.route('/resolver/csv/export')
 @check_privilege
 def admin_csv_export():
     entities = Entity.query.all()
-    # I'd rather write all data to a memory stream than a file, but streams
-    # require unicode and Python's csv/UnicodeWriter don't like unicode that
-    # much
-    # TODO: use cStringIO ?
-    file = tempfile.NamedTemporaryFile()
+    file = cStringIO.StringIO()
     writer = UnicodeWriter(file)
-
     writer.writerow(['PID', 'entity type', 'title', 'document type', 'URL',
-                     'enabled', 'notes'])
-
+                     'enabled', 'notes', 'format', 'reference', 'order'])
     for entity in entities:
         for document in entity.documents:
-            writer.writerow([entity.id, entity.type, entity.title, document.type,
-                             document.url, "1" if document.enabled else "0",
-                             str(document.notes)])
+            if type(document) == Data:
+                writer.writerow([entity.id, entity.type, entity.title, 'data',
+                                 str(document.url),
+                                 '1' if document.enabled else '0',
+                                 str(document.notes),
+                                 document.format, '', ''])
+            else:
+                writer.writerow([entity.id, entity.type, entity.title,
+                                 'representation',
+                                 str(document.url),
+                                 '1' if document.enabled else '0',
+                                 str(document.notes),
+                                 '',
+                                 '1' if document.reference else '0',
+                                 str(document.order)])
 
     file.seek(0)
-
     response = make_response(file.read())
     response.headers["Content-Disposition"] = 'attachment; filename="export.csv"'
     response.headers["Content-Type"] = 'text/csv'
-
     file.close()
-
     return response

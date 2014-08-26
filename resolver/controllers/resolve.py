@@ -16,23 +16,26 @@ def landing_page(id, etype=None, slug=None):
     ent = Entity.query.filter(Entity.id == id).first()
 
     if not ent:
-        return render_template('notice.html', title='Entity Not Found',
-                               message='No entity is associated with \'%s\''%id),\
-            404
+        raise NotFoundException()
 
     if etype and etype != ent.type:
         raise NotFoundException()
 
     if slug:
-        if not kvstore.get('title_enabled'):
+        if not kvstore.get('titles_enabled'):
             raise NotFoundException()
         elif slug != ent.slug:
             raise NotFoundException()
 
     docs = ent.documents
-    docs = filter(lambda doc: doc.enabled, docs)
+    #docs = filter(lambda doc: doc.enabled, docs)
+    if kvstore.get('titles_enabled'):
+        title = ent.title if ent.title else 'Untitled'
+    else:
+        title = ent.id
+
     return render_template('landing.html',
-                           title=ent.title if ent.title else 'Untitled',
+                           title=title,
                            documents=docs)
 
 @app.route('/collection/<dtype>/<id>')
@@ -139,16 +142,14 @@ def show_document(doc):
             return redirect(doc.url, code=303)
         else:
             title = "No link"
-            # TODO: Configuration for default messages
-            message = "No link is available for this entity."
     else:
         title = "Link disabled"
-        # TODO: Configuration for default messages
-        message = "The link for this document was disabled by an administrator."
 
     if doc.notes:
         message = doc.notes
+    else:
+        message = False
 
-    # We return HTTP error code 410 (Gone).
-    # TODO: check if this is a good idea (wrt. search engines etc)
-    return render_template("notice.html", title=title, message=message), 410
+    return render_template("notice.html", title=title, message=message,
+                           default_notice=kvstore.get('default_notice'),
+                           logo_url=kvstore.get('logo_url'))

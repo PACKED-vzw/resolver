@@ -14,6 +14,9 @@ class Document(db.Model):
     notes = db.Column(db.Text)
     _url = db.Column('url', db.String(512))
     type = db.Column(db.String(50))
+    hits = db.relationship('DocumentHit',
+                           cascade='all,delete',
+                           backref='document')
 
     __mapper_args__ = {
         'polymorphic_identity':'document',

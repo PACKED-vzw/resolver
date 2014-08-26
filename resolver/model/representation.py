@@ -31,7 +31,7 @@ class Representation(Document):
                                                         self.entity_id,
                                                         self.order)
 
-        if kvstore.get('title_enabled'):
+        if kvstore.get('titles_enabled'):
             return [uri, uri+'/'+self.entity.slug]
         else:
             return [uri]

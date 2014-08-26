@@ -6,4 +6,6 @@ init_db()
 db.session.add(User("admin", "default"))
 db.session.commit()
 
-kvstore.set('title_enabled', True)
+kvstore.set('titles_enabled', True)
+kvstore.set('default_notice', 'ToDo')
+kvstore.set('logo_url', False)

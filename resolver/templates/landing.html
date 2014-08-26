@@ -27,9 +27,17 @@
             </div>
             <div class="list-group">
               {% for doc in documents %}
-              <a href="{{ doc.persistent_uri[-1] }}" class="list-group-item">{{ doc.type }}</a>
+              {% if doc.type == 'data' %}
+              <a href="{{ doc.persistent_uri[-1] }}" class="list-group-item">Data ({{ doc.format }})</a>
+              {% else %}
+              {% if doc.reference %}
+              <a href="{{ doc.persistent_uri[-1] }}" class="list-group-item"><strong>Representation ({{doc.order}})</strong></a>
+              {% else %}
+              <a href="{{ doc.persistent_uri[-1] }}" class="list-group-item">Representation ({{doc.order}})</a>
+              {% endif %}
+              {% endif %}
               {% endfor %}
-            </ul>
+            </div>
           </div>
         </div>
       </div>

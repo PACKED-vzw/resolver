@@ -18,9 +18,11 @@
               <div class="form-group">
                 {{ render_field(form.id, placeholder="ID") }}
               </div>
+              {% if titles_enabled %}
               <div class="form-group">
                 {{ render_field(form.title, placeholder="Title") }}
               </div>
+              {% endif %}
               <div class="form-group">
                 {{ render_field(form.type) }}
               </div>
@@ -45,7 +47,7 @@
           <tr>
             <th>Type</th>
             <th>PID</th>
-            {% if title_enabled %}<th>Title</th>{% endif %}
+            {% if titles_enabled %}<th>Title</th>{% endif %}
             <th>Active documents</th>
             <th>Remove</th>
           </tr>
@@ -55,7 +57,7 @@
           <tr>
             <td>{{ entity.type | capitalize }}</td>
             <td><a href="/resolver/entity/{{ entity.id }}">{{ entity.id }}</a></td>
-            {% if title_enabled %}<td>{% if entity.title %}{{ entity.title }}{% else %}<em>Untitled</em>{% endif %}</td>{% endif %}
+            {% if titles_enabled %}<td>{% if entity.title %}{{ entity.title }}{% else %}<em>Untitled</em>{% endif %}</td>{% endif %}
             <td>---</td>
             <td><a href="/resolver/entity/delete/{{ entity.id }}"><span class="glyphicon glyphicon-remove"></span></a></td>
           </tr>

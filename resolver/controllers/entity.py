@@ -16,7 +16,7 @@ def admin_list_entities(form=False):
     form = form if form else EntityForm()
     return render_template("resolver/entities.html", title="Entities",
                            entities=entities, form=form,
-                           title_enabled=kvstore.get('title_enabled'))
+                           titles_enabled=kvstore.get('titles_enabled'))
 
 @app.route('/resolver/entity', methods=["POST"])
 @check_privilege
@@ -48,20 +48,13 @@ def admin_new_entity():
 @app.route('/resolver/entity/<id>')
 @check_privilege
 def admin_view_entity(id, form=None):
-    def sort_help(a, b):
-        # Helper function for sorting the documents list
-        if (type(a)==Data) or (type(b)==Data):
-            return 0
-        else:
-            return -1 if a.order < b.order else 1
-
     ent = Entity.query.filter(Entity.id == id).first()
     if ent:
         form = form if form else EntityForm(obj=ent)
-        documents = sorted(ent.documents, sort_help)
         return render_template("resolver/entity.html", title="Entity",
-                               entity=ent, documents=documents, form=form,
-                               data_formats=data_formats)
+                               entity=ent, documents=ent.documents, form=form,
+                               data_formats=data_formats,
+                               titles_enabled=kvstore.get('titles_enabled'))
     else:
         flash("Entity not found!", "danger")
         return redirect("/resolver/entity")

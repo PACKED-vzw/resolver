@@ -31,7 +31,7 @@ class Data(Document):
         uri += '/collection/%s/data/%s/%s' % (self.entity.type, self.entity_id,
                                               self.format)
 
-        if kvstore.get('title_enabled'):
+        if kvstore.get('titles_enabled'):
             return [uri, uri+'/'+self.entity.slug]
         else:
             return [uri]

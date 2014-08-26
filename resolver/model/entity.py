@@ -38,10 +38,10 @@ class Entity(db.Model):
     _title =  db.Column('title', db.String(TITLE_MAX))
     slug = db.Column(db.String(SLUG_MAX))
 
-    documents = db.relationship("Document",
-                                cascade='all,delete',
-                                backref='entity',
-                                order_by='Document.type')
+    _documents = db.relationship("Document",
+                                 cascade='all,delete',
+                                 backref='entity',
+                                 order_by='Document.type')
 
     def __init__(self, id, type='work', title=None):
         self.id = id
@@ -56,7 +56,7 @@ class Entity(db.Model):
     def persistent_uri(self):
         url = app.config['BASE_URL']+'/collection/%s' % self.id
 
-        if kvstore.get('title_enabled'):
+        if kvstore.get('titles_enabled'):
             return [url, url+'/%s'%self.slug]
         else:
             return [url]
@@ -86,6 +86,18 @@ class Entity(db.Model):
     def id(self, value):
         # TODO: error if id != cleanID(id) ?
         self._id = cleanID(value)
+
+    @property
+    def documents(self):
+        def sort_help(a, b):
+            # Helper function for sorting the documents list
+            if (a.type=='data') or (b.type=='data'):
+                return 0
+            else:
+                return -1 if a.order < b.order else 1
+
+        docs = self._documents
+        return sorted(docs, sort_help)
 
     title = db.synonym('_title', descriptor=title)
     id = db.synonym('_id', descriptor=id)

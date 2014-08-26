@@ -6,6 +6,12 @@
 
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <strong>PID:</strong> {{entity.id}}
+      </div>
+    </div>
+
     <div class="panel-group" id="accordion">
       <div class="panel panel-default">
         <div class="panel-heading">
@@ -95,9 +101,11 @@
               <div class="form-group">
                 {{ render_field(form.id, placeholder="ID") }}
               </div>
+              {% if titles_enabled %}
               <div class="form-group">
                 {{ render_field(form.title, placeholder="Title") }}
               </div>
+              {% endif %}
               <div class="form-group">
                 {{ render_field(form.type) }}
               </div>
@@ -200,7 +208,7 @@
               </span>
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <!--<button type="submit" class="btn btn-primary">Edit</button>-->
                 </div>
               </div>
