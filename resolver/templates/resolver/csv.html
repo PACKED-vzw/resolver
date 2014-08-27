@@ -2,6 +2,20 @@
 {% block body %}
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
+    {% if failures %}
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <h3 class="panel-title">Errors</h3>
+      </div>
+      <div class="panel-body">
+        {% for failure in failures %}
+        <strong>PID:</strong> {{ failure[0] }}<br>
+        <strong>Error:</strong> {{ failure[1] }}<br><br>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title">Import & Export</h3>

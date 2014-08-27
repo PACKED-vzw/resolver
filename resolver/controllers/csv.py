@@ -10,11 +10,12 @@ from resolver.util import log, UnicodeWriter, UnicodeReader
 @app.route('/resolver/csv')
 @check_privilege
 def admin_csv():
-    return render_template('resolver/csv.html', title='CSV')
+    return render_template('resolver/csv.html', title='Import & Export')
 
 @app.route('/resolver/csv/import', methods=["POST"])
 @check_privilege
 def admin_csv_import():
+    # TODO: FUNCTION TOO BIG!!!!
     # TODO: logging
     def allowed(filename):
         return ('.' in filename) and\
@@ -42,11 +43,15 @@ def admin_csv_import():
         reader.next() # Skip header again
 
     records = {}
+    failures = []
     for record in reader:
-        id = cleanID(record[0])
-
+        id = record[0]
         # Skip wrong types now
-        if (not record[1] in entity_types) or (not record[3] in document_types):
+        if not record[1] in entity_types:
+            failures.append((id, "Wrong entity type `%s'" % record[1]))
+            continue
+        if not record[3] in document_types:
+            failures.append((id, "Wrong document type `%s'" % record[3]))
             continue
 
         if records.get(id, False):
@@ -55,13 +60,19 @@ def admin_csv_import():
             records[id] = [record]
 
     for id, record_list in records.iteritems():
+        clean_id = cleanID(id)
         ent = Entity.query.\
-              filter(Entity.id == id).first()
-        if not ent:
+              filter(Entity.id == clean_id).first()
+        if ent:
+            if not ent.original_id == id:
+                failures.append((id, "PID collision with `%s'" % ent.original_id))
+                continue
+        else:
             ent = Entity(id)
             db.session.add(ent)
             db.session.flush()
 
+        id = ent.id
         for record in record_list:
             ent.title = record[2]
             ent.type = record[1]
@@ -118,6 +129,11 @@ def admin_csv_import():
             reps[0].reference = True
 
     db.session.commit()
+    if failures:
+        flash("There were some errors during import", 'warning')
+        return render_template('resolver/csv.html', title='Import & Export',
+                               failures=failures)
+
     flash("Import succesful", 'success')
     return redirect("/resolver/entity")
 

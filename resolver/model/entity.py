@@ -2,8 +2,11 @@ import re
 from unidecode import unidecode
 from resolver import app
 from resolver.database import db
+from resolver.exception import EntityPIDExistsException,\
+    EntityCollisionException
 import resolver.kvstore as kvstore
 
+ID_MAX = 64
 SLUG_MAX = 64
 TITLE_MAX = 512
 SLUG_DEFAULT = "untitled"
@@ -17,6 +20,7 @@ def slugify(text):
     result = []
     for word in _punct_re.split(text.lower()):
         result.extend(unidecode(word).split())
+
     return unicode('-'.join(result))
 
 def cleanID(ID):
@@ -24,6 +28,7 @@ def cleanID(ID):
     result = []
     for word in _clean_re.split(ID):
         result.extend(unidecode(word).split())
+
     return unicode(''.join(result))
 
 # TODO: make types a property of Entity?
@@ -31,9 +36,8 @@ entity_types = ('work', 'agent', 'concept', 'event')
 
 class Entity(db.Model):
     __tablename__ = 'entity'
-    # TODO: make maximum ID length a global var?
-    # it's also used in other classes, so it might not be a bad idea
-    _id = db.Column('id', db.String(64), primary_key=True)
+    _id = db.Column('id', db.String(ID_MAX), primary_key=True)
+    original_id = db.Column(db.String(ID_MAX))
     type = db.Column(db.Enum(*entity_types, name='EntityType'))
     _title =  db.Column('title', db.String(TITLE_MAX))
     slug = db.Column(db.String(SLUG_MAX))
@@ -84,8 +88,19 @@ class Entity(db.Model):
 
     @id.setter
     def id(self, value):
-        # TODO: error if id != cleanID(id) ?
-        self._id = cleanID(value)
+        new_id = cleanID(value)
+        ent = Entity.query.filter(Entity.id == new_id).first()
+        # check against self (in case we're changing an existing entity's PID)
+        if ent and not ent == self:
+            # PID already in DB. If the unclean PID is not equal to the existing
+            # entity's original PID, this is probably a collision.
+            if value == ent.original_id:
+                raise EntityPIDExistsException()
+            else:
+                raise EntityCollisionException(ent.original_id)
+
+        self.original_id = value
+        self._id = new_id
 
     @property
     def documents(self):
@@ -98,6 +113,16 @@ class Entity(db.Model):
 
         docs = self._documents
         return sorted(docs, sort_help)
+
+    @property
+    def active_documents(self):
+        count = 1
+        for document in self.documents:
+            if document.enabled and\
+               (document.url != '' or document.url != None):
+                count += 1
+
+        return count
 
     title = db.synonym('_title', descriptor=title)
     id = db.synonym('_id', descriptor=id)

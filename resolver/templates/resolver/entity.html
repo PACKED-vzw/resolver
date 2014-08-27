@@ -16,8 +16,42 @@
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title">
-            <a data-toggle="collapse" data-parent="#accordion" href="#collapseDocs">
-              Documents
+            <a data-toggle="collapse" data-target="#collapseForm" href="#collapseForm">
+              Entity ...
+            </a>
+          </h3>
+        </div>
+        <div class="panel-collapse collapse" id="collapseForm">
+          <div class="panel-body">
+            <form action="/resolver/entity/edit/{{ entity.id }}" method="POST" role="form" class="form-horizontal">
+              <div class="form-group">
+                {{ render_field(form.id, placeholder="ID") }}
+              </div>
+              {% if titles_enabled %}
+              <div class="form-group">
+                {{ render_field(form.title, placeholder="Title") }}
+              </div>
+              {% endif %}
+              <div class="form-group">
+                {{ render_field(form.type) }}
+              </div>
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                  {{ form.csrf_token }}
+                  <button type="submit" class="btn btn-primary">Save</button>
+                  <a id="{{entity.id}}" class="btn btn-danger link-delete-entity">Delete</a>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">
+            <a data-toggle="collapse" data-target="#collapseDocs" href="#collapseDocs">
+              Documents ...
             </a>
           </h3>
         </div>
@@ -90,41 +124,8 @@
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title">
-            <a data-toggle="collapse" data-parent="#accordion" href="#collapseForm">
-              Edit entity
-            </a>
-          </h3>
-        </div>
-        <div class="panel-collapse collapse" id="collapseForm">
-          <div class="panel-body">
-            <form action="/resolver/entity/edit/{{ entity.id }}" method="POST" role="form" class="form-horizontal">
-              <div class="form-group">
-                {{ render_field(form.id, placeholder="ID") }}
-              </div>
-              {% if titles_enabled %}
-              <div class="form-group">
-                {{ render_field(form.title, placeholder="Title") }}
-              </div>
-              {% endif %}
-              <div class="form-group">
-                {{ render_field(form.type) }}
-              </div>
-              <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                  {{ form.csrf_token }}
-                  <button type="submit" class="btn btn-default">Edit</button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">
-            <a data-toggle="collapse" data-parent="#accordion" href="#collapseURIs">
-              Show persistent URIs
+            <a data-toggle="collapse" data-target="#collapseURIs" href="#collapseURIs">
+              Persistent URIs ...
             </a>
           </h3>
         </div>
@@ -136,22 +137,6 @@
           </div>
         </div>
       </div>
-
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">
-            <a data-toggle="collapse" data-parent="#accordion" href="#collapseDelete">
-              Delete
-            </a>
-          </h3>
-        </div>
-        <div class="panel-collapse collapse" id="collapseDelete">
-          <div class="panel-body">
-            <a href="/resolver/entity/delete/{{ entity.id }}" class="btn btn-danger">Delete</a>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <div class="modal fade" id="docModal" tabindex="-1" role="dialog">
       <div class="modal-dialog">
@@ -215,8 +200,8 @@
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" id="btnSubmit"></button>
-            <button type="button" class="btn btn-danger" id="btnDelete">Delete</button>
+            <button type="button" class="btn btn-primary" id="btnMSubmit"></button>
+            <button type="button" class="btn btn-danger" id="btnMDelete">Delete</button>
             <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
           </div>
         </div>

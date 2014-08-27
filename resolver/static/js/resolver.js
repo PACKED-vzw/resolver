@@ -1,6 +1,13 @@
 var current_document;
 var action;
 
+function confirmDelete(url) {
+    var c = confirm('Are you sure?');
+    if(c) {
+        window.location.href = url;
+    }
+}
+
 function showDocument(id) {
     $.ajax({
         url:"/resolver/document/"+id+".json",
@@ -10,7 +17,7 @@ function showDocument(id) {
                 current_document = id;
                 action = base_url + '/resolver/document/edit/'+id+'.json';
 
-                $("#btnSubmit").html('Edit');
+                $("#btnMSubmit").html('Save');
                 $("#btnDelete").show();
 
                 $("#editUrl").val(data.url);
@@ -24,7 +31,7 @@ function showDocument(id) {
                 } else {
                     $("#dataInputs").hide();
                     $("#representationInputs").show();
-                    $("#representationReference").prop('checked', data.reference);
+                    $("#representation Reference").prop('checked', data.reference);
                 }
 
                 if(data.url && !data.resolves) {
@@ -37,19 +44,24 @@ function showDocument(id) {
             }}});
 }
 
-$("#btnDelete").click(function(event){
-    if(current_document){
-        window.location.href = '/resolver/document/delete/'+current_document;
-    }
-});
-
 function prepForm(){
     $("#resolveAlert").hide();
-    $("#btnSubmit").html('Add');
+    $("#btnMSubmit").html('Add');
     $("#editErrors").empty();
     $("#btnDelete").hide();
     $("#docEditForm")[0].reset();
 }
+
+$('.link-delete-entity').click(function(event) {
+    url = '/resolver/entity/delete/'+event.currentTarget.id;
+    confirmDelete(url);
+});
+
+$("#btnMDelete").click(function(event){
+    if(current_document){
+        confirmDelete('/resolver/document/delete/'+current_document);
+    }
+});
 
 $("#btnDataAdd").click(function(event){
     edit_mode=false;
@@ -69,7 +81,7 @@ $("#btnRepresentationAdd").click(function(event){
     action = base_url + '/resolver/document/representation/'+entity_id;
 });
 
-$("#btnSubmit").click(function(event){
+$("#btnMSubmit").click(function(event){
     $("#docEditForm").submit();
 });
 

@@ -48,7 +48,7 @@
             <th>Type</th>
             <th>PID</th>
             {% if titles_enabled %}<th>Title</th>{% endif %}
-            <th>Active documents</th>
+            <th>Active Documents</th>
             <th>Remove</th>
           </tr>
         </thead>
@@ -58,8 +58,8 @@
             <td>{{ entity.type | capitalize }}</td>
             <td><a href="/resolver/entity/{{ entity.id }}">{{ entity.id }}</a></td>
             {% if titles_enabled %}<td>{% if entity.title %}{{ entity.title }}{% else %}<em>Untitled</em>{% endif %}</td>{% endif %}
-            <td>---</td>
-            <td><a href="/resolver/entity/delete/{{ entity.id }}"><span class="glyphicon glyphicon-remove"></span></a></td>
+            <td>{{ entity.active_documents }}</td>
+            <td><a class="link-delete-entity" id="{{entity.id}}" href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
           </tr>
           {% endfor %}
         </tbody>
