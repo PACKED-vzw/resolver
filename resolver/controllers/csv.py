@@ -2,10 +2,10 @@ import csv, tempfile, cStringIO
 from flask import request, render_template, flash, make_response, redirect
 from resolver import app
 from resolver.model import Entity, Document, Data, Representation,\
-    entity_types, document_types, cleanID
+    entity_types, document_types
 from resolver.database import db
 from resolver.controllers.user import check_privilege
-from resolver.util import log, UnicodeWriter, UnicodeReader
+from resolver.util import log, UnicodeWriter, UnicodeReader, cleanID
 
 @app.route('/resolver/csv')
 @check_privilege

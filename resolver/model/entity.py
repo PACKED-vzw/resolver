@@ -4,6 +4,7 @@ from resolver import app
 from resolver.database import db
 from resolver.exception import EntityPIDExistsException,\
     EntityCollisionException
+from resolver.util import cleanID
 import resolver.kvstore as kvstore
 
 ID_MAX = 64
@@ -22,14 +23,6 @@ def slugify(text):
         result.extend(unidecode(word).split())
 
     return unicode('-'.join(result))
-
-def cleanID(ID):
-    """Adapted from slugify, but allows [,.]"""
-    result = []
-    for word in _clean_re.split(ID):
-        result.extend(unidecode(word).split())
-
-    return unicode(''.join(result))
 
 # TODO: make types a property of Entity?
 entity_types = ('work', 'agent', 'concept', 'event')
