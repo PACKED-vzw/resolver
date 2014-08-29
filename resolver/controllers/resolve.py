@@ -59,9 +59,10 @@ def document(id, dtype, opt1=None, opt2=None):
 @app.route('/collection/<etype>/data/<id>/<opt>')
 @app.route('/collection/<etype>/data/<id>/<format>/<slug>')
 def document_data(id, etype=None, opt=None, format=None, slug=None):
-    # TODO: what if etype is not None
     ent = Entity.query.filter(Entity.id == id).first()
     if not ent:
+        raise NotFoundException()
+    if etype and ent.type != etype:
         raise NotFoundException()
 
     if opt:
@@ -73,12 +74,18 @@ def document_data(id, etype=None, opt=None, format=None, slug=None):
             doc = Data.query.filter(Document.entity_id == id,
                                     Data.format == opt).first()
         else:
-            # TODO: slug checken
+            if kvstore.get('titles_enabled') and\
+               ent.slug != opt:
+                raise NotFoundException()
+
             doc = Data.query.filter(Document.entity_id == id,
                                     Data.format == DEFAULT_FORMAT).first()
     elif format:
         # format also implies slug
-        # TODO: slug checken?
+        if kvstore.get('titles_enabled') and\
+           ent.slug != slug:
+            raise NotFoundException()
+
         doc = Data.query.filter(Document.entity_id == id,
                                 Data.format == format).first()
     else:
@@ -95,10 +102,11 @@ def document_data(id, etype=None, opt=None, format=None, slug=None):
 @app.route('/collection/<etype>/representation/<id>/<opt>')
 @app.route('/collection/<etype>/representation/<id>/<num>/<slug>')
 def document_representation(id, etype=None, opt=None, num=None, slug=None):
-    # TODO: what if etype is not None
     ent = Entity.query.filter(Entity.id == id).first()
 
     if not ent:
+        raise NotFoundException()
+    if etype and ent.type != etype:
         raise NotFoundException()
 
     if opt:
@@ -114,12 +122,18 @@ def document_representation(id, etype=None, opt=None, num=None, slug=None):
                                               Document.entity_id == id).first()
         except ValueError:
             # opt == slug
-            # TODO: check slug?
+            if kvstore.get('titles_enabled') and\
+               ent.slug != opt:
+                raise NotFoundException()
+
             doc = Representation.query.filter(Representation.reference == True,
                                               Document.entity_id == id).first()
     elif num:
         # num also implies slug
-        # TODO: check slug?
+        if kvstore.get('titles_enabled') and\
+           ent.slug != slug:
+            raise NotFoundException()
+
         doc = Representation.query.filter(Representation.order == num,
                                           Document.entity_id == id).first()
     else:
