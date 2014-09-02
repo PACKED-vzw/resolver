@@ -44,7 +44,7 @@ def admin_new_entity():
 
         db.session.commit()
 
-        log("added a new entity to the system: %s" % ent)
+        log(ent.id, "Created entity `%s'" % ent)
         return redirect("/resolver/entity/%s" % ent.id)
     else:
         return admin_list_entities(form=form)
@@ -93,7 +93,6 @@ def admin_edit_entity(id):
         return admin_view_entity(id, form=form)
 
     db.session.commit() #commit changes to DB
-    log("changed entity `%s' to `%s'" % (old, ent))
     return redirect('/resolver/entity/%s' % ent.id)
 
 @app.route('/resolver/entity/delete/<id>')
@@ -106,5 +105,6 @@ def admin_delete_entity(id):
         db.session.delete(ent)
         db.session.commit()
         log("removed the entity `%s' from the system" % ent)
+        log(id, "Removed the entity `%s'" % ent)
         flash("Entity deleted succesfully!", "success")
     return redirect("/resolver/entity")

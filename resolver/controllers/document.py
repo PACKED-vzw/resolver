@@ -49,7 +49,7 @@ def admin_delete_document(id):
     else:
         db.session.delete(doc)
 
-    log("removed the document `%s' from entity `%s'" %
+    log(entity_id, "Removed the document `%s'" %
         (doc, doc.entity))
     db.session.commit()
     flash("Document deleted succesfully", "success")
@@ -72,6 +72,7 @@ def admin_representation_up(id):
             doc.order = doc.order - 1
             up.order = up.order + 1
             db.session.commit()
+            log(doc.entity_id, "Moved document `%s' up one position" % doc)
 
     return redirect("/resolver/entity/%s" % doc.entity_id)
 
@@ -91,6 +92,7 @@ def admin_representation_down(id):
         doc.order = doc.order + 1
         next.order = next.order - 1
         db.session.commit()
+        log(doc.entity_id, "Moved document `%s' down one position" % doc)
 
     return redirect("/resolver/entity/%s" % doc.entity_id)
 
@@ -114,7 +116,7 @@ def admin_add_data_json(entity_id):
 
     doc = Data(ent.id, form.format.data, url=form.url.data,
                enabled=form.enabled.data, notes=form.notes.data)
-    log("added a data object to the entity `%s': %s" % (ent.id, doc))
+    log(doc.entity_id, "Added data document `%s'" % doc)
     db.session.add(doc)
     db.session.commit()
 
@@ -152,7 +154,7 @@ def admin_add_representation_json(entity_id):
     rep = Representation(ent.id, order, url=form.url.data, label=form.label.data,
                          enabled=form.enabled.data, notes=form.notes.data,
                          reference=form.reference.data)
-    log("added a representation object to the entity `%s': %s" % (ent.id, ref))
+    log(doc.entity_id, "Added representation document `%s'" % doc)
     db.session.add(rep)
     db.session.commit()
 
@@ -209,7 +211,6 @@ def admin_edit_document_json(id):
                                               'detail':'At least one representation has to be the reference image.'}]})
 
         db.session.commit() #commit changes to DB
-        log("changed document `%s' to `%s'" % (old, doc))
         return json.dumps({'success':True})
     else:
         return form_errors_json(form)

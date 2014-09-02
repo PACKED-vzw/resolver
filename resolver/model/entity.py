@@ -4,7 +4,7 @@ from resolver import app
 from resolver.database import db
 from resolver.exception import EntityPIDExistsException,\
     EntityCollisionException
-from resolver.util import cleanID
+from resolver.util import cleanID, log
 import resolver.kvstore as kvstore
 
 ID_MAX = 64
@@ -31,7 +31,7 @@ class Entity(db.Model):
     __tablename__ = 'entity'
     _id = db.Column('id', db.String(ID_MAX), primary_key=True)
     original_id = db.Column(db.String(ID_MAX))
-    type = db.Column(db.Enum(*entity_types, name='EntityType'))
+    _type = db.Column('type', db.Enum(*entity_types, name='EntityType'))
     _title =  db.Column('title', db.String(TITLE_MAX))
     slug = db.Column(db.String(SLUG_MAX))
 
@@ -72,6 +72,10 @@ class Entity(db.Model):
 
     @title.setter
     def title(self, value):
+        if self._title != value:
+            log(self.id, "Changed title from '%s' to '%s'" %
+                (self._title, value))
+
         self._title = value
         self.slug = slugify(value)[:64] if value else SLUG_DEFAULT
 
@@ -92,8 +96,25 @@ class Entity(db.Model):
             else:
                 raise EntityCollisionException(ent.original_id)
 
+        if self._id != new_id:
+            log(self.id, "Changed id from '%s' to '%s'" % (self._id, new_id))
+
         self.original_id = value
         self._id = new_id
+
+    @property
+    def type(self):
+        return self._type
+
+    @type.setter
+    def type(self, value):
+        if value not in entity_types:
+            raise Exception("Wrong entity type")
+
+        if self._type != value:
+            log(self.id, "Changed type from '%s' to '%s'" % (self._type, value))
+
+        self._type = value
 
     @property
     def documents(self):
@@ -117,5 +138,6 @@ class Entity(db.Model):
 
         return count
 
-    title = db.synonym('_title', descriptor=title)
     id = db.synonym('_id', descriptor=id)
+    title = db.synonym('_title', descriptor=title)
+    type = db.synonym('_type', descriptor=type)

@@ -3,9 +3,14 @@ import csv, codecs, cStringIO, re
 from unidecode import unidecode
 from flask import session
 from resolver import app
+from resolver.database import db
+from resolver.model import Log
 
-def log(action):
-    app.logger.info("Resolver: user `%s' %s", session.get('username'), action)
+def log(entity, action):
+    l = Log(entity, session.get('username'), action)
+    app.logger.info(l)
+    db.session.add(l)
+    db.session.commit()
 
 _clean_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^`{|}]+')
 def cleanID(ID):

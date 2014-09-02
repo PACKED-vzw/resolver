@@ -31,7 +31,7 @@ def admin_csv_import():
         flash("File not allowed", "warning")
         return redirect("/resolver/csv")
 
-    log("is starting a CSV import session...")
+    #log("is starting a CSV import session...")
 
     reader = UnicodeReader(file)
     # NOTE: we always assume the first row is a header
@@ -71,11 +71,13 @@ def admin_csv_import():
             ent = Entity(id)
             db.session.add(ent)
             db.session.flush()
+            log(ent.id, "Added entity `%s'" % ent)
 
         id = ent.id
         for record in record_list:
             ent.title = record[2]
             ent.type = record[1]
+
             url = record[4] if record[4]!='None' else ''
 
             if record[3] == 'data':
@@ -89,6 +91,7 @@ def admin_csv_import():
                     doc = Data(id, record[7], url=url, enabled=record[5],
                                notes=record[6])
                     db.session.add(doc)
+                    log(id, "Added data document `%s'" % doc)
             elif record[3] == 'representation':
                 doc = Representation.query.\
                       filter(Document.entity_id == id,
@@ -101,6 +104,7 @@ def admin_csv_import():
                     doc = Representation(id, record[9], url=url,
                                          enabled=record[5], notes=record[6])
                     db.session.add(doc)
+                    log(id, "Added representation document `%s'" % doc)
 
                 reference = True if record[8] == '1' else False
                 if reference:

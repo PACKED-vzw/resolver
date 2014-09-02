@@ -9,7 +9,7 @@ class Representation(Document):
     __tablename__ = 'representation'
     id = db.Column(db.Integer, db.ForeignKey('document.id'), primary_key=True)
     order = db.Column(db.Integer)
-    reference = db.Column(db.Boolean)
+    _reference = db.Column('reference', db.Boolean)
     label = db.Column(db.String(LABEL_MAX))
 
     __mapper_args__ = {
@@ -25,7 +25,7 @@ class Representation(Document):
         self.label = label
 
     def __repr__(self):
-        if label:
+        if self.label:
             return '<Representation(%s), entity=%s, label=%s, url=%s, order=%s, ref=%s>' %\
                 (self.id, self.entity_id, self.label, self.url, self.order,
                  self.reference)
@@ -51,3 +51,19 @@ class Representation(Document):
         dict['reference'] = self.reference
         dict['label'] = self.label
         return dict
+
+    @property
+    def reference(self):
+        return self._reference
+
+    @reference.setter
+    def reference(self, value):
+        value = bool(value)
+        if self._reference and (not value):
+            log(self.entity_id, "Removed as reference: %s" % self)
+        elif (not self._reference) and value:
+            log(self.entity_id, "Set as reference: %s" % self)
+
+        self._reference = value
+
+    reference = db.synonym('_reference', descriptor=reference)

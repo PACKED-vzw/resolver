@@ -1,6 +1,7 @@
 from resolver import app
 from resolver.database import db
 from resolver.model import Document
+from resolver.util import log
 import resolver.kvstore as kvstore
 
 data_formats = ('html', 'json', 'xml', 'pdf')
@@ -8,7 +9,7 @@ data_formats = ('html', 'json', 'xml', 'pdf')
 class Data(Document):
     __tablename__ = 'data'
     id = db.Column(db.Integer, db.ForeignKey('document.id'), primary_key=True)
-    format = db.Column(db.Enum(*data_formats, name='Format'))
+    _format = db.Column('format', db.Enum(*data_formats, name='Format'))
 
     __mapper_args__ = {
         'polymorphic_identity':'data'
@@ -40,3 +41,19 @@ class Data(Document):
         dict = super(Data, self).to_dict()
         dict['format'] = self.format
         return dict
+
+    @property
+    def format(self):
+        return self._format
+
+    @format.setter
+    def format(self, value):
+        if value not in data_formats:
+            raise Exception("Incorrect data format")
+        if self._format != value:
+            log(self.entity_id, "Changed format from '%s' to '%s' for %s" %
+                (self._format, value, self))
+
+        self._format = value
+
+    format = db.synonym('_format', descriptor=format)

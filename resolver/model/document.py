@@ -2,6 +2,7 @@ import re, requests
 from urlparse import urlparse, urlunparse
 from resolver import app
 from resolver.database import db
+from resolver.util import log
 import resolver.kvstore as kvstore
 
 document_types = ('data', 'representation')
@@ -10,7 +11,7 @@ class Document(db.Model):
     __tablename__ = 'document'
     id = db.Column(db.Integer, primary_key=True)
     entity_id = db.Column(db.String(64), db.ForeignKey("entity.id"))
-    enabled = db.Column(db.Boolean)
+    _enabled = db.Column('enabled', db.Boolean)
     notes = db.Column(db.Text)
     _url = db.Column('url', db.String(512))
     type = db.Column(db.String(50))
@@ -62,6 +63,7 @@ class Document(db.Model):
 
     @url.setter
     def url(self, url):
+        old = self._url
         if url:
             u = urlparse(url)
             if u.scheme:
@@ -71,4 +73,23 @@ class Document(db.Model):
         else:
             self._url = None
 
+        if old != self._url:
+            log(self.entity_id, "Changed URL from '%s' to '%s' for %s" %
+                (old, self._url, self))
+
+    @property
+    def enabled(self):
+        return self._enabled
+
+    @enabled.setter
+    def enabled(self, value):
+        value = bool(value)
+        if self._enabled and (not value):
+            log(self.entity_id, "Disabled document %s" % self)
+        elif (not self._enabled) and value:
+            log(self.entity_id, "Enabled document %s" % self)
+
+        self._enabled = value
+
+    enabled = db.synonym('_enabled', descriptor=enabled)
     url = db.synonym('_url', descriptor=url)
