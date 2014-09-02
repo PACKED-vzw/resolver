@@ -31,11 +31,14 @@ class Data(Document):
         uri = app.config['BASE_URL']
         uri += '/collection/%s/data/%s/%s' % (self.entity.type, self.entity_id,
                                               self.format)
+        uris = [uri]
 
         if kvstore.get('titles_enabled'):
-            return [uri, uri+'/'+self.entity.slug]
-        else:
-            return [uri]
+            uris.append(uri+'/'+self.entity.slug)
+        if self.format == 'html':
+            uris.append(uri[:-5])
+
+        return uris
 
     def to_dict(self):
         dict = super(Data, self).to_dict()

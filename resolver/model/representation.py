@@ -39,11 +39,16 @@ class Representation(Document):
         uri += '/collection/%s/representation/%s/%s' % (self.entity.type,
                                                         self.entity_id,
                                                         self.order)
+        uris = [uri]
 
         if kvstore.get('titles_enabled'):
-            return [uri, uri+'/'+self.entity.slug]
-        else:
-            return [uri]
+            uris.append(uri+'/'+self.entity.slug)
+        if self.reference:
+            uris.append(app.config['BASE_URL'] +
+                        '/collection/%s/representation/%s' % (self.entity.type,
+                                                              self.entity_id))
+
+        return uris
 
     def to_dict(self):
         dict = super(Representation, self).to_dict()
