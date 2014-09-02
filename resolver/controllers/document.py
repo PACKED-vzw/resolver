@@ -149,10 +149,10 @@ def admin_add_representation_json(entity_id):
     else:
         order = 1
 
-    rep = Representation(ent.id, order, url=form.url.data,
+    rep = Representation(ent.id, order, url=form.url.data, label=form.label.data,
                          enabled=form.enabled.data, notes=form.notes.data,
                          reference=form.reference.data)
-    log("added a representation object to the entity `%s': %s" % (ent.id, doc))
+    log("added a representation object to the entity `%s': %s" % (ent.id, ref))
     db.session.add(rep)
     db.session.commit()
 
@@ -191,6 +191,8 @@ def admin_edit_document_json(id):
             doc.format = form.format.data
         else:
             # Representation
+            doc.label = form.label.data
+
             # Reference bookkeeping
             ref = Representation.query.\
                   filter(Document.entity_id == doc.entity_id,

@@ -31,7 +31,8 @@ function showDocument(id) {
                 } else {
                     $("#dataInputs").hide();
                     $("#representationInputs").show();
-                    $("#representation Reference").prop('checked', data.reference);
+                    $("#representationReference").prop('checked', data.reference);
+                    $("#representationLabel").val(data.label);
                 }
 
                 if(data.url && !data.resolves) {

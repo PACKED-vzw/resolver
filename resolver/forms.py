@@ -26,6 +26,9 @@ class RepresentationForm(DocumentForm):
     #order = DecimalField('Order', [validators.required(),
     #                               validators.NumberRange(min=1)])
     reference = BooleanField('Reference image', default=False)
+    # TODO: Use constant var instead of constant val 64
+    label = StringField('Label', [validators.optional(),
+                                  validators.Length(max=64)])
 
 class SigninForm(Form):
     username = StringField('Username', [validators.required(),
