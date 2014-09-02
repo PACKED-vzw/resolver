@@ -10,7 +10,8 @@ def admin_settings(form=None):
     if not form:
         form = SettingsForm(data={'default_notice':kvstore.get('default_notice'),
                                   'titles_enabled':kvstore.get('titles_enabled'),
-                                  'logo_url':kvstore.get('logo_url')})
+                                  'logo_url':kvstore.get('logo_url'),
+                                  'domains':kvstore.get('domains')})
 
     return render_template('resolver/settings.html', title='Settings',
                            form=form)
@@ -23,6 +24,7 @@ def admin_update_settings():
         kvstore.set('default_notice', form.default_notice.data)
         kvstore.set('titles_enabled', form.titles_enabled.data)
         kvstore.set('logo_url', form.logo_url.data)
+        kvstore.set('domains', form.domains.data)
         flash("Settings successfully changed.", 'success')
         return admin_settings()
     else:

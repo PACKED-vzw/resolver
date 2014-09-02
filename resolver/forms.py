@@ -39,3 +39,4 @@ class SettingsForm(Form):
     default_notice = TextAreaField('Default notice', [validators.required()])
     titles_enabled = BooleanField('Titles enabled', default=True)
     logo_url = StringField('Logo URL', [validators.optional(), validators.URL()])
+    domains = TextAreaField('Domains', [validators.optional()])

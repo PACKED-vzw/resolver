@@ -13,8 +13,6 @@ if os.environ.get('HEROKU', False):
                                               app.config['SECRET_KEY'])
     app.config['SALT'] = os.environ.get('SALT', app.config['SALT'])
 
-# TODO: Logging in production only?
-# TODO: Add log file to config
 if os.environ.get('HEROKU', False):
     import sys
     handler = logging.StreamHandler(sys.stdout)

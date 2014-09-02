@@ -26,7 +26,6 @@ def admin_signin():
         flash("You are already logged in", "info")
         return redirect('/resolver')
     if form.validate_on_submit():
-        # TODO: form validation
         user = User.query.filter(User.username ==  form.username.data).first()
         if not user:
             flash("Username incorrect", "danger")
@@ -64,7 +63,7 @@ def admin_new_user():
             flash("There already is a user named '%s'." % form.username.data,
                   "danger")
             return admin_list_users(form=form)
-        # TODO: Do we really need this
+        # TODO: Do we really need this?
         if form.password.data != form.confirm.data:
             flash("The two passwords do not match.", "warning")
             return admin_list_users(form=form)
@@ -79,10 +78,13 @@ def admin_new_user():
 @app.route('/resolver/user/delete/<username>')
 @check_privilege
 def admin_delete_user(username):
-    # TODO: Maybe a user shouldn't be able to remove himself?
     if username == "admin":
         flash("The administrator cannot be removed!", "danger")
         return redirect("/resolver/user")
+    if username == session.get('username'):
+        flash("You can not remove yourself!", 'warning')
+        return redirect("/resolver/user")
+
     user = User.query.filter(User.username == username).first()
     if not user:
         flash("User not found", "warning")

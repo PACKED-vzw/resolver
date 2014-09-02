@@ -45,7 +45,6 @@ def admin_new_entity():
         db.session.commit()
 
         log("added a new entity to the system: %s" % ent)
-        # TODO: to flash or not to flash (UX)
         return redirect("/resolver/entity/%s" % ent.id)
     else:
         return admin_list_entities(form=form)

@@ -10,13 +10,24 @@
         </div>
         <div class="panel-body">
           <div class="form-group">
+            <div class="col-sm-2 text-right">
+              <strong>Template</strong>
+            </div>
+            <div class="col-sm-10">
+              <strong>{{ config['BASE_URL'] }}</strong>/collection/<em>entity type</em>/<em>document type</em>/<em>PID</em>/
+            </div>
+          </div>
+          <div class="form-group">
+            {{ render_field(form.domains, rows=5) }}
+          </div>
+          <div class="form-group">
             {{ render_field(form.titles_enabled, class="") }}
           </div>
           <div class="form-group">
-            {{ render_field(form.default_notice) }}
+            {{ render_field(form.logo_url) }}
           </div>
           <div class="form-group">
-            {{ render_field(form.logo_url) }}
+            {{ render_field(form.default_notice, rows=10) }}
           </div>
         </div>
         <div class="panel-footer clearfix">

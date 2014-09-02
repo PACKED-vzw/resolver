@@ -28,3 +28,10 @@ body {
 .panel-collapse .list-group .list-group-item:last-child {
 	border-bottom: none;
 }
+
+.notice-float {
+    float: left;
+    margin-right:15px;
+    position: relative;
+    max-width:50%;
+}

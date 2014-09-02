@@ -146,7 +146,6 @@ def document_representation(id, etype=None, opt=None, num=None, slug=None):
     return show_document(doc)
 
 def show_document(doc):
-    # TODO: is it OK to log a hit, even when the document is disabled?
     hit = DocumentHit(doc.id, request.remote_addr, request.referrer)
     db.session.add(hit)
     db.session.commit()

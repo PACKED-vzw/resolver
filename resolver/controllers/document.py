@@ -97,7 +97,6 @@ def admin_representation_down(id):
 @app.route('/resolver/document/data/<entity_id>', methods=["POST"])
 @check_privilege
 def admin_add_data_json(entity_id):
-    # TODO: logging
     ent = Entity.query.filter(Entity.id == entity_id).first()
     if not ent:
         return json.dumps({'errors':[{'detail':'Entity not found'}]})
@@ -115,6 +114,7 @@ def admin_add_data_json(entity_id):
 
     doc = Data(ent.id, form.format.data, url=form.url.data,
                enabled=form.enabled.data, notes=form.notes.data)
+    log("added a data object to the entity `%s': %s" % (ent.id, doc))
     db.session.add(doc)
     db.session.commit()
 
@@ -123,7 +123,6 @@ def admin_add_data_json(entity_id):
 @app.route('/resolver/document/representation/<entity_id>', methods=["POST"])
 @check_privilege
 def admin_add_representation_json(entity_id):
-    # TODO: logging
     ent = Entity.query.filter(Entity.id == entity_id).first()
     if not ent:
         return json.dumps({'errors':[{'detail':'Entity not found'}]})
@@ -153,6 +152,7 @@ def admin_add_representation_json(entity_id):
     rep = Representation(ent.id, order, url=form.url.data,
                          enabled=form.enabled.data, notes=form.notes.data,
                          reference=form.reference.data)
+    log("added a representation object to the entity `%s': %s" % (ent.id, doc))
     db.session.add(rep)
     db.session.commit()
 

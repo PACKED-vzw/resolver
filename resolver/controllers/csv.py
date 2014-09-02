@@ -15,8 +15,8 @@ def admin_csv():
 @app.route('/resolver/csv/import', methods=["POST"])
 @check_privilege
 def admin_csv_import():
-    # TODO: FUNCTION TOO BIG!!!!
-    # TODO: logging
+    # TODO: Function too big!
+    # TODO: logging?
     def allowed(filename):
         return ('.' in filename) and\
             (filename.rsplit('.', 1)[1].lower() == 'csv')
