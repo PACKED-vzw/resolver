@@ -49,10 +49,13 @@ class Document(db.Model):
     @property
     def resolves(self):
         if self.url:
-            r = requests.head(self.url, allow_redirects=True)
-            if r.status_code == 200:
-                return True
-            else:
+            try:
+                r = requests.head(self.url, allow_redirects=True)
+                if r.status_code == 200:
+                    return True
+                else:
+                    return False
+            except:
                 return False
         else:
             return False
