@@ -4,8 +4,11 @@ from wtforms import StringField, SelectField, BooleanField,\
 from resolver.model import entity_types, data_formats
 
 class EntityForm(Form):
-    id = StringField('ID', [validators.required()])
-    title = StringField('Title', [validators.optional()])
+    # TODO: use model constants
+    id = StringField('ID', [validators.required(),
+                            validators.Length(max=64)])
+    title = StringField('Title', [validators.optional(),
+                                  validators.Length(max=512)])
     type = SelectField('Type', [validators.required()],
                        choices=zip(entity_types,
                                    map(lambda c: c.capitalize(),
