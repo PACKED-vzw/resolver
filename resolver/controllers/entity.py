@@ -13,12 +13,13 @@ import resolver.kvstore as kvstore
 
 @app.route('/resolver/entity')
 @check_privilege
-def admin_list_entities(form=False):
+def admin_list_entities(form=False, show_form=False):
     entities = Entity.query.all()
     form = form if form else EntityForm()
     return render_template("resolver/entities.html", title="Entities",
                            entities=entities, form=form,
-                           titles_enabled=kvstore.get('titles_enabled'))
+                           titles_enabled=kvstore.get('titles_enabled'),
+                           show_form=show_form)
 
 @app.route('/resolver/entity', methods=["POST"])
 @check_privilege
@@ -47,7 +48,7 @@ def admin_new_entity():
         log(ent.id, "Created entity `%s'" % ent)
         return redirect("/resolver/entity/%s" % ent.id)
     else:
-        return admin_list_entities(form=form)
+        return admin_list_entities(form=form, show_form=True)
 
 @app.route('/resolver/entity/<id>')
 @check_privilege

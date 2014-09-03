@@ -36,7 +36,8 @@ class RepresentationForm(DocumentForm):
 class SigninForm(Form):
     username = StringField('Username', [validators.required(),
                                         validators.Length(min=3, max=32)])
-    password = PasswordField('Password', [validators.required()])
+    password = PasswordField('Password', [validators.required(),
+                                          validators.Length(min=7, max=64)])
 
 class UserForm(SigninForm):
     confirm = PasswordField('Confirm', [validators.required()])

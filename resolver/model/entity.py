@@ -36,7 +36,8 @@ class Entity(db.Model):
     slug = db.Column(db.String(SLUG_MAX))
 
     _documents = db.relationship("Document",
-                                 cascade='all,delete',
+                                 #cascade='all,delete',
+                                 cascade='all,delete-orphan',
                                  backref='entity',
                                  order_by='Document.type')
 
@@ -130,7 +131,7 @@ class Entity(db.Model):
 
     @property
     def active_documents(self):
-        count = 1
+        count = 0
         for document in self.documents:
             if document.enabled and\
                (document.url != '' or document.url != None):

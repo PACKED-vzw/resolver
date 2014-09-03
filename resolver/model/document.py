@@ -10,13 +10,16 @@ document_types = ('data', 'representation')
 class Document(db.Model):
     __tablename__ = 'document'
     id = db.Column(db.Integer, primary_key=True)
-    entity_id = db.Column(db.String(64), db.ForeignKey("entity.id"))
+    entity_id = db.Column(db.String(64), db.ForeignKey("entity.id",
+                                                       onupdate='cascade',
+                                                       ondelete='cascade'))
     _enabled = db.Column('enabled', db.Boolean)
     notes = db.Column(db.Text)
     _url = db.Column('url', db.String(512))
     type = db.Column(db.String(50))
     hits = db.relationship('DocumentHit',
-                           cascade='all,delete',
+                           #cascade='all,delete',
+                           cascade='all, delete-orphan',
                            backref='document')
 
     __mapper_args__ = {

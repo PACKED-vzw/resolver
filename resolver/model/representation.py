@@ -1,6 +1,7 @@
 from resolver import app
 from resolver.database import db
 from resolver.model import Document
+from resolver.util import log
 import resolver.kvstore as kvstore
 
 LABEL_MAX = 64
