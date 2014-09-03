@@ -8,5 +8,6 @@ db.session.commit()
 
 kvstore.set('titles_enabled', True)
 kvstore.set('default_notice', 'ToDo')
+kvsotre.set('default_notice_clean', 'ToDo')
 kvstore.set('logo_url', False)
 kvstore.set('domains', '')

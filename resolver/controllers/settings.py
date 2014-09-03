@@ -1,4 +1,5 @@
 from flask import flash, redirect, render_template
+from BeautifulSoup import BeautifulSoup
 from resolver import app
 from resolver.controllers.user import check_privilege
 from resolver.forms import SettingsForm
@@ -21,7 +22,12 @@ def admin_settings(form=None):
 def admin_update_settings():
     form = SettingsForm()
     if form.validate():
-        kvstore.set('default_notice', form.default_notice.data)
+        notice = form.default_notice.data
+        soup = BeautifulSoup(notice)
+        [x.extract() for x in soup(['script', 'iframe'])]
+
+        kvstore.set('default_notice', notice)
+        kvstore.set('default_notice_clean', str(soup))
         kvstore.set('titles_enabled', form.titles_enabled.data)
         kvstore.set('logo_url', form.logo_url.data)
         kvstore.set('domains', form.domains.data)

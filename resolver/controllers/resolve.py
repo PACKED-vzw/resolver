@@ -164,5 +164,5 @@ def show_document(doc):
         message = False
 
     return render_template("notice.html", title=title, message=message,
-                           default_notice=kvstore.get('default_notice'),
+                           default_notice=kvstore.get('default_notice_clean'),
                            logo_url=kvstore.get('logo_url'))

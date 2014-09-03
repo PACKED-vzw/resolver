@@ -25,7 +25,19 @@
             {{ render_field(form.logo_url) }}
           </div>
           <div class="form-group">
-            {{ render_field(form.default_notice, rows=10) }}
+            {% with %}
+            {% set field = form.default_notice %}
+            <label for="{{ field.label.field_id }}" class="col-sm-2 control-label">{{ field.label.text }}</label>
+            <div class="col-sm-10">
+              {{ field(class="form-control", rows=10)|safe }}
+              <span class="label label-info">HTML allowed, except &lt;script&gt; and &lt;iframe&gt; tags</span>
+              {% if field.errors %}
+              {% for error in field.errors %}
+              <span class="label label-danger">{{ error }}</span>
+              {% endfor %}
+              {% endif %}
+            </div>
+            {% endwith %}
           </div>
         </div>
         <div class="panel-footer clearfix">
