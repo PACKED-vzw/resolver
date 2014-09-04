@@ -27,9 +27,9 @@ class Representation(Document):
 
     def __repr__(self):
         if self.label:
-            return '<Representation(%s), entity=%s, label=%s, url=%s, order=%s, ref=%s>' %\
+            return '<Representation(%s), entity=%s, label=%s, url=%s, order=%s, ref=%s, enabled=%s>' %\
                 (self.id, self.entity_id, self.label, self.url, self.order,
-                 self.reference)
+                 self.reference, self.enabled)
         else:
             return '<Representation(%s), entity=%s, url=%s, order=%s, ref=%s>' %\
                 (self.id, self.entity_id, self.url, self.order, self.reference)

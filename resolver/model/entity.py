@@ -47,8 +47,8 @@ class Entity(db.Model):
         self.title = title
 
     def __repr__(self):
-        return '<Entity(%s), id=%s, title=%s>' %\
-            (self.type, self.id, self.title)
+        return '<Entity(%s), id=%s (%s), title=%s>' %\
+            (self.type, self.id, self.original_id, self.title)
 
     @property
     def persistent_uri(self):

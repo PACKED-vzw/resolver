@@ -23,8 +23,8 @@ class Data(Document):
             raise Exception("Incorrect data format")
 
     def __repr__(self):
-        return '<Data(%s), entity=%s, format=%s, url=%s>' %\
-            (self.id, self.entity_id, self.format, self.url)
+        return '<Data(%s), entity=%s, format=%s, url=%s, enabled=%s>' %\
+            (self.id, self.entity_id, self.format, self.url, self.enabled)
 
     @property
     def persistent_uri(self):
