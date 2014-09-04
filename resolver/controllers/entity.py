@@ -105,7 +105,6 @@ def admin_delete_entity(id):
     else:
         db.session.delete(ent)
         db.session.commit()
-        log("removed the entity `%s' from the system" % ent)
         log(id, "Removed the entity `%s'" % ent)
         flash("Entity deleted succesfully!", "success")
     return redirect("/resolver/entity")

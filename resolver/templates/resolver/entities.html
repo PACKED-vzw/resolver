@@ -63,15 +63,16 @@
       <div class="panel-heading">
         <h3 class="panel-title">Entities</h3>
       </div>
-      <table class="table table-striped">
+      <div class="panel-body">
+      <table class="table table-striped" id="entitiesTable">
         <thead>
           <tr>
             <th>Type</th>
             <th>PID</th>
             {% if titles_enabled %}<th>Title</th>{% endif %}
             <th>Active Documents</th>
-            <th>Remove</th>
-            <th>Logs</th>
+            <th class="nosort">Remove</th>
+            <th class="nosort">Logs</th>
           </tr>
         </thead>
         <tbody>
@@ -81,11 +82,22 @@
             <td><a href="/resolver/entity/{{ entity.id }}">{{ entity.id }}</a></td>
             {% if titles_enabled %}<td>{% if entity.title %}{{ entity.title }}{% else %}<em>Untitled</em>{% endif %}</td>{% endif %}
             <td>{{ entity.active_documents }}</td>
-            <td><a class="link-delete-entity" id="{{entity.id}}" href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+            <td><a class="link-delete-entity" id="{{entity.id}}"><span class="glyphicon glyphicon-remove"></span></a></td>
             <td><a href="/resolver/log/id/{{entity.id}}"><span class="glyphicon glyphicon-time"></span></a></td>
           </tr>
           {% endfor %}
         </tbody>
-      </table>
+      </table></div>
     </div>
+
+    <script>
+      $(document).ready(function() {
+          $('#entitiesTable').dataTable({
+                  "info":false,
+                  "order": [[ 1, "asc" ]],
+                  "iDisplayLength": 25,
+                  "aoColumnDefs": [{"bSortable": false,
+                                    "aTargets": ["nosort"]}]});
+      });
+    </script>
 {% endblock %}
