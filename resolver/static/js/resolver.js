@@ -87,10 +87,12 @@ $("#btnMSubmit").click(function(event){
 });
 
 $("#docEditForm").submit(function(event){
+    $("#indicator").show();
     $("#editErrors").empty();
     $.post(action,
            $("#docEditForm").serialize(),
            function(data){
+               $("#indicator").hide();
                if(data.errors) {
                    for(var i = 0; i<data.errors.length; i++){
                        $("#editErrors").append('<div class="alert alert-danger"><strong>'+data.errors[i].title+'</strong> '+data.errors[i].detail+'</div>');

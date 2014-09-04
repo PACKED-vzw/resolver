@@ -5,7 +5,7 @@ from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
 
 app = Flask(__name__)
-app.config.from_object('resolver.config.Config')
+app.config.from_pyfile('../resolver.cfg')
 app.config.from_envvar('RESOLVER_SETTINGS', silent=True)
 
 if os.environ.get('HEROKU', False):

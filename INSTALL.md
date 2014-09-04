@@ -8,7 +8,8 @@ In this document instructions are given to install the application on several pl
 The following packages should be installed on your system:
 - mysql-server
 - Python2
-- python-virtualenv
+- python-virtualenv (optional, but highly recommended)
+- A webserver such as Apache, nginx, ...
 
 Additional packages such as `libmysqlclient-dev` (on Debian/Ubuntu) might be required to install some of the required Python packages.
 
@@ -72,7 +73,7 @@ $ git checkout heroku
 ```
 $ heroku create
 ```
-4. Change the settings in `resolver/config.py` as explained in the configuration section, and commit your changes to the repository (note: you do not need to change anything in the database section).
+4. Create a configuration file as explained in the configuration section, and commit your changes to the repository (note: you do not need to change anything in the database section).
 5. Update the requirements for Heroku and commit your changes
 ```
 $ echo "\npsycopg2" >> requirements.txt
@@ -99,10 +100,16 @@ $ heroku ps:scale web=1
 ```
 
 ## Configuration
-Only the `resolver.py` in the `resolver` directory needs to be changed in order to configure the application. Both `secret_key` and `salt` should contain two random strings of characters. The site [random.org](http://random.org/strings) can be used to generate random data. It is important that the value of `salt` remains constant as changing it will invalidate all user passwords!
-
-The `simple_url` and `full_url` values contain the templates for the resolver's generated URLs. The `simple_url` should only contain `%id`, and `full_url` should contain `%otype, %dtype, %id` and preferably `%slug`.
+### Resolver
+You can create a new configuration file by simply copying the `resolver.cfg.example` to `resolver.cfg` and editing it. Both `secret_key` and `salt` should contain two random strings of characters. The site [random.org](http://random.org/strings) can be used to generate random data. It is important that the value of `salt` remains constant as changing it will invalidate all user passwords!
 
 The `DATABASE_*` values are the connection details for MySQL.
 
 The value for `BASE_URL` should be the root URL of the application.
+
+### Webserver
+When running the application on a dedicated domain or subdomain, no special configuration is needed and the provided example configurations for Apache and nginx can be used.
+
+When the application is hosted on the same domain as an existing application, for instance a simple PHP CMS installation, special configuration is needed in order to route the correct requests to the application. Specifically, all requests to `/resolver`, `/static`, and `/collection` should be forwarded to the application, making sure no parts of the request URI are truncated.
+
+On Apache2 [mod_proxy](https://httpd.apache.org/docs/2.2/mod/mod_proxy.html) can be used. Similary, Nginx has [http_proxy](http://nginx.org/en/docs/http/ngx_http_proxy_module.html).

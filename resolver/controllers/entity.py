@@ -78,7 +78,7 @@ def admin_edit_entity(id):
     if not form.validate():
         return admin_view_entity(id, form=form)
 
-    old = str(ent)
+    old = unicode(ent)
     try:
         ent.id = form.id.data
         ent.title = form.title.data

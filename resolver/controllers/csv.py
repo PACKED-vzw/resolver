@@ -153,19 +153,19 @@ def admin_csv_export():
         for document in entity.documents:
             if type(document) == Data:
                 writer.writerow([entity.id, entity.type, entity.title, 'data',
-                                 str(document.url),
+                                 unicode(document.url),
                                  '1' if document.enabled else '0',
-                                 str(document.notes),
+                                 unicode(document.notes),
                                  document.format, '', ''])
             else:
                 writer.writerow([entity.id, entity.type, entity.title,
                                  'representation',
-                                 str(document.url),
+                                 unicode(document.url),
                                  '1' if document.enabled else '0',
-                                 str(document.notes),
+                                 unicode(document.notes),
                                  '',
                                  '1' if document.reference else '0',
-                                 str(document.order)])
+                                 unicode(document.order)])
 
     file.seek(0)
     response = make_response(file.read())

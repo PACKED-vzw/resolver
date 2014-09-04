@@ -19,7 +19,7 @@ def export_log(id=None, limit=None):
     output = ""
     for log in reversed(logs):
         # Newline problems on windows?
-        output += str(log) + '\n'
+        output += unicode(log) + '\n'
 
     response = make_response(output)
     response.headers["Content-Disposition"] = 'attachment; filename="log.txt"'

@@ -27,7 +27,7 @@ def admin_update_settings():
         [x.extract() for x in soup(['script', 'iframe'])]
 
         kvstore.set('default_notice', notice)
-        kvstore.set('default_notice_clean', str(soup))
+        kvstore.set('default_notice_clean', unicode(soup))
         kvstore.set('titles_enabled', form.titles_enabled.data)
         kvstore.set('logo_url', form.logo_url.data)
         kvstore.set('domains', form.domains.data)

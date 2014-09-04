@@ -16,17 +16,17 @@ body {
 }
 
 .panel-collapse .list-group {
-	margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .panel-collapse .list-group .list-group-item {
-	border-radius: 0;
-	border-left: none;
-	border-right: none;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
 }
 
 .panel-collapse .list-group .list-group-item:last-child {
-	border-bottom: none;
+    border-bottom: none;
 }
 
 .notice-float {

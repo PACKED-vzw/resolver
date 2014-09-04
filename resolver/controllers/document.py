@@ -175,7 +175,7 @@ def admin_edit_document_json(id):
         form = RepresentationForm()
 
     if form.validate():
-        old = str(doc)
+        old = unicode(doc)
 
         doc.enabled = form.enabled.data
         doc.url = form.url.data
