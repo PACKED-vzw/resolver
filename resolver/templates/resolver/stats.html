@@ -1,77 +1,134 @@
 {% extends "resolver/layout.html" %}
 {% block body %}
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Statistics</h3>
-      </div>
-      <div class="panel-body">
-        There have <strong>{{ hits }} total hits</strong> since the first day of this month
-      </div>
-    </div>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Entities</h3>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Entries</th>
+        <th>Hits</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Work</td>
+        <td>{{entities_num_work}}</td>
+        <td>{{work_hits}}</td>
+      </tr>
+      <tr>
+        <td>Agent</td>
+        <td>{{entities_num_agent}}</td>
+        <td>{{agent_hits}}</td>
+      </tr>
+      <tr>
+        <td>Concept</td>
+        <td>{{entities_num_concept}}</td>
+        <td>{{concept_hits}}</td>
+      </tr>
+      <tr>
+        <td>Event</td>
+        <td>{{entities_num_event}}</td>
+        <td>{{event_hits}}</td>
+      </tr>
+      <tr>
+        <td><strong>Total</strong></td>
+        <td>{{entities_total}}</td>
+        <td>{{total_hits}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Hits per document type</h3>
-      </div>
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Hits</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for tuple in document_hits %}
-          <tr>
-            <td>{{ tuple[0] | capitalize }}</td>
-            <td>{{ tuple[1] }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Documents</h3>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Entries</th>
+        <th>Active entries</th>
+        <th>Hits</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Representation</td>
+        <td>{{repr_total}}</td>
+        <td>{{repr_active}}</td>
+        <td>{{repr_hits}}</td>
+      </tr>
+      <tr>
+        <td>Data</td>
+        <td>{{data_total}}</td>
+        <td>{{data_active}}</td>
+        <td>{{data_hits}}</td>
+      </tr>
+      <tr>
+        <td><strong>Total</strong></td>
+        <td>{{docs_total}}</td>
+        <td>{{docs_active}}</td>
+        <td>{{total_hits}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Hits per entity type</h3>
-      </div>
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Hits</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for tuple in entity_hits %}
-          <tr>
-            <td>{{ tuple[0] | capitalize }}</td>
-            <td>{{ tuple[1] }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Top 10 entities</h3>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>PID</th>
+        <th>Hits</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tuple in top10_ents %}
+      <tr>
+        <td>{{ tuple[1] }}</td>
+        <td>{{ tuple[0] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Top 10 referrers</h3>
-      </div>
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Referrer</th>
-            <th>Hits</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for tuple in referrers %}
-          <tr>
-            <td>{{ tuple[0] }}</td>
-            <td>{{ tuple[1] }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Top 10 referrers</h3>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Referrer</th>
+        <th>Hits</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tuple in referrers %}
+      <tr>
+        <td>{{ tuple[1] }}</td>
+        <td>{{ tuple[0] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Logs</h3>
+  </div>
+  <div class="panel-body">
+    <a href="/resolver/log/limit/1000" class="btn btn-primary">Download last 1000</a>
+    <a href="/resolver/log/limig/0" class="btn btn-primary">Download all</a>
+  </div>
+</div>
 {% endblock %}
