@@ -7,8 +7,8 @@
     <title>Resolver - {{ title }}</title>
 
     <!-- Bootstrap -->
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/css/resolver.css" rel="stylesheet">
+    <link href="{{config['BASE_URL']}}/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{config['BASE_URL']}}/static/css/resolver.css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -27,9 +27,18 @@
             </div>
             <div class="list-group">
               {% for doc in documents %}
-              <a href="{{ doc.persistent_uri }}" class="list-group-item">{{ doc.type }}</a>
+              {% if doc.type == 'data' %}
+              <a href="{{ doc.persistent_uri[-1] }}" class="list-group-item">Data ({{ doc.format }})</a>
+              {% else %}
+              <a href="{{ doc.persistent_uri[-1] }}" class="list-group-item">
+              {% if doc.reference %}<strong>{% endif %}
+                {% if doc.label %}{{doc.label}}{% else %} Representation{% endif %}
+                ({{doc.order}})
+              {% if doc.reference %}</strong>{% endif %}
+              </a>
+              {% endif %}
               {% endfor %}
-            </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -38,6 +47,6 @@
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="{{config['BASE_URL']}}/static/js/bootstrap.min.js"></script>
   </body>
 </html>

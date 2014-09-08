@@ -1,0 +1,51 @@
+{% from "_formhelpers.html" import render_field %}
+{% extends "resolver/layout.html" %}
+{% block body %}
+    <form class="form-horizontal" method="post">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Settings</h3>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <div class="col-sm-2 text-right">
+              <strong>Template</strong>
+            </div>
+            <div class="col-sm-10">
+              <strong>{{ config['BASE_URL'] }}</strong>/collection/<em>entity type</em>/<em>document type</em>/<em>PID</em>/
+            </div>
+          </div>
+          <div class="form-group">
+            {{ render_field(form.domains, rows=5) }}
+          </div>
+          <div class="form-group">
+            {{ render_field(form.titles_enabled, class="") }}
+          </div>
+          <div class="form-group">
+            {{ render_field(form.logo_url) }}
+          </div>
+          <div class="form-group">
+            {% with %}
+            {% set field = form.default_notice %}
+            <label for="{{ field.label.field_id }}" class="col-sm-2 control-label">{{ field.label.text }}</label>
+            <div class="col-sm-10">
+              {{ field(class="form-control", rows=10)|safe }}
+              <span class="label label-info">HTML allowed, except &lt;script&gt; and &lt;iframe&gt; tags</span>
+              {% if field.errors %}
+              {% for error in field.errors %}
+              <span class="label label-danger">{{ error }}</span>
+              {% endfor %}
+              {% endif %}
+            </div>
+            {% endwith %}
+          </div>
+        </div>
+        <div class="panel-footer clearfix">
+          <div class="pull-right">
+            {{ form.csrf_token }}
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </div>
+      </div>
+    </form>
+{% endblock %}

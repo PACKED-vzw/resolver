@@ -5,7 +5,7 @@ from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
 
 app = Flask(__name__)
-app.config.from_object('resolver.config.Config')
+app.config.from_pyfile('../resolver.cfg')
 app.config.from_envvar('RESOLVER_SETTINGS', silent=True)
 
 if os.environ.get('HEROKU', False):
@@ -13,8 +13,6 @@ if os.environ.get('HEROKU', False):
                                               app.config['SECRET_KEY'])
     app.config['SALT'] = os.environ.get('SALT', app.config['SALT'])
 
-# TODO: Logging in production only?
-# TODO: Add log file to config
 if os.environ.get('HEROKU', False):
     import sys
     handler = logging.StreamHandler(sys.stdout)
@@ -28,13 +26,13 @@ app.logger.addHandler(handler)
 @app.errorhandler(404)
 @app.errorhandler(NotFoundException)
 def page_not_found(e):
-    return render_template('notice.html', title='Page Not Found',
+    return render_template('error.html', title='Page Not Found',
                            message='The page you requested was not found.'), 404
 
 @app.errorhandler(500)
 def internal_error(e):
     app.logger.exception(e)
-    return render_template('notice.html', title='Server Error',
+    return render_template('error.html', title='Server Error',
                            message='Something went terribly wrong!'), 500
 
 import resolver.controllers

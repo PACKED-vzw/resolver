@@ -1,9 +1,36 @@
-import csv, codecs, cStringIO
+# -*- coding: utf-8-unix -*-
+import csv, codecs, cStringIO, re
+from unidecode import unidecode
 from flask import session
 from resolver import app
+from resolver.database import db
+from resolver.model import Log
 
-def log(action):
-    app.logger.info("Resolver: user `%s' %s", session.get('username'), action)
+def log(entity, action):
+    l = Log(entity, session.get('username'), action)
+    app.logger.info(l)
+    db.session.add(l)
+    db.session.commit()
+
+_clean_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^`{|}]+')
+def cleanID(ID):
+    patterns = [
+        # Exceptions
+        ('- ','-'),(' -','-'),('\)+$',''),('\]+$', ''),('\°+$', ''),
+        # Simple replacements
+        ('\.','_'),(' ','_'),('\(','_'),('\)','_'),('\[','_'),('\]','_'),
+        ('\/','_'),('\?','_'),(',','_'),('&','_'),('\+','_'),('°','_'),
+        # Replace 1 or more underscores by a single underscore
+        ('_+', '_')]
+    partial = reduce(lambda str, t: re.sub(t[0], t[1], str),
+                     patterns,
+                     ID)
+    # For safety, let's give it another scrub.
+    result = []
+    for word in _clean_re.split(partial):
+        result.extend(unidecode(word).split())
+
+    return unicode(''.join(result))
 
 class UTF8Recoder:
     """

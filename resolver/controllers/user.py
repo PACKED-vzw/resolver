@@ -26,7 +26,6 @@ def admin_signin():
         flash("You are already logged in", "info")
         return redirect('/resolver')
     if form.validate_on_submit():
-        # TODO: form validation
         user = User.query.filter(User.username ==  form.username.data).first()
         if not user:
             flash("Username incorrect", "danger")
@@ -64,14 +63,14 @@ def admin_new_user():
             flash("There already is a user named '%s'." % form.username.data,
                   "danger")
             return admin_list_users(form=form)
-        # TODO: Do we really need this
+        # TODO: Do we really need this?
         if form.password.data != form.confirm.data:
             flash("The two passwords do not match.", "warning")
             return admin_list_users(form=form)
         user = User(form.username.data, form.password.data)
         db.session.add(user)
         db.session.commit()
-        log("added user `%s' to the system" % user.username)
+        #log("added user `%s' to the system" % user.username)
         flash("User added succesfully", "success")
         return admin_list_users()
     return admin_list_users(form=form)
@@ -79,17 +78,20 @@ def admin_new_user():
 @app.route('/resolver/user/delete/<username>')
 @check_privilege
 def admin_delete_user(username):
-    # TODO: Maybe a user shouldn't be able to remove himself?
     if username == "admin":
         flash("The administrator cannot be removed!", "danger")
         return redirect("/resolver/user")
+    if username == session.get('username'):
+        flash("You can not remove yourself!", 'warning')
+        return redirect("/resolver/user")
+
     user = User.query.filter(User.username == username).first()
     if not user:
         flash("User not found", "warning")
         return redirect("/resolver/user")
     db.session.delete(user)
     db.session.commit()
-    log("removed user `%s' from the system" % user.username)
+    #log("removed user `%s' from the system" % user.username)
     flash("User removed succesfully", "success")
     return redirect("/resolver/user")
 
@@ -115,6 +117,6 @@ def admin_change_user_password(username):
                                user=user)
     user.change_password(request.form['password'])
     db.session.commit()
-    log("changed the password of user `%s'" % user.username)
+    #log("changed the password of user `%s'" % user.username)
     flash("Password changed succesfully", "success")
     return admin_view_user(username)
