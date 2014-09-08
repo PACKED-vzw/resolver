@@ -144,6 +144,7 @@ def admin_csv_import():
 @app.route('/resolver/csv/export')
 @check_privilege
 def admin_csv_export():
+    # TODO: Fix all the 'None' in export
     entities = Entity.query.all()
     file = cStringIO.StringIO()
     writer = UnicodeWriter(file)
