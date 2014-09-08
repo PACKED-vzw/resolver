@@ -6,7 +6,6 @@ from resolver.exception import NotFoundException
 
 app = Flask(__name__)
 app.config.from_pyfile('../resolver.cfg')
-app.config.from_envvar('RESOLVER_SETTINGS', silent=True)
 
 if os.environ.get('HEROKU', False):
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY',

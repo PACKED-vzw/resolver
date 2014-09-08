@@ -15,7 +15,7 @@ ADD . /resolver
 RUN pip install -r /resolver/requirements.txt
 RUN service mysql start && echo "create database resolver;" | mysql -u root
 RUN rm -f sentinel
-RUN rm -f docker_config.py
+RUN rm -f resolver.cfg
 
 EXPOSE 80
 ENV GUNICORN_WORKERS 4
