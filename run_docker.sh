@@ -9,6 +9,4 @@ if [ ! -f sentinel ]; then
     touch sentinel
 fi
 
-export RESOLVER_SETTINGS=`pwd`/docker_config.py
-
 exec gunicorn -w $GUNICORN_WORKERS -b 0.0.0.0:80 resolver:wsgi_app
