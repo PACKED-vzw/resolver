@@ -42,19 +42,16 @@ Gunicorn can be daemonized by using the `-D` or `--daemon` command line switch, 
 ## Docker
 The application is also made available as a Docker image in the `packed/resolver` repository, and can be used to simplify the installation. The application's webserver is bound to port 80. Once again it is advised to run the application behind another webserver such as Apache or Nginx. See the `apache` and `nginx` directories for example configuration files.
 
-For example:
-```
-docker run -d -p 8080:80 packed/resolver
-```
-Will download the image, create a new container, execute the application, and forward all requests on `localhost:8080` to the resolver. The image is configured to use 4 workers for Gunicorn.
-
-Using the `-e` flag it is possible to set environment variables inside the container to configure the application. Setting the `BASE_URL` environment variable will change the application's configuration to use the provided value as base url for the application. It is also possible to change the default amount of Gunicorn workers (4) by setting `GUNICORN_WORKERS`. Example:
+To set up the application using Docker, one can run the following command as an example:
 ```
 docker run -d -p 8080:80 -e "BASE_URL=http://resolver.be" -e "GUNICORN_WORKERS=2" packed/resolver
 ```
+This will download the image, create a new container, execute the application, and forward all requests on `localhost:8080` to the resolver. The container will be configured to use 2 workers for Gunicorn.
+
+Using the `-e` flag it is possible to set environment variables inside the container to configure the application. The `-e "GUNICORN_WORKERS=2"` option can be omitted; in this case the application will fall back to using 4 workers. The `-e "BASE_URL="` is mandatory however, and should be provided for the correct working of the application.
 
 ### Building your own image
-It is possible to build a resolver image yourself. Just checkout the `docker` branch from the repository (`git checkout docker`) to gain access to the Dockerfile.
+It is possible to build a resolver image yourself, as the Dockerfile is provided in the repository.
 
 The image can be built like any other.
 
