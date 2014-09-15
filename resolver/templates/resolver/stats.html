@@ -1,5 +1,11 @@
 {% extends "resolver/layout.html" %}
 {% block body %}
+
+<div class="alert alert-info alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+  <strong>Heads up!</strong> Only hits since the beginning of the current month are accounted for.
+</div>
+
 <div class="panel panel-default">
   <div class="panel-heading">
     <h3 class="panel-title">Entities</h3>
@@ -122,13 +128,4 @@
   </table>
 </div>
 
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">Logs</h3>
-  </div>
-  <div class="panel-body">
-    <a href="/resolver/log/limit/1000" class="btn btn-primary">Download last 1000</a>
-    <a href="/resolver/log/limig/0" class="btn btn-primary">Download all</a>
-  </div>
-</div>
 {% endblock %}
