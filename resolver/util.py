@@ -12,7 +12,7 @@ def log(entity, action):
     db.session.add(l)
     db.session.commit()
 
-_clean_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^`{|}]+')
+_clean_re = re.compile(r'[\t !"#$%&\'()*/<=>?@\[\\\]^`{|}]+')
 def cleanID(ID):
     patterns = [
         # Exceptions
