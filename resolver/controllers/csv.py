@@ -42,6 +42,9 @@ def admin_csv_import():
         reader = UnicodeReader(file, delimiter=';')
         reader.next() # Skip header again
 
+    # This removes all entities, associated documents/data, hits, ...
+    Entity.query.delete()
+
     records = {}
     failures = []
     for record in reader:
