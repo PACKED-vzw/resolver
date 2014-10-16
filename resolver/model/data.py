@@ -8,7 +8,11 @@ data_formats = ('html', 'json', 'xml', 'pdf')
 
 class Data(Document):
     __tablename__ = 'data'
-    id = db.Column(db.Integer, db.ForeignKey('document.id'), primary_key=True)
+    id = db.Column(db.Integer,
+                   db.ForeignKey('document.id',
+                                 onupdate='cascade',
+                                 ondelete='cascade'),
+                   primary_key=True)
     _format = db.Column('format', db.Enum(*data_formats, name='Format'))
 
     __mapper_args__ = {

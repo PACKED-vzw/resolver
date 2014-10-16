@@ -8,7 +8,11 @@ LABEL_MAX = 64
 
 class Representation(Document):
     __tablename__ = 'representation'
-    id = db.Column(db.Integer, db.ForeignKey('document.id'), primary_key=True)
+    id = db.Column(db.Integer,
+                   db.ForeignKey('document.id',
+                                 onupdate='cascade',
+                                 ondelete='cascade'),
+                   primary_key=True)
     order = db.Column(db.Integer)
     _reference = db.Column('reference', db.Boolean)
     label = db.Column(db.String(LABEL_MAX))

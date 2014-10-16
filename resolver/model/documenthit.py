@@ -12,7 +12,9 @@ class DocumentHit(db.Model):
     __tablename__ = 'documenthit'
     id = db.Column(db.Integer, primary_key=True)
     ip = db.Column(db.String(15))
-    document_id = db.Column(db.Integer, db.ForeignKey("document.id"))
+    document_id = db.Column(db.Integer, db.ForeignKey("document.id",
+                                                      onupdate='cascade',
+                                                      ondelete='cascade'))
     referrer = db.Column(db.String(128))
     timestamp = db.Column(db.DateTime)
 
