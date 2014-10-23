@@ -12,3 +12,8 @@ To contribute to the application, first follow the installation instructions to 
 ## Installation
 
 See `INSTALL.md` for instructions.
+
+## License
+
+The application is licensed under GPL3
+
