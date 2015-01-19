@@ -27,8 +27,8 @@
             </div>
             <div class="panel-body">
               {% if logo_url %}
-              <img class="notice-float" src="{{ logo_url }}">
-              <div>{{ default_notice | safe }}</div>
+              <img class="notice-float" id="logo-inst"  src="{{ logo_url }}">
+              <div id="landing-text">{{ default_notice | safe }}</div>
               {% else %}
               {{ default_notice|safe }}
               {% endif %}

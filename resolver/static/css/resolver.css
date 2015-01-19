@@ -35,3 +35,13 @@ body {
     position: relative;
     max-width:50%;
 }
+
+#logo-inst {
+    width: 300px;
+    display: block;
+    margin: 0 auto;
+}
+
+#landing-text {
+    margin-top: 30px;
+}
