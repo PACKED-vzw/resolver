@@ -29,13 +29,6 @@ body {
     border-bottom: none;
 }
 
-.notice-float {
-    float: left;
-    margin-right:15px;
-    position: relative;
-    max-width:50%;
-}
-
 #logo-inst {
     width: 300px;
     display: block;
