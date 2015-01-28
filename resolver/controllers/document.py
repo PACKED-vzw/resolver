@@ -154,7 +154,7 @@ def admin_add_representation_json(entity_id):
     rep = Representation(ent.id, order, url=form.url.data, label=form.label.data,
                          enabled=form.enabled.data, notes=form.notes.data,
                          reference=form.reference.data)
-    log(doc.entity_id, "Added representation document `%s'" % doc)
+    log(rep.entity_id, "Added representation document `%s'" % rep)
     db.session.add(rep)
     db.session.commit()
 
