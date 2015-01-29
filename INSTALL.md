@@ -73,7 +73,7 @@ $ heroku create
 4. Create a configuration file as explained in the configuration section, and commit your changes to the repository (note: you do not need to change anything in the database section).
 5. Update the requirements for Heroku and commit your changes
 ```
-$ echo "\npsycopg2" >> requirements.txt
+$ echo "psycopg2==2.5.4" >> requirements.txt
 ```
 6. Add a database to the application
 ```
