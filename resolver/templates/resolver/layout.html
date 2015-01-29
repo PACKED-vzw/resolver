@@ -7,8 +7,8 @@
     <title>Resolver - {{ title }}</title>
 
     <!-- Bootstrap -->
-    <link href="{{config['BASE_URL']}}/static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{config['BASE_URL']}}/static/css/resolver.css" rel="stylesheet">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/resolver.css" rel="stylesheet">
     <link href="//cdn.datatables.net/plug-ins/725b2a2115b/integration/bootstrap/3/dataTables.bootstrap.css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -18,11 +18,11 @@
         <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
         <![endif]-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="{{config['BASE_URL']}}/static/js/bootstrap.min.js"></script>
-    <script src="{{config['BASE_URL']}}/static/js/jquery.dataTables.min.js"></script>
+    <script src="{{request['url_root']}}/static/js/bootstrap.min.js"></script>
+    <script src="{{request['url_root']}}/static/js/jquery.dataTables.min.js"></script>
     <script src="//cdn.datatables.net/plug-ins/725b2a2115b/integration/bootstrap/3/dataTables.bootstrap.js"></script>
-    <script src="{{config['BASE_URL']}}/static/js/resolver.js"></script>
-    <script type="text/javascript">var base_url="{{config['BASE_URL']}}";</script>
+    <script src="{{request['url_root']}}/static/js/resolver.js"></script>
+    <script type="text/javascript">var base_url="{{request['url_root']}}";</script>
   </head>
   <body>
     <div class="container">
