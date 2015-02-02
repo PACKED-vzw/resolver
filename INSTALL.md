@@ -7,7 +7,7 @@ In this document instructions are given to install the application on several pl
 ### Requirements
 The following packages should be installed on your system:
 - mysql-server
-- Python2
+- Python 2.7
 - python-virtualenv (optional, but highly recommended)
 - A webserver such as Apache, nginx, ...
 
