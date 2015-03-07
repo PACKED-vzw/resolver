@@ -47,6 +47,7 @@ Python:
 
 ```bash
 sudo apt-get install -y python python-dev python-virtualenv
+```
 
 MySQL with Python bindings
 
