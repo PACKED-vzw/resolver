@@ -1,45 +1,205 @@
 Installation instructions
 =========================
-In this document instructions are given to install the application on several platforms. The default login for every installation is `u: admin/p: default`. **Important:** change the password of the `admin` user immediately after installation.
 
-## Linux/UNIX
+This documents provides instructions to install the Resolver application on a Linux/UNIX based environment.
 
-### Requirements
-The following packages should be installed on your system:
-- mysql-server
-- Python 2.7
-- python-virtualenv (optional, but highly recommended)
-- A webserver such as Apache, nginx, ...
+## Table of contents
 
-Additional packages such as `libmysqlclient-dev` (on Debian/Ubuntu) might be required to install some of the required Python packages.
+1. Overview
+2. Installation instructions
+3. Deployment to a PaaS service
 
-### Installation
-1. Clone the git repository or extract the archive containing the source
-2. Create a new virtual environment in the project directory and activate it
+## Overview
+
+The Resolver application is not a stand-alone application. It's part of a stack of required services. The setup is Web Server Gateway Interface (WSGI) based and consists of these parts:
+
+| Interpreter | Python |
+| WSGI HTTP Server | Gunicorn |
+| Database Server | MySQL or MariaDB |
+| HTTP Server | NGinX or Apache |
+
+The installation instructions will cover on a Virtual Private Server (VPS) which will only host the Resolver application. **If you plan to install the application on an enviroment which hosts any other type of service (Apache/PHP), be aware of potential dependency (version) conflicts between packages.** If configuration files already exist, settings described in this document should be integrated.
+
+The installation instructions assume that all services are running on the same host.
+
+## Requirements/Dependencies
+
+The instructions target intallation on an Ubuntu/Debian based system. You will need SSH or terminal access and appropriate system permissions to execute the following commands.
+
+Update your system
+
+```bash
+sudo apt-get update
+sudo apt-get upgrade
 ```
-$ cd resolver
-$ virtualenv venv
-$ . venv/bin/activate
+
+Install dependencies and packages
+
+Essential build tools:
+
+```bash
+sudo apt-get install -y tar git wget build-essential vim
 ```
-3. Install the required Python packages
+
+Python:
+
+```bash
+sudo apt-get install -y python python-dev python-virtualenv
+
+MySQL with Python bindings
+
+```bash
+sudo apt-get install -y mysql-server python-mysqldb libmysqlclient-dev
 ```
+
+## Create a new database
+
+The Resolver application stores data in a MySQL/MariaDB database. Make sure you have the MySQL server running and sufficient access permissions to create a new database and user.  The following commands should be executed from the command line, but you can also create a new database/user via such tools as PHPMyAdmin or Sequel Pro.
+
+In the following commands, change 'root' to the appropriate MySQL user.
+
+Create a new database:
+
+```bash
+echo "CREATE DATABASE resolver CHARACTER SET utf8 COLLATE utf8_general_ci;" | mysql -u root -p
+```
+
+Create a new user with grant permissions for the database. This example will create a new database user `u:resolver` and `p:resolver`. Change these to a suitable user/password combination.
+
+```bash
+echo "CREATE USER 'resolver'@'localhost' IDENTIFIED BY 'resolver';" | mysql -u root -p
+echo "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES ON resolver.* TO 'resolver'@'localhost' IDENTIFIED BY 'resolver';" | mysql -u root -p
+```
+
+## Install the Resolver application
+
+TBD: file system permissions and dedicated unix user
+
+Deploy the codebase of the application. The instructions will install the application codebase in `/opt` but other locations, such as the home directory of a dedicated resolver user, are possible as well.
+
+```bash
+cd /opt
+git clone https://github.com/PACKED-vzw/resolver.git resolver
+```
+
+You should end up with a new directory `/opt/resolver` which contains the application code.
+
+### Virtual Enviroment
+
+The application uses Python Virtual Environment to keep track of project specific library dependencies. First, we'll activate `venv`in the installation root.
+
+```bash
+cd /opt/resolver
+virtualenv venv
+. venv/bin/activate
+```
+
+Now install the required python packages using pip, Pythons' package manager tool which comes with Python 2.7.
+
+```bash
 pip install -r requirements.txt
 ```
-4. Configure the application (see section `Configuration` further on)
-5. Initialize the database (and test if all settings are correct)
-```
-$ python initialise.py
-```
-6. The application should now be ready and can be ran by using Gunicorn. `[w]` should be replaced by the preferred amount of worker threads (2-4 should suffice), `[ip]:[port]` should be replaced by the IP and port on which the server should listen.
-```
-$ gunicorn -w [x] -b [ip]:[port] resolver:wsgi_app
+
+### Configure the application settings file
+
+Copy the example settings file and start editing this new file. In this example, we will use the `vi` editor.
+
+```bash
+cp resolver.cfg.example resolver.cfg
+vi resolver.cfg
 ```
 
-It is highly advisable to use Gunicorn in combination with a webserver such as Apache or Nginx. Example configuration files for both servers can be found in the directories `apache` and `nginx`. When using Apache, Nginx, or any other proxying webserver, make sure the application is bound to the localhost IP only (127.0.0.1:[port]).
+Change the `DATABASE_USER`, `DATABASE_PASS` and `DATABASE_NAME` variables to reflect the database and user we created in the previous section.
+
+Change the `BASE_URL` variable to the domain location where the application will be active i.e. http://example.com. **The application will not listen directly to the root of the domain.**
+
+Both `SECRET_KEY` and `SALT` should contain two random strings of characters. The site [random.org](http://random.org/strings) can be used to generate random data. It is important that the value of `SALT` remains constant as changing it will invalidate all user passwords!
+
+### Initialise the database
+
+This command will populate the database will all the required tables.
+
+```bash
+python initialise.py
+```
+
+## Configure the HTTP server
+
+The HTTP server will act as a proxy for the Gunicorn HTTP WSGI server.
+More information about HTTP proxies and WSGI can be found in the [Gunicorn documentation](http://gunicorn-docs.readthedocs.org/en/latest/deploy.html).
+
+The next commands assume that the target domain (`resolver.be`) only serves the Resolver application. Generally, a target domain might already serve an existing CMS based website (Drupal, WordPress, etc.) In that case, you should add the following settings to an existing virtual host configuration instead of creating a new virtual host.
+
+### NGinX
+
+Install and start NGinX.
+
+```bash
+sudo apt-get install nginx
+```
+
+Create a new virtual host configuration for the resolver application and edit it using the `vi` editor.
+
+```bash
+sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/resolver.be
+sudo vi /etc/nginx/sites-available/resolver.be
+```
+
+Change the `resolver.be` file so that it reflects the example settings below:
+
+```
+server {
+	listen 80;
+
+	# Make site accessible from http://resolver.be/
+	# This is a catch-all domain configuration.
+	# see: http://nginx.org/en/docs/http/server_names.html#miscellaneous_names
+	server_name _;
+
+	location / {
+		proxy_pass		http://127.0.0.1:8080/;
+		proxy_redirect		off;
+		proxy_set_header	Host		$host;
+		proxy_set_header	X-Real-IP	$remote_addr;
+		proxy_set_header	X-Fowarded-For	$proxy_add_x_forwarded_for;
+	}
+}
+```
+
+Note: these settings assume that the Gunicorn daemon (see: next section) will run on port 8080.
+
+Link the new configuration file to the `sites-enabled` folder:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/resolver.local /etc/nginx/sites-enabled/
+```
+
+Restart NGinX.
+
+```bash
+sudo service nginx restart
+```
+
+### Apache
+
+TBD
+
+## Activate Gunicorn
+
+You can start Gunicorn from the command line by this command running from the project root (`/opt/resolver`).
+
+```bash
+gunicorn -w 4 -b 127.0.0.1:8080 resolver:wsgi_app
+```
+
+Gunicorn will listen on port 8080 and make 4 workers available.
 
 Gunicorn can be daemonized by using the `-D` or `--daemon` command line switch, although it might prove more useful to run the server by using `screen` or [Supervisor](http://supervisord.org/). An example configuration for Supervisor can be found in the `supervisor` directory.
 
-## Docker
+## Deployment to a PaaS enviroment
+
+### Docker
+
 The application is also made available as a Docker image in the `packed/resolver` repository, and can be used to simplify the installation. The application's webserver is bound to port 80. Once again it is advised to run the application behind another webserver such as Apache or Nginx. See the `apache` and `nginx` directories for example configuration files.
 
 To set up the application using Docker, one can run the following command as an example:
@@ -96,15 +256,8 @@ $ heroku run python initialise.py
 $ heroku ps:scale web=1
 ```
 
-## Configuration
-### Resolver
-You can create a new configuration file by simply copying the `resolver.cfg.example` to `resolver.cfg` and editing it. Both `secret_key` and `salt` should contain two random strings of characters. The site [random.org](http://random.org/strings) can be used to generate random data. It is important that the value of `salt` remains constant as changing it will invalidate all user passwords!
-
-The `DATABASE_*` values are the connection details for MySQL.
-
-The value for `BASE_URL` should be the root URL of the application.
-
 ### Webserver
+
 When running the application on a dedicated domain or subdomain, no special configuration is needed and the provided example configurations for Apache and nginx can be used.
 
 When the application is hosted on the same domain as an existing application, for instance a simple PHP CMS installation, special configuration is needed in order to route the correct requests to the application. Specifically, all requests to `/resolver`, `/static`, and `/collection` should be forwarded to the application, making sure no parts of the request URI are truncated.
