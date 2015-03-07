@@ -61,13 +61,13 @@ The Resolver application stores data in a MySQL/MariaDB database. Make sure you 
 
 In the following commands, change 'root' to the appropriate MySQL user.
 
-Create a new database:
+Create a new database called `resolver`:
 
 ```bash
 echo "CREATE DATABASE resolver CHARACTER SET utf8 COLLATE utf8_general_ci;" | mysql -u root -p
 ```
 
-Create a new user with grant permissions for the database. This example will create a new database user `u:resolver` and `p:resolver`. Change these to a suitable user/password combination.
+Create a new user with grant permissions for the database. This example will create a new database user `u:resolver` with `p:resolver`. Change these to a suitable user/password combination.
 
 ```bash
 echo "CREATE USER 'resolver'@'localhost' IDENTIFIED BY 'resolver';" | mysql -u root -p
