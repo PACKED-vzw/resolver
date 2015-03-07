@@ -13,6 +13,8 @@ This documents provides instructions to install the Resolver application on a Li
 
 The Resolver application is not a stand-alone application. It's part of a stack of required services. The setup is Web Server Gateway Interface (WSGI) based and consists of these parts:
 
+| Type | Package |
+| --- | ---|
 | Interpreter | Python |
 | WSGI HTTP Server | Gunicorn |
 | Database Server | MySQL or MariaDB |
