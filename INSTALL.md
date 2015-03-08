@@ -19,16 +19,21 @@ The Resolver project is a database driven web application based on the following
 | WSGI HTTP Server | Gunicorn |
 | Database Server | MySQL or MariaDB |
 | HTTP Server | NGinX or Apache |
+| Process manager | Supervisor |
 
-The instructions cover installation on a virtual private server (VPS) which only hosts the Resolver. **If you plan to install the application on an enviroment which hosts any other type of services (Apache/PHP), be aware of potential dependency (version) conflicts between packages.** If configuration files already exist, settings described in this document should be integrated.
+The instructions are specifically geared towards a installation on a virtual private server (VPS) which only hosts the Resolver. Contact your hosting provider to make sure your hosting plan covers the requirements outlined further in this document.
+
+**If you plan to install the application on an enviroment which hosts any other type of services (Apache/PHP), be aware of potential dependency (version) conflicts between packages.**
+
+The instructions target intallation on an [Ubuntu](http://www.ubuntu.com/) or [Debian](https://www.debian.org) based system.
 
 The installation instructions assume that all services are running on the same host.
 
 ## Requirements/Dependencies
 
-The instructions target intallation on an Ubuntu/Debian based system. You will need SSH or terminal access and appropriate system permissions to execute the following commands. Packages might already be installed on your system.
+You will need SSH or terminal access and a user account with appropriate administrative permissions to execute the following commands. Packages might already be installed on your system.
 
-Update your system:
+We prepare the system by performing a system wide update of all packages:
 
 ```bash
 sudo apt-get update
@@ -57,7 +62,7 @@ sudo apt-get install -y mysql-server python-mysqldb libmysqlclient-dev
 
 ## Create a new database
 
-The Resolver application stores data in a MySQL/MariaDB database. Make sure you have the MySQL server running and sufficient access permissions to create a new database and user.  The following commands should be executed from the command line, but you can also create a new database/user via such tools as PHPMyAdmin or Sequel Pro.
+The Resolver application stores data in a MySQL/MariaDB database. Make sure you have the MySQL server running and sufficient access permissions to create a new database and user.  The following commands should be executed from the command line, but you can also create a new database/user via alternative, graphical MySQL clients.
 
 In the following commands, you might change 'root' to an appropriate MySQL account with administrative privileges.
 
@@ -78,7 +83,7 @@ echo "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE T
 
 ### Create a new unix user
 
-The application runs through its own persistent daemon. For security purposes, we'll create a new dedicated unix user which will own this process.
+The application runs through its own persistent daemon. For security purposes, we'll create a new dedicated unix user & group which will own this process.
 
 ```bash
 sudo adduser resolver
@@ -136,7 +141,7 @@ python initialise.py
 
 ## Configure the HTTP server
 
-The HTTP server will act as a proxy for the Gunicorn HTTP WSGI server.
+The HTTP server will act as a proxy for the [Gunicorn HTTP WSGI server](http://gunicorn.org/).
 More information about HTTP proxies and WSGI can be found in the [Gunicorn documentation](http://gunicorn-docs.readthedocs.org/en/latest/deploy.html).
 
 The next commands assume that the target domain (`resolver.be`) only serves the Resolver application.  When the application is hosted on the same domain as an existing application, for instance a PHP CMS installation (Drupal, WordPress,...), special configuration is needed in order to route the correct requests to the application. Specifically, all requests to `/resolver`, `/static`, and `/collection` should be forwarded to the application, making sure no parts of the request URI are truncated.
@@ -228,12 +233,13 @@ sudo touch resolver.conf
 sudo vi resolver.conf
 ```
 
-Add these lines:
+Add these lines to the `resolver.conf` file. Note that Supervisor will assign the `resolver` user as the owner of the process.
 
 ```
 [program:resolver]
 directory = /home/resolver/resolver
 command = bash run_gunicorn.sh
+user = resolver
 autostart = true
 autorestart = true
 ```
@@ -252,6 +258,10 @@ sudo supervisorctl update
 Navigate to `http://www.resolver.be/resolver/signin` (substitute by your host/domain). You should be greeted by a login screen. Login using `u:admin` with `p:default`.
 
 **Important: change default password of the admin user account before proceeding to use the application **
+
+## Running multiple instances simultaneaously
+
+TBD
 
 ## Deployment to a PaaS enviroment
 
