@@ -11,7 +11,7 @@ This documents provides instructions to install the Resolver application on a Li
 
 ## Overview
 
-The Resolver application is not a stand-alone application. It's part of a stack of required services. The setup is Web Server Gateway Interface (WSGI) based and consists of these parts:
+The Resolver project is a database driven web application based on the following technology stack:
 
 | Type | Package |
 | --- | ---|
@@ -20,22 +20,22 @@ The Resolver application is not a stand-alone application. It's part of a stack 
 | Database Server | MySQL or MariaDB |
 | HTTP Server | NGinX or Apache |
 
-The installation instructions will cover on a Virtual Private Server (VPS) which will only host the Resolver application. **If you plan to install the application on an enviroment which hosts any other type of service (Apache/PHP), be aware of potential dependency (version) conflicts between packages.** If configuration files already exist, settings described in this document should be integrated.
+The instructions cover installation on a virtual private server (VPS) which only hosts the Resolver. **If you plan to install the application on an enviroment which hosts any other type of services (Apache/PHP), be aware of potential dependency (version) conflicts between packages.** If configuration files already exist, settings described in this document should be integrated.
 
 The installation instructions assume that all services are running on the same host.
 
 ## Requirements/Dependencies
 
-The instructions target intallation on an Ubuntu/Debian based system. You will need SSH or terminal access and appropriate system permissions to execute the following commands.
+The instructions target intallation on an Ubuntu/Debian based system. You will need SSH or terminal access and appropriate system permissions to execute the following commands. Packages might already be installed on your system.
 
-Update your system
+Update your system:
 
 ```bash
 sudo apt-get update
 sudo apt-get upgrade
 ```
 
-Install dependencies and packages
+Now we are ready to install all the required packages and services.
 
 Essential build tools:
 
@@ -59,7 +59,7 @@ sudo apt-get install -y mysql-server python-mysqldb libmysqlclient-dev
 
 The Resolver application stores data in a MySQL/MariaDB database. Make sure you have the MySQL server running and sufficient access permissions to create a new database and user.  The following commands should be executed from the command line, but you can also create a new database/user via such tools as PHPMyAdmin or Sequel Pro.
 
-In the following commands, change 'root' to the appropriate MySQL user.
+In the following commands, you might change 'root' to an appropriate MySQL account with administrative privileges.
 
 Create a new database called `resolver`:
 
@@ -89,7 +89,7 @@ You should end up with a new directory `/opt/resolver` which contains the applic
 
 ### Virtual Enviroment
 
-The application uses Python Virtual Environment to keep track of project specific library dependencies. First, we'll activate `venv`in the installation root.
+The application uses Python [Virtual Environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to keep track of project specific library dependencies. First, we'll activate `venv`in the installation root.
 
 ```bash
 cd /opt/resolver
