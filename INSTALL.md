@@ -76,23 +76,31 @@ echo "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE T
 
 ## Install the Resolver application
 
-TBD: file system permissions and dedicated unix user
+### Create a new unix user
 
-Deploy the codebase of the application. The instructions will install the application codebase in `/opt` but other locations, such as the home directory of a dedicated resolver user, are possible as well.
+The application runs through its own persistent daemon. For security purposes, we'll create a new dedicated unix user which will own this process.
 
 ```bash
-cd /opt
+sudo adduser resolver
+```
+
+### Deploy the codebase
+
+Switch to the newly created resolver user and deploy the codebase in the home folder using `git`.
+
+```bash
+su - resolver
 git clone https://github.com/PACKED-vzw/resolver.git resolver
 ```
 
-You should end up with a new directory `/opt/resolver` which contains the application code.
+You should end up with a new directory `/home/resolver/resolver` which contains the application code.
 
 ### Virtual Enviroment
 
-The application uses Python [Virtual Environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to keep track of project specific library dependencies. First, we'll activate `venv`in the installation root.
+The application uses Python [Virtual Environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to keep track of project specific library dependencies. First, we'll activate `venv`in the installation root of the resolver application.
 
 ```bash
-cd /opt/resolver
+cd resolver
 virtualenv venv
 . venv/bin/activate
 ```
@@ -131,11 +139,13 @@ python initialise.py
 The HTTP server will act as a proxy for the Gunicorn HTTP WSGI server.
 More information about HTTP proxies and WSGI can be found in the [Gunicorn documentation](http://gunicorn-docs.readthedocs.org/en/latest/deploy.html).
 
-The next commands assume that the target domain (`resolver.be`) only serves the Resolver application. Generally, a target domain might already serve an existing CMS based website (Drupal, WordPress, etc.) In that case, you should add the following settings to an existing virtual host configuration instead of creating a new virtual host.
+The next commands assume that the target domain (`resolver.be`) only serves the Resolver application.  When the application is hosted on the same domain as an existing application, for instance a PHP CMS installation (Drupal, WordPress,...), special configuration is needed in order to route the correct requests to the application. Specifically, all requests to `/resolver`, `/static`, and `/collection` should be forwarded to the application, making sure no parts of the request URI are truncated.
+
+If you are still logged in as the newly created `resolver` user, log out and switch back to an user account with administrative privileges before proceeding.
 
 ### NGinX
 
-Install and start NGinX.
+The following command installs and starts the NGinX HTTP service.
 
 ```bash
 sudo apt-get install nginx
@@ -148,7 +158,7 @@ sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/resolver.b
 sudo vi /etc/nginx/sites-available/resolver.be
 ```
 
-Change the `resolver.be` file so that it reflects the example settings below:
+Change the `resolver.be` file so that it reflects the example settings below. This configuration will make NGinX behave as a catch all proxy, forwarding all HTTP calls to the Gunicorn HTTP WSGI server process.
 
 ```
 server {
@@ -169,7 +179,7 @@ server {
 }
 ```
 
-Note: these settings assume that the Gunicorn daemon (see: next section) will run on port 8080.
+Note: these settings assume that the Gunicorn process will run on port 8080 (see: next section)
 
 Link the new configuration file to the `sites-enabled` folder:
 
@@ -187,9 +197,9 @@ sudo service nginx restart
 
 TBD
 
-## Activate Gunicorn
+## The Gunicorn WSGI HTTP server
 
-You can start Gunicorn from the command line by this command running from the project root (`/opt/resolver`).
+You can start Gunicorn from the command line manually running by this command running the project root (`/home/resolver/resolver`). Make sure you are logged in as the `resolver` user we've created earlier.
 
 ```bash
 gunicorn -w 4 -b 127.0.0.1:8080 resolver:wsgi_app
@@ -197,7 +207,51 @@ gunicorn -w 4 -b 127.0.0.1:8080 resolver:wsgi_app
 
 Gunicorn will listen on port 8080 and make 4 workers available.
 
-Gunicorn can be daemonized by using the `-D` or `--daemon` command line switch, although it might prove more useful to run the server by using `screen` or [Supervisor](http://supervisord.org/). An example configuration for Supervisor can be found in the `supervisor` directory.
+If you close the terminal session, the process will be killed. Gunicorn can be daemonized by using the `-D` or `--daemon` command line switch, although it might prove more useful to run the server by using `screen` or [Supervisor](http://supervisord.org/).
+
+### Supervisor
+
+Supervisor is a process manager which makes managing a number of long-running programs a trivial task by providing a consistent interface through which they can be monitored and controlled.
+
+Install and start supervisor:
+
+```bash
+sudo apt-get install supervisor
+sudo service supervisor restart
+```
+
+Create a new configuration for the resolver application
+
+```bash
+cd /etc/supervisor/conf.d
+sudo touch resolver.conf
+sudo vi resolver.conf
+```
+
+Add these lines:
+
+```
+[program:resolver]
+directory = /home/resolver/resolver
+command = bash run_gunicorn.sh
+autostart = true
+autorestart = true
+```
+
+Reload supervisor to enact to any updates:
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+```
+
+** At this point, the resolver service should now be operational and ready to be used.**
+
+## Using the resolver application
+
+Navigate to `http://www.resolver.be/resolver/signin` (substitute by your host/domain). You should be greeted by a login screen. Login using `u:admin` with `p:default`.
+
+**Important: change default password of the admin user account before proceeding to use the application **
 
 ## Deployment to a PaaS enviroment
 
@@ -263,6 +317,5 @@ $ heroku ps:scale web=1
 
 When running the application on a dedicated domain or subdomain, no special configuration is needed and the provided example configurations for Apache and nginx can be used.
 
-When the application is hosted on the same domain as an existing application, for instance a simple PHP CMS installation, special configuration is needed in order to route the correct requests to the application. Specifically, all requests to `/resolver`, `/static`, and `/collection` should be forwarded to the application, making sure no parts of the request URI are truncated.
 
 On Apache2 [mod_proxy](https://httpd.apache.org/docs/2.2/mod/mod_proxy.html) can be used. Similary, Nginx has [http_proxy](http://nginx.org/en/docs/http/ngx_http_proxy_module.html).
