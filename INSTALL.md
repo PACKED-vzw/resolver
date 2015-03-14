@@ -3,21 +3,15 @@ Installation instructions
 
 This documents provides instructions to install the Resolver application on a Linux/UNIX based environment.
 
-## Table of contents
-
-1. Overview
-2. Installation instructions
-3. Deployment to a PaaS service
-
 ## Overview
 
 The Resolver project is a database driven web application based on the following technology stack:
 
 | Type | Package |
 | --- | ---|
-| Interpreter | Python |
-| WSGI HTTP Server | Gunicorn |
-| Database Server | MySQL or MariaDB |
+| Interpreter | Python >= 2.7 |
+| WSGI HTTP Server | Gunicorn 17.5 |
+| Database Server | MySQL or MariaDB 5.5 |
 | HTTP Server | NGinX or Apache |
 | Process manager | Supervisor |
 
@@ -51,7 +45,7 @@ sudo apt-get install -y tar git wget build-essential vim
 Python:
 
 ```bash
-sudo apt-get install -y python python-dev python-virtualenv
+sudo apt-get install -y python python-dev python-virtualenv gunicorn
 ```
 
 MySQL with Python bindings
@@ -144,9 +138,11 @@ python initialise.py
 The HTTP server will act as a proxy for the [Gunicorn HTTP WSGI server](http://gunicorn.org/).
 More information about HTTP proxies and WSGI can be found in the [Gunicorn documentation](http://gunicorn-docs.readthedocs.org/en/latest/deploy.html).
 
-The next commands assume that the target domain (`resolver.be`) only serves the Resolver application.  When the application is hosted on the same domain as an existing application, for instance a PHP CMS installation (Drupal, WordPress,...), special configuration is needed in order to route the correct requests to the application. Specifically, all requests to `/resolver`, `/static`, and `/collection` should be forwarded to the application, making sure no parts of the request URI are truncated.
+On Apache2 [mod_proxy](https://httpd.apache.org/docs/2.2/mod/mod_proxy.html) can be used. Similary, Nginx has [http_proxy](http://nginx.org/en/docs/http/ngx_http_proxy_module.html).
 
-If you are still logged in as the newly created `resolver` user, log out and switch back to an user account with administrative privileges before proceeding.
+The next commands assume that the target domain (i.e. `resolver.be`) only serves the Resolver application.  When the application is hosted on the same domain as an existing application, for instance a PHP CMS installation (Drupal, WordPress,...), special configuration is needed in order to route the correct requests to the application. Specifically, all requests to `/resolver`, `/static`, and `/collection` should be forwarded to the application, making sure no parts of the request URI are truncated.
+
+If you are still logged in as the `resolver` user, log out and switch back to an user account with administrative privileges before proceeding.
 
 ### NGinX
 
@@ -189,7 +185,7 @@ Note: these settings assume that the Gunicorn process will run on port 8080 (see
 Link the new configuration file to the `sites-enabled` folder:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/resolver.local /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/resolver.be /etc/nginx/sites-enabled/
 ```
 
 Restart NGinX.
@@ -257,7 +253,7 @@ sudo supervisorctl update
 
 Navigate to `http://www.resolver.be/resolver/signin` (substitute by your host/domain). You should be greeted by a login screen. Login using `u:admin` with `p:default`.
 
-**Important: change default password of the admin user account before proceeding to use the application **
+** Important: change default password of the admin user account before proceeding to use the application. **
 
 ## Running multiple instances simultaneaously
 
@@ -282,7 +278,8 @@ It is possible to build a resolver image yourself, as the Dockerfile is provided
 
 The image can be built like any other.
 
-## Heroku
+### Heroku
+
 The application can be deployed on multiple PaaS services, but as an example instructions for Heroku are given. Some knowledge of Git is required for using Heroku.
 
 1. Make sure you have an Heroku account, you have installed the command line tools, and you are logged in to Heroku using the tools ([more info...](https://devcenter.heroku.com/))
@@ -322,10 +319,3 @@ $ heroku run python initialise.py
 ```
 $ heroku ps:scale web=1
 ```
-
-### Webserver
-
-When running the application on a dedicated domain or subdomain, no special configuration is needed and the provided example configurations for Apache and nginx can be used.
-
-
-On Apache2 [mod_proxy](https://httpd.apache.org/docs/2.2/mod/mod_proxy.html) can be used. Similary, Nginx has [http_proxy](http://nginx.org/en/docs/http/ngx_http_proxy_module.html).
