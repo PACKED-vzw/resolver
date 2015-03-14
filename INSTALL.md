@@ -7,15 +7,15 @@ This documents provides instructions to install the Resolver application on a Li
 
 The Resolver project is a database driven web application based on the following technology stack:
 
-| Type | Package |
-| --- | ---|
-| Interpreter | Python >= 2.7 |
-| WSGI HTTP Server | Gunicorn 17.5 |
-| Database Server | MySQL or MariaDB 5.5 |
-| HTTP Server | NGinX or Apache |
-| Process manager | Supervisor |
+| Type | Package | Version |
+| --- | --- | --- |
+| Interpreter | Python | >= 2.7 |
+| WSGI HTTP Server | Gunicorn | 17.5 |
+| Database Server | MySQL or MariaDB | >= 5.5 |
+| HTTP Server | NGinX or Apache | N/A |
+| Process manager | Supervisor | N/A |
 
-The instructions are specifically geared towards a installation on a virtual private server (VPS) which only hosts the Resolver. Contact your hosting provider to make sure your hosting plan covers the requirements outlined further in this document.
+The instructions are specifically geared towards a installation on a virtual private server (VPS) which exclusively hosts the Resolver. Contact your hosting provider to make sure your hosting plan covers the requirements outlined further in this document.
 
 **If you plan to install the application on an enviroment which hosts any other type of services (Apache/PHP), be aware of potential dependency (version) conflicts between packages.**
 
@@ -23,7 +23,7 @@ The instructions target intallation on an [Ubuntu](http://www.ubuntu.com/) or [D
 
 The installation instructions assume that all services are running on the same host.
 
-## Requirements/Dependencies
+## Requirements
 
 You will need SSH or terminal access and a user account with appropriate administrative permissions to execute the following commands. Packages might already be installed on your system.
 
@@ -121,7 +121,7 @@ vi resolver.cfg
 
 Change the `DATABASE_USER`, `DATABASE_PASS` and `DATABASE_NAME` variables to reflect the database and user we created in the previous section.
 
-Change the `BASE_URL` variable to the domain location where the application will be active i.e. http://example.com. **The application will not listen directly to the root of the domain.**
+Change the `BASE_URL` variable to the domain location where the application will be active. (i.e. http://resolver.be).
 
 Both `SECRET_KEY` and `SALT` should contain two random strings of characters. The site [random.org](http://random.org/strings) can be used to generate random data. It is important that the value of `SALT` remains constant as changing it will invalidate all user passwords!
 
@@ -247,13 +247,13 @@ sudo supervisorctl reread
 sudo supervisorctl update
 ```
 
-** At this point, the resolver service should now be operational and ready to be used.**
+**At this point, the resolver service should now be operational and ready to be used.**
 
 ## Using the resolver application
 
 Navigate to `http://www.resolver.be/resolver/signin` (substitute by your host/domain). You should be greeted by a login screen. Login using `u:admin` with `p:default`.
 
-** Important: change default password of the admin user account before proceeding to use the application. **
+**Important: change default password of the admin user account before proceeding to use the application.**
 
 ## Running multiple instances simultaneaously
 
@@ -273,7 +273,7 @@ This will download the image, create a new container, execute the application, a
 
 Using the `-e` flag it is possible to set environment variables inside the container to configure the application. The `-e "GUNICORN_WORKERS=2"` option can be omitted; in this case the application will fall back to using 4 workers. The `-e "BASE_URL="` is mandatory however, and should be provided for the correct working of the application.
 
-### Building your own image
+#### Building your own image
 It is possible to build a resolver image yourself, as the Dockerfile is provided in the repository.
 
 The image can be built like any other.
