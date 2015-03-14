@@ -4,9 +4,13 @@ Resolver
 [![Latest Version](https://img.shields.io/github/release/PACKED-vzw/resolver.svg?style=flat-square)](https://github.com/PACKED-vzw/resolver/releases)
 [![Software License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg?style=flat-square)](LICENSE.md)
 
-## About
+The Resolver application is a tool for creating, managing, and using *persistent URIs*.
 
-The Resolver application is a tool for creating, managing, and using *persistent URIs*. More information on the usage of the tool and its purpose can be found on the [wiki](https://github.com/PACKED-vzw/resolver/wiki).
+A persistent URI (or URL) allows for generalized curation of HTTP URI's on the World Wide Web. A Persistent URI is an address that causes a redirection to another web resource. If the address of a web resource changes location, a PURL pointing to it can be updated. A user of a PURL always uses the same web address although the location of resource may have changed. Thus a PURL resolver service allows the management of hyperlink integrity.
+
+Persistent URI's make the unambiguous dereferencing of web resources on the linked data web and the objects these resources my represent in the real world possible.
+
+More information on the usage of the tool and its purpose can be found on the [wiki](https://github.com/PACKED-vzw/resolver/wiki).
 
 ## Installation
 
