@@ -210,6 +210,38 @@ Gunicorn will listen on port 8080 and make 4 workers available.
 
 If you close the terminal session, the process will be killed. Gunicorn can be daemonized by using the `-D` or `--daemon` command line switch, although it might prove more useful to run the server by using `screen` or [Supervisor](http://supervisord.org/).
 
+## Performance
+
+When working with large import files, performance can become an issue. If you run into trouble, alter these settings.
+
+### 411 Request entity body too large
+
+The import file is rejected by the HTTP proxy (Apache or NGinx) because it is too large. You can change the limitation in the configuration of the proxy.
+
+**NGinX**
+
+Open the configuration file `/etc/nginx/nginx.conf` and add this line to the `http` or `location` section of the file.
+
+```
+client_max_body_size 2M;
+```
+
+This allows uploads below 2M. Change the value to allow larger file uploads.
+
+**Apache**
+
+### 502 Bad Gateway
+
+This is a general error thrown by the HTTP proxy when it can't reach the gunicorn backend.
+
+The gunicorn process execution has a time out period. Large file imports (ie 5000 rows) can cause gunicorn to time out. You can configure the timeout with the `--timeout` flag followed by the interval expressed in seconds.
+
+i.e. Set the timeout to 4 minuts or 240 seconds:
+
+```
+gunicorn -w 4 -b 127.0.0.1:8080 resolver:wsgi_app --timeout 240
+```
+
 ### Supervisor
 
 Supervisor is a process manager which makes managing a number of long-running programs a trivial task by providing a consistent interface through which they can be monitored and controlled.
