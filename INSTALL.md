@@ -253,7 +253,7 @@ This error is thrown by the web server (nginx/apache) when it times out before t
 Open the configuration file of your resolver instance (ie. `/etc/nginx/sites-available/resolver.be`) and add this line to the `http` or `location` section of the file. The value should match teh timeout value of the gunicorn daemon.
 
 ```
-proxy_read_timeout 300;
+proxy_read_timeout 300s;
 ```
 
 **Apache**
