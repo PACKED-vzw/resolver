@@ -230,6 +230,8 @@ This allows uploads below 2M. Change the value to allow larger file uploads.
 
 **Apache**
 
+TBD
+
 ### 502 Bad Gateway
 
 This is a general error thrown by the HTTP proxy when it can't reach the gunicorn backend.
@@ -241,6 +243,22 @@ i.e. Set the timeout to 4 minuts or 240 seconds:
 ```
 gunicorn -w 4 -b 127.0.0.1:8080 resolver:wsgi_app --timeout 240
 ```
+
+### 504 Bad Gateway
+
+This error is thrown by the web server (nginx/apache) when it times out before the Gunicorn has had a chance to complete processing. You need to configure the time out setting of the web server to match it with the time out of the gunicorn backend.
+
+**NGinX**
+
+Open the configuration file of your resolver instance (ie. `/etc/nginx/sites-available/resolver.be`) and add this line to the `http` or `location` section of the file. The value should match teh timeout value of the gunicorn daemon.
+
+```
+proxy_read_timeout 300;
+```
+
+**Apache**
+
+TBD
 
 ### Supervisor
 
