@@ -196,7 +196,48 @@ sudo service nginx restart
 
 ### Apache
 
-TBD
+Install and start the apache2 service (Debian-based).
+
+```bash
+sudo aptitude install apache2
+```
+
+Create a new virtual host configuration for the resolver application (in this case resolver.be) and edit it using the `nano` editor.
+
+```bash
+sudo nano /etc/apache2/sites-available/resolver.be.conf
+```
+
+Change the `resolver.be.conf` file so that it reflects the example settings below. This configuration will make apache redirect all requests to our gunicorn server running at port 8080 (see below).
+
+
+```
+<VirtualHost *:80>
+        ServerName resolver.be
+
+        LogLevel warn
+        ErrorLog /var/log/apache2/resolver_error.log
+        CustomLog /var/log/apache2/alpacafiles/resolver_access.log combined
+
+        ProxyPass / http://127.0.0.1:8080/
+        ProxyPassReverse / http://127.0.0.1:8080/
+        ProxyPreserveHost On
+</VirtualHost>
+
+```
+
+Enable the new website:
+
+```bash
+sudo a2ensite resolver.be.conf
+```
+
+Reload apache (reread configuration files-.
+
+```bash
+sudo service apache2 reload
+```
+
 
 ## The Gunicorn WSGI HTTP server
 
@@ -238,7 +279,7 @@ This is a general error thrown by the HTTP proxy when it can't reach the gunicor
 
 The gunicorn process execution has a time out period. Large file imports (ie 5000 rows) can cause gunicorn to time out. You can configure the timeout with the `--timeout` flag followed by the interval expressed in seconds.
 
-i.e. Set the timeout to 4 minuts or 240 seconds:
+i.e. Set the timeout to 4 minutes or 240 seconds:
 
 ```
 gunicorn -w 4 -b 127.0.0.1:8080 resolver:wsgi_app --timeout 240
