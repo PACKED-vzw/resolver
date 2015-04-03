@@ -232,7 +232,7 @@ Enable the new website:
 sudo a2ensite resolver.be.conf
 ```
 
-Reload apache (reread configuration files-.
+Reload apache (reread configuration files).
 
 ```bash
 sudo service apache2 reload
@@ -271,7 +271,13 @@ This allows uploads below 2M. Change the value to allow larger file uploads.
 
 **Apache**
 
-TBD
+Open the configuration file for your virtual host server (e.g. resolver.be.conf) and add the following directive:
+
+```
+LimitRequestBody 2000000
+```
+
+[LimitRequestBody](http://httpd.apache.org/docs/current/mod/core.html#limitrequestbody) accepts any value in bytes. This value will allow uploads up to 2M. Change the value to allow larger file uploads.
 
 ### 502 Bad Gateway
 
@@ -299,7 +305,19 @@ proxy_read_timeout 300s;
 
 **Apache**
 
-TBD
+Open your virtual hosts file and add the following to your [ProxyPass](http://httpd.apache.org/docs/current/mod/mod_proxy.html#proxypass) directive:
+
+```
+timeout=300
+```
+
+e.g.
+
+```
+ProxyPass / http://127.0.0.1:8080/ timeout=300
+```
+
+The ``timeout`` argument accepts any value in seconds and sets the time apache waits for a reply to this value.
 
 ### Supervisor
 
