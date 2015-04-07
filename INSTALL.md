@@ -390,8 +390,6 @@ As an example, we're configuring two resolver applications, with the public-faci
 
 ### Server configuration
 
-Configuring the [server](#server) and [gunicorn](#gunicorn) is different however.
-
 #### Gunicorn
 
 Every instance must have its own port configured for gunicorn to listen on. It is impossible to have two gunicorn instances (and thus two resolver instances) to listen on the same port if they are on the same server (e.g. 8080 and 8081). Note that the firewall must allow to connect on these ports.
