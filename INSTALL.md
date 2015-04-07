@@ -17,7 +17,7 @@ The Resolver project is a database driven web application based on the following
 
 The instructions are specifically geared towards a installation on a virtual private server (VPS) which exclusively hosts the Resolver. Contact your hosting provider to make sure your hosting plan covers the requirements outlined further in this document.
 
-**If you plan to install the application on an enviroment which hosts any other type of services (Apache/PHP), be aware of potential dependency (version) conflicts between packages.**
+**If you plan to install the application on an environment which hosts any other type of services (Apache/PHP), be aware of potential dependency (version) conflicts between packages.**
 
 The instructions target intallation on an [Ubuntu](http://www.ubuntu.com/) or [Debian](https://www.debian.org) based system.
 
@@ -73,7 +73,7 @@ echo "CREATE USER 'resolver'@'localhost' IDENTIFIED BY 'resolver';" | mysql -u r
 echo "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES ON resolver.* TO 'resolver'@'localhost' IDENTIFIED BY 'resolver';" | mysql -u root -p
 ```
 
-## Install the Resolver application
+## <a name="install">Install the Resolver application</a>
 
 ### Create a new unix user
 
@@ -133,7 +133,7 @@ This command will populate the database will all the required tables.
 python initialise.py
 ```
 
-## Configure the HTTP server
+## <a name="server">Configure the HTTP server</a>
 
 The HTTP server will act as a proxy for the [Gunicorn HTTP WSGI server](http://gunicorn.org/).
 More information about HTTP proxies and WSGI can be found in the [Gunicorn documentation](http://gunicorn-docs.readthedocs.org/en/latest/deploy.html).
@@ -144,7 +144,7 @@ The next commands assume that the target domain (i.e. `resolver.be`) only serves
 
 If you are still logged in as the `resolver` user, log out and switch back to an user account with administrative privileges before proceeding.
 
-### NGinX
+### <a name="nginx">NGinX</a>
 
 The following command installs and starts the NGinX HTTP service.
 
@@ -194,7 +194,7 @@ Restart NGinX.
 sudo service nginx restart
 ```
 
-### Apache
+### <a name="apache">Apache</a>
 
 Install and start the apache2 service (Debian-based).
 
@@ -239,7 +239,7 @@ sudo service apache2 reload
 ```
 
 
-## The Gunicorn WSGI HTTP server
+## <a name="gunicorn">The Gunicorn WSGI HTTP server</a>
 
 You can start Gunicorn from the command line manually running by this command running the project root (`/home/resolver/resolver`). Make sure you are logged in as the `resolver` user we've created earlier.
 
@@ -376,11 +376,117 @@ Navigate to `http://www.resolver.be/resolver/signin` (substitute by your host/do
 
 **Important: change default password of the admin user account before proceeding to use the application.**
 
-## Running multiple instances simultaneaously
+## Running multiple instances simultaneously
 
-TBD
+### Installation
 
-## Deployment to a PaaS enviroment
+Running multiple instances simultaneously requires some changes:
+
+Every instance requires its own resolver-directory, with a copy of the entire application. For safety reasons, it is also recommended you create a different user for every instance.
+
+The steps in [the installation instructions](#install) do not change, but every instance must have its own database configured.
+
+As an example, we're configuring two resolver applications, with the public-facing part (the webserver) on ```s1.resolver.be``` and ```s2.resolver.be```. The gunicorn instance is listening on ```s1.proxy.resolver.be``` (port ```8080```) for ```s1.resolver.be``` and ```s2.proxy.resolver.be``` (port ```8081```) for ```s2.resolver.be```.
+
+### Server configuration
+
+Configuring the [server](#server) and [gunicorn](#gunicorn) is different however.
+
+#### Gunicorn
+
+Every instance must have its own port configured for gunicorn to listen on. It is impossible to have two gunicorn instances (and thus two resolver instances) to listen on the same port if they are on the same server (e.g. 8080 and 8081). Note that the firewall must allow to connect on these ports.
+
+For reasons of clarity, it is recommended you configure a different (sub)domain for every instance of gunicorn (e.g. s1.proxy.resolver.be and s2.proxy.resolver.be).
+
+Starting the gunicorn server (see [this section](#gunicorn) for more information) thus changes like this:
+
+```
+gunicorn -w -b proxy_name:proxy_port resolver:wsgi_app
+```
+
+In our example this becomes (for s1):
+```
+gunicorn -w 4 -b s1.proxy.resolver.be:8080 resolver:wsgi_app
+```
+
+And for s2:
+```
+gunicorn -w 4 -b s2.proxy.resolver.be:8081 resolver:wsgi_app
+```
+
+#### HTTP server
+
+##### NGinX
+
+For every new instance, you have to create a new virtual host file for the public-facing part (e.g. s1.resolver.be).
+
+Update the [NGinX virtual host configuration file](#nginx) like this:
+
+```
+server {
+    listen 80;
+
+    # Make site accessible from http://SITE/
+    # This is a catch-all domain configuration.
+    # see: http://nginx.org/en/docs/http/server_names.html#miscellaneous_names
+    server_name _;
+
+    location / {
+        proxy_pass      http://PROXY_NAME:PROXY_PORT/;
+        proxy_redirect      off;
+        proxy_set_header    Host        $host;
+        proxy_set_header    X-Real-IP   $remote_addr;
+        proxy_set_header    X-Fowarded-For  $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+Change ```PROXY_NAME``` to either the IP-address or the FQDN of the server your gunicorn instance is listening and ```PROXY_PORT``` to the port it is listening on.
+
+For s1.resolver.be, this becomes:
+```
+proxy_pass      http://s1.proxy.resolver.be:8080
+```
+
+##### Apache
+
+The apache configuration is similar to the NGinX configuration. You must create a new virtual host file for every instance.
+
+The [Apache virtual host configuration file](#apache) must be changed like this:
+
+```
+<VirtualHost *:80>
+        ServerName SERVER_NAME
+
+        LogLevel warn
+        ErrorLog /var/log/apache2/resolver_error.log
+        CustomLog /var/log/apache2/alpacafiles/resolver_access.log combined
+
+        ProxyPass / http://PROXY_NAME:PROXY_PORT/
+        ProxyPassReverse / http://PROXY_NAME:PROXY_PORT/
+        ProxyPreserveHost On
+</VirtualHost>
+```
+
+```SERVER_NAME``` is the FQDN of the public facing part (e.g. s1.resolver.be); ```PROXY_NAME``` is either the IP-address or the FQDN of the server your gunicorn instance is listening and ```PROXY_PORT``` to the port it is listening on.
+
+For s1.resolver.be, this becomes:
+
+```
+<VirtualHost *:80>
+        ServerName s1.resolver.be
+
+        LogLevel warn
+        ErrorLog /var/log/apache2/resolver_error.log
+        CustomLog /var/log/apache2/alpacafiles/resolver_access.log combined
+
+        ProxyPass / http://s1.proxy.resolver.be:8080/
+        ProxyPassReverse / http://s1.proxy.resolver.be:8080/
+        ProxyPreserveHost On
+</VirtualHost>
+```
+
+## Deployment to a PaaS environment
 
 ### Docker
 
