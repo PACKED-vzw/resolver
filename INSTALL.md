@@ -330,24 +330,36 @@ sudo apt-get install supervisor
 sudo service supervisor restart
 ```
 
-Create a new configuration for the resolver application
+Create a new configuration (e.g. resolver.conf) for the resolver application
 
 ```bash
 cd /etc/supervisor/conf.d
 sudo touch resolver.conf
-sudo vi resolver.conf
+sudo nano resolver.conf
 ```
 
-Add these lines to the `resolver.conf` file. Note that Supervisor will assign the `resolver` user as the owner of the process.
+Copy these lines into the configuration file (or copy the example provided):
 
 ```
-[program:resolver]
-directory = /home/resolver/resolver
-command = bash run_gunicorn.sh
-user = resolver
+[program:SERVER_NAME]
+directory = RESOLVER_DIRECTORY
+command = bash supervisor/start_server.sh
+user = RESOLVER_USER
 autostart = true
 autorestart = true
 ```
+
+Change the following settings:
+* ```SERVER_NAME```: the name of your resolver application (e.g. resolver).
+* ```RESOLVER_DIRECTORY```: directory where the resolver application resides (e.g. /srv/resolver).
+* ```RESOLVER_USER```: user under which to run the application (must own the RESOLVER_DIRECTORY).
+
+Edit the ```start_server.sh``` script in the ```supervisor```-directory and update the following configuration settings:
+* ```RESOLVER_USER```: user under which to run the application (same as above).
+* ```RESOLVER_NAME```: name of the resolver application (same as above).
+* ```PROXY_NAME```: either FQDN or IP-address on which gunicorn must run (e.g. 127.0.0.1 or proxy.resolver.be).
+* ```PROXY_PORT```: port on which gunicorn must listen (e.g. 8080).
+* ```RESOLVER_DIR```: directory where the resolver application resides (where resolver.cfg is stored) (same as above).
 
 Reload supervisor to enact to any updates:
 
