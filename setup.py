@@ -15,6 +15,12 @@ setup(
     description='The Resolver application is a tool for creating, managing, and using persistent URIs.',
     long_description=read ('README.md'),
     include_package_data=True,
+    package_data={
+        'config':'resolver.cfg'
+    },
+    scripts=[
+        'bin/initialise.py'
+    ],
     install_requires=[
         'BeautifulSoup == 3.2.1',
         'Flask == 0.10.1',

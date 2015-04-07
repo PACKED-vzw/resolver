@@ -1,11 +1,12 @@
 import os, logging
+from pkg_resources import resource_filename
 from flask import Flask, render_template
 from flask_wtf.csrf import CsrfProtect
 from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
 
 app = Flask(__name__)
-app.config.from_pyfile('../resolver.cfg')
+app.config.from_pyfile(resource_filename(__name__, 'resolver.cfg')) # TODO replace by resource_string
 
 if os.environ.get('HEROKU', False):
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY',
