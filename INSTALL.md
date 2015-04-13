@@ -283,12 +283,12 @@ LimitRequestBody 2000000
 
 This is a general error thrown by the HTTP proxy when it can't reach the gunicorn backend.
 
-The gunicorn process execution has a time out period. Large file imports (ie 5000 rows) can cause gunicorn to time out. You can configure the timeout with the `--timeout` flag followed by the interval expressed in seconds.
+The gunicorn process execution has a time out period. Large file imports (ie 5000 rows) can cause gunicorn to time out. You can configure the timeout with the `--timeout` and `--graceful-timeout` flag followed by the interval expressed in seconds.
 
 i.e. Set the timeout to 4 minutes or 240 seconds:
 
 ```
-gunicorn -w 4 -b 127.0.0.1:8080 resolver:wsgi_app --timeout 240
+gunicorn -w 4 -b 127.0.0.1:8080 resolver:wsgi_app --timeout 240 --graceful-timeout 240
 ```
 
 ### 504 Bad Gateway

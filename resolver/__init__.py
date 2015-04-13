@@ -32,7 +32,7 @@ def page_not_found(e):
 def internal_error(e):
     app.logger.exception(e)
     return render_template('error.html', title='Server Error',
-                           message='Something went terribly wrong!'), 500
+                           message=e), 500
 
 import resolver.controllers
 

@@ -49,7 +49,7 @@ def admin_delete_document(id):
     else:
         db.session.delete(doc)
 
-    log(entity_id, "Removed the document `%s'" %
+    log(entity_id, "Removed the document '%s' %s" %
         (doc, doc.entity))
     db.session.commit()
     flash("Document deleted succesfully", "success")
