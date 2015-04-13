@@ -152,7 +152,8 @@ def admin_csv_export():
     file = cStringIO.StringIO()
     writer = UnicodeWriter(file)
     writer.writerow(['PID', 'entity type', 'title', 'document type', 'URL',
-                     'enabled', 'notes', 'format', 'reference', 'order'])
+                     'enabled', 'notes', 'format', 'reference', 'order']) # TODO add column persistent_link (as separate export?)
+    # TODO ignore column persistent_link while importing (but column is not required)
     for entity in entities:
         for document in entity.documents:
             if type(document) == Data:
