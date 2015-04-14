@@ -1,3 +1,5 @@
+import sys
+sys.path.append ('/usr/share/resolver')
 from resolver.database import db, init_db
 from resolver.model import User
 import resolver.kvstore as kvstore

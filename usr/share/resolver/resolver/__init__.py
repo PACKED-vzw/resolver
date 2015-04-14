@@ -6,7 +6,7 @@ from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
 
 app = Flask(__name__)
-app.config.from_pyfile(resource_filename(__name__, 'resolver.cfg')) # TODO replace by resource_string
+app.config.from_pyfile('/etc/resolver/resolver.cfg') # TODO replace by resource_string
 
 if os.environ.get('HEROKU', False):
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY',
