@@ -1,11 +1,11 @@
-import csv, tempfile, cStringIO
+import csv, tempfile, cStringIO, time
 from flask import request, render_template, flash, make_response, redirect
 from resolver import app
 from resolver.model import Entity, Document, Data, Representation,\
     entity_types, document_types
 from resolver.database import db
 from resolver.controllers.user import check_privilege
-from resolver.util import log, UnicodeWriter, UnicodeReader, cleanID
+from resolver.util import log, UnicodeWriter, UnicodeReader, cleanID, import_log
 
 @app.route('/resolver/csv')
 @check_privilege
@@ -17,6 +17,11 @@ def admin_csv():
 def admin_csv_import():
     # TODO: Function too big!
     # TODO: logging?
+    ##
+    # Create id for the import logging function (id = unique identifier of this import action)
+    import_id = str (time.time ())
+    rows = 1
+    count_pids = 0
     def allowed(filename):
         return ('.' in filename) and\
             (filename.rsplit('.', 1)[1].lower() == 'csv')
@@ -56,11 +61,14 @@ def admin_csv_import():
         if not record[3] in document_types:
             failures.append((id, "Wrong document type `%s'" % record[3]))
             continue
-
+        rows = rows + 1
         if records.get(id, False):
             records[id].append(record)
+            import_log (import_id, "Appended representation to PID %s" % str (id))
         else:
             records[id] = [record]
+            count_pids = count_pids + 1
+            import_log (import_id, "Added new PID %s" % str (id))
 
     for id, record_list in records.iteritems():
         clean_id = cleanID(id)
@@ -141,8 +149,8 @@ def admin_csv_import():
         return render_template('resolver/csv.html', title='Import & Export',
                                failures=failures)
 
-    flash("Import succesful", 'success')
-    return redirect("/resolver/entity")
+    flash('Import successful', 'success')
+    return render_template ('resolver/csv.html', title="Import & Export", import_log_id=import_id, rows=rows, count_pids=count_pids)
 
 @app.route('/resolver/csv/export')
 @check_privilege
