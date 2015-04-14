@@ -20,7 +20,7 @@ def admin_csv_import():
     ##
     # Create id for the import logging function (id = unique identifier of this import action)
     import_id = str (time.time ())
-    rows = 1
+    rows = 0
     count_pids = 0
     def allowed(filename):
         return ('.' in filename) and\
