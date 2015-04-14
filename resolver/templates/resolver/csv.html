@@ -14,6 +14,17 @@
 </div>
 {% endif %}
 
+{% if import_log_id %}
+    <div class="panel">
+    <div class="panel-heading">
+        <h3 class="panel-title">Import successful</h3>
+    </div>
+    <div class="panel-body">
+        <p>Import successful. Imported {{ rows }} rows with {{ count_pids }} different PIDS. <a href="/resolver/log/import/{{ import_log_id }}">(log)</a></p>
+    </div>
+    </div>
+{% endif %}
+
 <div class="panel panel-default">
   <div class="panel-heading">
     <h3 class="panel-title">Import & Export</h3>
