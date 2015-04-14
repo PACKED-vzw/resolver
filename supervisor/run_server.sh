@@ -30,5 +30,5 @@ else
 fi
 
 #exec gunicorn -w 4 -b 127.0.0.1:8080 resolver:wsgi_app
-exec gunicorn -w 4 -b "$proxy_name"":""$port" resolver:wsgi_app
+exec gunicorn -w 4 -b "$proxy_name"":""$port" resolver:wsgi_app --timeout 900 --graceful-timeout 900
 exit 0

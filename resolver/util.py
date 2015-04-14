@@ -4,13 +4,25 @@ from unidecode import unidecode
 from flask import session
 from resolver import app
 from resolver.database import db
-from resolver.model import Log
+from resolver.model import Log, ImportLog
 
 def log(entity, action):
     l = Log(entity, session.get('username'), action)
     app.logger.info(l)
     db.session.add(l)
     db.session.commit()
+
+
+def import_log (import_id, action):
+    """
+    Function to create a log of the import actions
+    :param import_id id of the import
+    :param action action performed
+    """
+    l = ImportLog (import_id, session.get ('username'), action)
+    app.logger.info (l)
+    db.session.add (l)
+    db.session.commit ()
 
 _clean_re = re.compile(r'[\t !"#$%&\'()*/<=>?@\[\\\]^`{|}]+')
 def cleanID(ID):

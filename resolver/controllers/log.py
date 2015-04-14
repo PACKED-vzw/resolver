@@ -1,7 +1,7 @@
 from flask import make_response
 from resolver import app
 from resolver.controllers.user import check_privilege
-from resolver.model import Log
+from resolver.model import Log, ImportLog
 
 @app.route('/resolver/log/id/<id>')
 @app.route('/resolver/log/limit/<int:limit>')
@@ -23,6 +23,20 @@ def export_log(id=None, limit=None):
 
     response = make_response(output)
     response.headers["Content-Disposition"] = 'attachment; filename="log.txt"'
+    response.headers["Content-Type"] = 'text/plain'
+
+    return response
+
+@app.route ('/resolver/log/import/<id>')
+@check_privilege
+def export_import_log (id):
+    logs = ImportLog.query.filter(ImportLog.import_id == id).order_by(ImportLog.timestamp.desc()).all()
+    output = ""
+    for log in logs:
+        output += unicode (log) + '\n'
+
+    response = make_response (output)
+    response.headers["Content-Disposition"] = 'attachment; filename="import_log' + str (id) + '.txt"'
     response.headers["Content-Type"] = 'text/plain'
 
     return response

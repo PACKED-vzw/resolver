@@ -1,4 +1,5 @@
 from log import Log
+from importlog import ImportLog
 from kvpair import KVPair
 from entity import Entity, entity_types
 from document import Document, document_types
