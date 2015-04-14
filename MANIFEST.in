@@ -1,7 +1,0 @@
-include INSTALL.md
-include README.md
-include LICENSE.md
-recursive-include resolver/templates *
-recursive-include resolver/static *
-include resolver.cfg
-recursive-include bin *
