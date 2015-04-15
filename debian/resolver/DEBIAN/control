@@ -2,8 +2,8 @@ Package: resolver
 Version: 1.0.0-1
 Architecture: all
 Maintainer: Pieter De Praetere <pieter@packed.be>
-Installed-Size: 63
-Depends: python-beautifulsoup, python-flask, python-flask-sqlalchemy, python-flaskext.wtf, python-jinja2, python-markupsafe, python-mysqldb, python-sqlalchemy, python-unidecode, python-wtforms, python-werkzeug, gunicorn, python-itsdangerous, python-requests, python-wsgiref, dbconfig-common, apache2, supervisor
+Installed-Size: 640
+Depends: python-beautifulsoup, python-flask, python-flask-sqlalchemy, python-flaskext.wtf, python-jinja2, python-markupsafe, python-mysqldb, python-sqlalchemy, python-unidecode, python-wtforms, python-werkzeug, gunicorn, python-itsdangerous, python-requests, python-wsgiref, dbconfig-common, apache2, supervisor, python:any (>= 2.7.5-5~)
 Recommends: mysql-client
 Section: main
 Priority: optional

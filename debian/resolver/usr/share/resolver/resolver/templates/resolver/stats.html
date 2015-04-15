@@ -1,0 +1,131 @@
+{% extends "resolver/layout.html" %}
+{% block body %}
+
+<div class="alert alert-info alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+  <strong>Heads up!</strong> Only hits since the beginning of the current month are accounted for.
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Entities</h3>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Entries</th>
+        <th>Hits</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Work</td>
+        <td>{{entities_num_work}}</td>
+        <td>{{work_hits}}</td>
+      </tr>
+      <tr>
+        <td>Agent</td>
+        <td>{{entities_num_agent}}</td>
+        <td>{{agent_hits}}</td>
+      </tr>
+      <tr>
+        <td>Concept</td>
+        <td>{{entities_num_concept}}</td>
+        <td>{{concept_hits}}</td>
+      </tr>
+      <tr>
+        <td>Event</td>
+        <td>{{entities_num_event}}</td>
+        <td>{{event_hits}}</td>
+      </tr>
+      <tr>
+        <td><strong>Total</strong></td>
+        <td>{{entities_total}}</td>
+        <td>{{total_hits}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Documents</h3>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Entries</th>
+        <th>Active entries</th>
+        <th>Hits</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Representation</td>
+        <td>{{repr_total}}</td>
+        <td>{{repr_active}}</td>
+        <td>{{repr_hits}}</td>
+      </tr>
+      <tr>
+        <td>Data</td>
+        <td>{{data_total}}</td>
+        <td>{{data_active}}</td>
+        <td>{{data_hits}}</td>
+      </tr>
+      <tr>
+        <td><strong>Total</strong></td>
+        <td>{{docs_total}}</td>
+        <td>{{docs_active}}</td>
+        <td>{{total_hits}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Top 10 entities</h3>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>PID</th>
+        <th>Hits</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tuple in top10_ents %}
+      <tr>
+        <td>{{ tuple[1] }}</td>
+        <td>{{ tuple[0] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Top 10 referrers</h3>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Referrer</th>
+        <th>Hits</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tuple in referrers %}
+      <tr>
+        <td>{{ tuple[1] }}</td>
+        <td>{{ tuple[0] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
