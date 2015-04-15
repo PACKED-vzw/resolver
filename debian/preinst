@@ -1,7 +1,2 @@
 #!/bin/bash
 set -e
-
-cat /etc/passwd | grep resolver > /dev/null
-if [ $? -ne 0 ]; then
-	adduser --system  --no-create-home resolver
-fi
