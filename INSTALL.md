@@ -202,6 +202,13 @@ Install and start the apache2 service (Debian-based).
 sudo aptitude install apache2
 ```
 
+Load the proxy and proxy_http modules
+
+```bash
+sudo a2enmod proxy
+sudo a2enmod proxy_http
+```
+
 Create a new virtual host configuration for the resolver application (in this case resolver.be) and edit it using the `nano` editor.
 
 ```bash
