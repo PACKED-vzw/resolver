@@ -1,0 +1,11 @@
+# Root URL of the resolver, without trailing /, and with scheme.
+BASE_URL = "__BASE_URL__"
+
+DATABASE_HOST = "_DBC_DBSERVER_"
+DATABASE_USER = "_DBC_DBUSER_"
+DATABASE_PASS = "_DBC_DBPASS_"
+DATABASE_NAME = "_DBC_DBNAME_"
+
+SECRET_KEY = "__SECRET_KEY__"
+SALT = "__SALT__"
+

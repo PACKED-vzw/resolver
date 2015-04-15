@@ -1,0 +1,10 @@
+# Templates
+Template: resolver/base_url
+Type: string
+Description: Base url:
+Base url of the resolver, without trailing / but with protocol.
+
+Template: resolver/server_name
+Type: string
+Description: Server name:
+Name of the server (fqdn) the resolver will be running under.

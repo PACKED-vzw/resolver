@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+. /usr/share/debconf/confmodule
+
+# Configuration questions
+if [ -f /usr/share/dbconfig-common/dpkg/config.mysql ]; then
+	. /usr/share/dbconfig-common/dpkg/config.mysql
+	dbc_go resolver $@
+fi
+
+db_input critical resolver/base_url || true
+
+db_input critical resolver/server_name || true
+
+db_go

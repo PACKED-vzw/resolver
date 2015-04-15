@@ -25,7 +25,11 @@ Depends: 	python-beautifulsoup (>= 3.2.1),
 		python-itsdangerous (>= 0.24),
 		python-requests (>= 2.3.0),
 		python-wsgiref (>= 0.1.2),
+		dbconfig-common,
+		apache2,
+		supervisor,
 		${misc:Depends},
 		${python:Depends}
+Recommends:	mysql-client
 Description:	An application for creating, managing, and using persistent URIs.
 	The Resolver application is a tool for creating, managing, and using persistent URIs.

@@ -1,0 +1,78 @@
+CREATE TABLE `ImportLog` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `import_id` varchar(64) DEFAULT NULL,
+  `user` varchar(32) DEFAULT NULL,
+  `timestamp` datetime DEFAULT NULL,
+  `data` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+
+CREATE TABLE `data` (
+  `id` int(11) NOT NULL,
+  `format` enum('html','json','xml','pdf') DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `data_ibfk_1` FOREIGN KEY (`id`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `document` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `entity_id` varchar(64) DEFAULT NULL,
+  `enabled` tinyint(1) DEFAULT NULL,
+  `notes` text,
+  `url` varchar(512) DEFAULT NULL,
+  `type` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `entity_id` (`entity_id`),
+  CONSTRAINT `document_ibfk_1` FOREIGN KEY (`entity_id`) REFERENCES `entity` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+
+CREATE TABLE `documenthit` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip` varchar(15) DEFAULT NULL,
+  `document_id` int(11) DEFAULT NULL,
+  `referrer` varchar(128) DEFAULT NULL,
+  `timestamp` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `document_id` (`document_id`),
+  CONSTRAINT `documenthit_ibfk_1` FOREIGN KEY (`document_id`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `entity` (
+  `id` varchar(64) NOT NULL,
+  `original_id` varchar(64) DEFAULT NULL,
+  `type` enum('work','agent','concept','event') DEFAULT NULL,
+  `title` varchar(512) DEFAULT NULL,
+  `slug` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `kvpair` (
+  `key` varchar(64) NOT NULL,
+  `value` text,
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `entity` varchar(64) DEFAULT NULL,
+  `user` varchar(32) DEFAULT NULL,
+  `timestamp` datetime DEFAULT NULL,
+  `data` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+
+CREATE TABLE `representation` (
+  `id` int(11) NOT NULL,
+  `order` int(11) DEFAULT NULL,
+  `reference` tinyint(1) DEFAULT NULL,
+  `label` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `representation_ibfk_1` FOREIGN KEY (`id`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(32) DEFAULT NULL,
+  `password` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
