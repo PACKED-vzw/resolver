@@ -1,35 +1,39 @@
 Source: resolver
-Section: python
+Section: main
 Priority: optional
 Maintainer: Pieter De Praetere <pieter@packed.be>
-Build-Depends:	debhelper (>= 7),
-		python (>= 2.7)
-Standards-Version: 3.9.2
+Build-Depends:	debhelper (>= 9),
+		python,
+		dh-python,
+		python-setuptools
+Standards-Version: 3.9.4
+Homepage: https://github.com/PACKED-vzw/resolver
 X-Python-Version: >= 2.7
+#Vcs-Git: git://git.debian.org/collab-maint/resolver.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/resolver.git;a=summary
 
 Package: resolver
 Architecture: all
-Section: python
-Depends: 	python-beautifulsoup (>= 3.2.1),
-		python-flask (>= 0.10.1),
-		python-flask-sqlalchemy (>= 1.0),
-		python-flaskext.wtf (>= 0.10.0),
-		python-jinja2 (>= 2.7.3),
-		python-markupsafe (>= 0.23),
-		python-mysqldb (>= 1.2.5),
-		python-sqlalchemy (>= 0.9.7),
-		python-unidecode (>= 0.04.16),
-		python-wtforms (>=2.0.1),
-		python-werkzeug (>= 0.9.6),
-		gunicorn (>= 19.1.0),
-		python-itsdangerous (>= 0.24),
-		python-requests (>= 2.3.0),
-		python-wsgiref (>= 0.1.2),
+Depends:	${misc:Depends},
+		python-beautifulsoup,
+		python-flask,
+		python-flask-sqlalchemy,
+		python-flaskext.wtf,
+		python-jinja2,
+		python-markupsafe,
+		python-mysqldb,
+		python-sqlalchemy,
+		python-unidecode,
+		python-wtforms,
+		python-werkzeug,
+		gunicorn,
+		python-itsdangerous,
+		python-requests,
+		python-wsgiref,
 		dbconfig-common,
 		apache2,
 		supervisor,
-		${misc:Depends},
 		${python:Depends}
 Recommends:	mysql-client
-Description:	An application for creating, managing, and using persistent URIs.
-	The Resolver application is a tool for creating, managing, and using persistent URIs.
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>

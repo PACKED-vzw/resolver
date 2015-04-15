@@ -1,0 +1,12 @@
+Package: resolver
+Version: 1.0.0-1
+Architecture: all
+Maintainer: Pieter De Praetere <pieter@packed.be>
+Installed-Size: 63
+Depends: python-beautifulsoup, python-flask, python-flask-sqlalchemy, python-flaskext.wtf, python-jinja2, python-markupsafe, python-mysqldb, python-sqlalchemy, python-unidecode, python-wtforms, python-werkzeug, gunicorn, python-itsdangerous, python-requests, python-wsgiref, dbconfig-common, apache2, supervisor
+Recommends: mysql-client
+Section: main
+Priority: optional
+Homepage: https://github.com/PACKED-vzw/resolver
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>

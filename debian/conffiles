@@ -1,6 +1,0 @@
-/etc/resolver/resolver.cfg.example
-/etc/resolver/settings.ini
-/etc/resolver/resolver.cfg
-/etc/resolver/resolver_server.cfg
-/etc/apache2/sites-available/resolver.conf
-/etc/supervisor/conf.d/resolver.conf

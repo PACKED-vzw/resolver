@@ -1,0 +1,14 @@
+a69f5f1d579a834e5faa5d0e9057ea21  usr/share/doc-base/resolver
+0777c48380caeec7caa0ca3b189c87d5  usr/share/doc/resolver/README.Debian
+86626b1e320f6f64566b0c97f8f169c4  usr/share/doc/resolver/changelog.Debian.gz
+8ed79c67ff0c4b729260f58c49ec872a  usr/share/doc/resolver/copyright
+c8c4f9f00c50fb84dde7498b0d1204e1  usr/share/doc/resolver/resolver/INSTALL.md.gz
+0406e2f0aa8ebf1e9d25e8f5258ac938  usr/share/doc/resolver/resolver/LICENSE.md
+db8d639ab40ddae2d54848c4c345288a  usr/share/doc/resolver/resolver/README.md
+1e1b1a1d72239a45cf8dfb6e4a94ac9a  usr/share/doc/resolver/resolver/apache/resolver.conf
+c332db00c8a979549d9b71aa73e3b12b  usr/share/doc/resolver/resolver/docker/Dockerfile
+c40a00e8ab0c3101cea12161b7c2750c  usr/share/doc/resolver/resolver/docker/run_docker.sh
+c18c4257d44c8dc431624d2008983972  usr/share/doc/resolver/resolver/nginx/resolver.conf
+ff611cf1dc7009da2168105e66bc0251  usr/share/doc/resolver/resolver/supervisor/resolver.conf
+35239822e2e5dff6fbace4943341264a  usr/share/doc/resolver/resolver/supervisor/run_server.sh
+1920c61544a790b11e9bdc3064ab36d3  usr/share/doc/resolver/resolver/supervisor/start_server.sh
