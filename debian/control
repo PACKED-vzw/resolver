@@ -1,0 +1,31 @@
+Source: resolver
+Section: python
+Priority: optional
+Maintainer: Pieter De Praetere <pieter@packed.be>
+Build-Depends:	debhelper (>= 7),
+		python (>= 2.7)
+Standards-Version: 3.9.2
+X-Python-Version: >= 2.7
+
+Package: resolver
+Architecture: all
+Section: python
+Depends: 	python-beautifulsoup (>= 3.2.1),
+		python-flask (>= 0.10.1),
+		python-flask-sqlalchemy (>= 1.0),
+		python-flaskext.wtf (>= 0.10.0),
+		python-jinja2 (>= 2.7.3),
+		python-markupsafe (>= 0.23),
+		python-mysqldb (>= 1.2.5),
+		python-sqlalchemy (>= 0.9.7),
+		python-unidecode (>= 0.04.16),
+		python-wtforms (>=2.0.1),
+		python-werkzeug (>= 0.9.6),
+		gunicorn (>= 19.1.0),
+		python-itsdangerous (>= 0.24),
+		python-requests (>= 2.3.0),
+		python-wsgiref (>= 0.1.2),
+		${misc:Depends},
+		${python:Depends}
+Description:	An application for creating, managing, and using persistent URIs.
+	The Resolver application is a tool for creating, managing, and using persistent URIs.

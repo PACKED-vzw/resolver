@@ -1,0 +1,5 @@
+resolver (1.0.0-1) UNRELEASED; urgency=medium
+
+  * Initial release.
+
+ -- Pieter De Praetere <pieter@packed.be>  Wed, 15 Apr 2015 03:26:07 -0400
