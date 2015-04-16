@@ -22,12 +22,12 @@ set -e
 case "$1" in
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
         deluser --system resolver
-        deluser --group --only-if-empty --system resolver
+        deluser --group --system resolver
     ;;
 
     purge)
         deluser --system resolver
-        deluser --group --system --only-if-empty resolver
+        deluser --group --only-if-empty resolver
         rm -rf /etc/resolver
         rm /etc/apache2/sites-enabled/resolver.conf
         rm /etc/apache2/sites-available/resolver.conf
