@@ -3,11 +3,7 @@
 ##
 # Configuration settings (EDIT THESE)
 ##
-RESOLVER_USER="user"
-RESOLVER_NAME="resolver_name"
-PROXY_NAME="proxy_name"
-PROXY_PORT="proxy_port"
-RESOLVER_DIR="resolver_dir"
+source /etc/resolver/resolver_server.cfg
 
 ##
 # Application

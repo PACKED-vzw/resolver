@@ -17,7 +17,7 @@ if os.environ.get('HEROKU', False):
     import sys
     handler = logging.StreamHandler(sys.stdout)
 else:
-    handler = logging.FileHandler("application.log")
+    handler = logging.FileHandler("/var/log/resolver/application.log")
 
 handler.setLevel(logging.INFO)
 handler.setFormatter(logging.Formatter('[%(levelname)s] %(asctime)s -- %(message)s'))
