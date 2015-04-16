@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # postrm script for resolver
 #
 # see: dh_installdeb(1)
@@ -20,7 +20,18 @@ set -e
 
 
 case "$1" in
-    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        deluser --system resolver
+        deluser --group --only-if-empty --system resolver
+    ;;
+
+    purge)
+        deluser --system resolver
+        deluser --group --system --only-if-empty resolver
+        rm -rf /etc/resolver
+        rm /etc/apache2/sites-enabled/resolver.conf
+        rm /etc/apache2/sites-available/resolver.conf
+        rm /etc/supervisor/conf.d/resolver.conf
     ;;
 
     *)

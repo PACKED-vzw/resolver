@@ -1,2 +1,3 @@
 usr/share/resolver usr/share
 etc/resolver etc
+usr/share/dbconfig-common/data/resolver usr/share/dbconfig-common/data
