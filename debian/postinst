@@ -34,8 +34,7 @@ function supervisor_install {
         cp /usr/share/doc/resolver/resolver/supervisor/resolver.conf /etc/supervisor/conf.d/resolver.conf
         ##
         # Provide sensible defaults
-        sed -i.bak      -e 's/__SERVER_NAME__/localhost/' \
-                        -e 's/__RESOLVER_DIRECTORY__/\/usr\/share\/resolver/' \
+        sed -i.bak      -e 's/__RESOLVER_DIRECTORY__/\/usr\/share\/resolver/' \
                         -e 's/__RESOLVER_USER__/resolver/' /etc/supervisor/conf.d/resolver.conf
         rm /etc/supervisor/conf.d/resolver.conf.bak
         sed -i.bak      -e 's/__RESOLVER_USER__/resolver/' \
@@ -91,6 +90,7 @@ rm /etc/resolver/resolver.cfg.bak
 #       if [ -f /usr/sbin/supervisorctl ]; then
                 supervisorctl reread
                 supervisorctl update
+        service supervisor restart
 #       else
         if [ $? -ne 0 ]; then
                 echo "Failed to execute supervisorctl. Please execute supervisorctl reread and supervisorctl update by hand."

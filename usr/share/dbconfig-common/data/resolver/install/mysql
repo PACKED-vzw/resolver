@@ -7,11 +7,13 @@ CREATE TABLE `ImportLog` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
 
-CREATE TABLE `data` (
-  `id` int(11) NOT NULL,
-  `format` enum('html','json','xml','pdf') DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `data_ibfk_1` FOREIGN KEY (`id`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+CREATE TABLE `entity` (
+  `id` varchar(64) NOT NULL,
+  `original_id` varchar(64) DEFAULT NULL,
+  `type` enum('work','agent','concept','event') DEFAULT NULL,
+  `title` varchar(512) DEFAULT NULL,
+  `slug` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `document` (
@@ -26,6 +28,13 @@ CREATE TABLE `document` (
   CONSTRAINT `document_ibfk_1` FOREIGN KEY (`entity_id`) REFERENCES `entity` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
 
+CREATE TABLE `data` (
+  `id` int(11) NOT NULL,
+  `format` enum('html','json','xml','pdf') DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `data_ibfk_1` FOREIGN KEY (`id`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 CREATE TABLE `documenthit` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ip` varchar(15) DEFAULT NULL,
@@ -35,15 +44,6 @@ CREATE TABLE `documenthit` (
   PRIMARY KEY (`id`),
   KEY `document_id` (`document_id`),
   CONSTRAINT `documenthit_ibfk_1` FOREIGN KEY (`document_id`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-CREATE TABLE `entity` (
-  `id` varchar(64) NOT NULL,
-  `original_id` varchar(64) DEFAULT NULL,
-  `type` enum('work','agent','concept','event') DEFAULT NULL,
-  `title` varchar(512) DEFAULT NULL,
-  `slug` varchar(64) DEFAULT NULL,
-  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `kvpair` (
