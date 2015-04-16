@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+. /usr/share/debconf/confmodule
+
+if [ -f /usr/share/dbconfig-common/dpkg/config.mysql ]; then
+        . /usr/share/dbconfig-common/dpkg/config.mysql
+        if ! dbc_go resolver $@ ; then
+            echo 'Automatic configuration using dbconfig-common failed!'
+        fi
+fi

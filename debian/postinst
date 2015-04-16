@@ -99,7 +99,7 @@ rm /etc/resolver/resolver.cfg.bak
         # Enable apache
         apache_install
 #       if [ -f /usr/sbin/apache2ctl ]; then
-                apache2ctl restart
+                apache2ctl reload
 #       else
         if [ $? -ne 0 ]; then
                 echo "Failed to restart Apache server. Please restart it manually."
