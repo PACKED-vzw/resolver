@@ -1,57 +1,60 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 ##
 # postinst script for resolver:
-#	1) Configure web server
-#	2) Configure supervisor
-#	3) Configure database
+#       1) Configure web server
+#       2) Configure supervisor
+#       3) Configure database
 
-apache_install() {
-	mkdir -p /etc/apache2/sites-available
-	cp /usr/share/doc/resolver/apache/resolver.conf /etc/apache2/sites-available/resolver.conf
-	mkdir -p /var/log/apache2/alpacafiles
-	chown -R :adm /var/log/apache2/alpacafiles
-	mkdir -p /etc/apache2/sites-enabled
-	ln -s /etc/apache2/sites-available/resolver.conf /etc/apache2/sites-enabled/resolver.conf
-	#COMMON_STATE=$(dpkg-query -f '${Status}' -W 'apache2.2-common' 2>/dev/null | awk '{print $3}' || true)
-	if [ -f /usr/sbin/a2enmod ] && [ -d /etc/apache2/mods-available ] && [ -d /etc/apache2/mods-enabled ]; then
-		/usr/sbin/a2enmod proxy
-		/usr/sbin/a2enmod proxy_http
-	else
-		echo "Failed to execute a2enmod. Please enable mod_proxy and mod_proxy_http by hand."
-	fi
+function apache_install {
+        mkdir -p /etc/apache2/sites-available
+        cp /usr/share/doc/resolver/resolver/apache/resolver.conf /etc/apache2/sites-available/resolver.conf
+        mkdir -p /var/log/apache2/alpacafiles
+        chown -R :adm /var/log/apache2/alpacafiles
+        mkdir -p /etc/apache2/sites-enabled
+        if [ ! -f /etc/apache2/sites-enabled/resolver.conf ]; then
+            ln -s /etc/apache2/sites-available/resolver.conf /etc/apache2/sites-enabled/resolver.conf
+        fi
+        #COMMON_STATE=$(dpkg-query -f '${Status}' -W 'apache2.2-common' 2>/dev/null | awk '{print $3}' || true)
+#       if [ -f /usr/sbin/a2enmod ] && [ -d /etc/apache2/mods-available ] && [ -d /etc/apache2/mods-enabled ]; then
+                a2enmod proxy
+                a2enmod proxy_http
+#       else
+        if [ $? -ne 0 ]; then
+                echo "Failed to execute a2enmod. Please enable mod_proxy and mod_proxy_http by hand."
+        fi
 }
 
-nginx_install() {
-	# Not supported
-}
+#nginx_install() {
+#       # Not supported
+#}
 
-supervisor_install() {
-	mkdir -p /etc/supervisor/conf.d
-	cp /usr/share/doc/resolver/supervisor/resolver.conf /etc/supervisor/conf.d/resolver.conf
-	##
-	# Provide sensible defaults
-	sed -i.bak	-e 's/__SERVER_NAME__/localhost/' \ 
-			-e 's/__RESOLVER_DIRECTORY__/\/usr\/share\/resolver/' \
-			-e 's/__RESOLVER_USER__/resolver/' /etc/supervisor/conf.d/resolver.conf
-	rm /etc/supervisor/conf.d/resolver.conf.bak
-	sed -i.bak	-e 's/__RESOLVER_USER__/resolver/' \
-			-e 's/__RESOLVER_NAME__/localhost/' \
-			-e 's/__PROXY_NAME__/127.0.0.1/' \
-			-e 's/__PROXY_PORT__/8080/' \
-			-e 's/__RESOLVER_DIR__/\/usr\/share\/resolver/' /etc/resolver/resolver_server.cfg
-	rm /etc/resolver/resolver_server.cfg.bak
+function supervisor_install {
+        mkdir -p /etc/supervisor/conf.d
+        cp /usr/share/doc/resolver/resolver/supervisor/resolver.conf /etc/supervisor/conf.d/resolver.conf
+        ##
+        # Provide sensible defaults
+        sed -i.bak      -e 's/__SERVER_NAME__/localhost/' \
+                        -e 's/__RESOLVER_DIRECTORY__/\/usr\/share\/resolver/' \
+                        -e 's/__RESOLVER_USER__/resolver/' /etc/supervisor/conf.d/resolver.conf
+        rm /etc/supervisor/conf.d/resolver.conf.bak
+        sed -i.bak      -e 's/__RESOLVER_USER__/resolver/' \
+                        -e 's/__RESOLVER_NAME__/localhost/' \
+                        -e 's/__PROXY_NAME__/127.0.0.1/' \
+                        -e 's/__PROXY_PORT__/8080/' \
+                        -e 's/__RESOLVER_DIR__/\/usr\/share\/resolver/' /etc/resolver/resolver_server.cfg
+        rm /etc/resolver/resolver_server.cfg.bak
 }
 
 ##
 # User
-create_user() {
-	adduser --system resolver
-	if [ ! -d /var/log/resolver ]; then
-		# Create log directory
-		mkdir -p /var/log/resolver
-	fi
-	chown -R resolver:adm /var/log/resolver
+function create_user {
+        adduser --system resolver --home /usr/share/resolver --no-create-home --group
+        if [ ! -d /var/log/resolver ]; then
+                # Create log directory
+                mkdir -p /var/log/resolver
+        fi
+        chown -R resolver:adm /var/log/resolver
 }
 
 ##
@@ -59,39 +62,50 @@ create_user() {
 . /usr/share/debconf/confmodule
 
 . /usr/share/dbconfig-common/dpkg/postinst.mysql
+
+# Create user
+create_user
+
 dbc_generate_include_owner="root:resolver"
 dbc_generate_include_perms="0640"
 dbc_generate_include_args="-o template_infile=/usr/share/doc/resolver/resolver/resolver.cfg.example"
 dbc_generate_include=template:/etc/resolver/resolver.cfg
 
+dbc_go resolver $@
+
 SECRET_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 SALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 
-sed -i.bak	-e 's/__BASE_URL__/http:\/\/localhost/' \
-		-e s/__SECRET_KEY__/$SECRET_KEY/ \
-		-e s/__SALT__/$SALT/ /etc/resolver/resolver.cfg
+sed -i.bak      -e 's/__BASE_URL__/http:\/\/localhost/' \
+                -e s/__SECRET_KEY__/$SECRET_KEY/ \
+                -e s/__SALT__/$SALT/ /etc/resolver/resolver.cfg
 rm /etc/resolver/resolver.cfg.bak
 
-if [ "$1" = "configure" ]; then
+#if [ "$1" = "configure" ]; then
 
-	# Create user
-	create_user()
+        # Create user
+#       create_user
 
-	# Enable supervisor
-	supervisor_install()
-	if [ -f /usr/sbin/supervisorctl ]; then
-		/usr/sbin/supervisorctl reread
-		/usr/sbin/supervisorctl update
-	else
-		echo "Failed to execute supervisorctl. Please execute supervisorctl reread and supervisorctl update by hand."
-	fi
+        # Enable supervisor
+        supervisor_install
+#       if [ -f /usr/sbin/supervisorctl ]; then
+                supervisorctl reread
+                supervisorctl update
+#       else
+        if [ $? -ne 0 ]; then
+                echo "Failed to execute supervisorctl. Please execute supervisorctl reread and supervisorctl update by hand."
+        fi
 
-	# Enable apache
-	apache_install()
-	if [ -f /usr/sbin/apache2ctl ]; then
-		/usr/sbin/apache2ctl restart
-	else
-		echo "Failed to restart Apache server. Please restart it manually."
-	fi
-fi
+        # Enable apache
+        apache_install
+#       if [ -f /usr/sbin/apache2ctl ]; then
+                apache2ctl restart
+#       else
+        if [ $? -ne 0 ]; then
+                echo "Failed to restart Apache server. Please restart it manually."
+        fi
+#fi
+
+#DEBHELPER#
+
 exit 0
