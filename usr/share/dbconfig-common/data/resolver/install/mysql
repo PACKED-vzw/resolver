@@ -1,4 +1,4 @@
-CREATE TABLE `ImportLog` (
+CREATE TABLE IF NOT EXISTS `ImportLog` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `import_id` varchar(64) DEFAULT NULL,
   `user` varchar(32) DEFAULT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE `ImportLog` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
 
-CREATE TABLE `entity` (
+CREATE TABLE IF NOT EXISTS `entity` (
   `id` varchar(64) NOT NULL,
   `original_id` varchar(64) DEFAULT NULL,
   `type` enum('work','agent','concept','event') DEFAULT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE `entity` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE `document` (
+CREATE TABLE IF NOT EXISTS `document` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `entity_id` varchar(64) DEFAULT NULL,
   `enabled` tinyint(1) DEFAULT NULL,
@@ -28,14 +28,14 @@ CREATE TABLE `document` (
   CONSTRAINT `document_ibfk_1` FOREIGN KEY (`entity_id`) REFERENCES `entity` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
 
-CREATE TABLE `data` (
+CREATE TABLE IF NOT EXISTS `data` (
   `id` int(11) NOT NULL,
   `format` enum('html','json','xml','pdf') DEFAULT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `data_ibfk_1` FOREIGN KEY (`id`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE `documenthit` (
+CREATE TABLE IF NOT EXISTS `documenthit` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ip` varchar(15) DEFAULT NULL,
   `document_id` int(11) DEFAULT NULL,
@@ -46,13 +46,26 @@ CREATE TABLE `documenthit` (
   CONSTRAINT `documenthit_ibfk_1` FOREIGN KEY (`document_id`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE `kvpair` (
+CREATE TABLE IF NOT EXISTS `kvpair` (
   `key` varchar(64) NOT NULL,
   `value` text,
   PRIMARY KEY (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE `log` (
+CREATE TEMPORARY TABLE `kvpair_f` (
+    `key` varchar(64) NOT NULL,
+    `value` text
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+INSERT INTO `kvpair_f` VALUES ('default_notice','S\'\'\n.'),('default_notice_clean','S\'\'\n.'),('domains','S\'\'\n.'),('logo_url','S\'\'\n.'),('titles_enabled','I01\n.');
+
+INSERT INTO `kvpair`
+SELECT f.key, f.value FROM `kvpair_f` f
+WHERE NOT EXISTS (SELECT * FROM `kvpair`);
+
+DROP TABLE `kvpair_f`;
+
+
+CREATE TABLE IF NOT EXISTS `log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `entity` varchar(64) DEFAULT NULL,
   `user` varchar(32) DEFAULT NULL,
@@ -61,7 +74,7 @@ CREATE TABLE `log` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
 
-CREATE TABLE `representation` (
+CREATE TABLE IF NOT EXISTS `representation` (
   `id` int(11) NOT NULL,
   `order` int(11) DEFAULT NULL,
   `reference` tinyint(1) DEFAULT NULL,
@@ -70,9 +83,12 @@ CREATE TABLE `representation` (
   CONSTRAINT `representation_ibfk_1` FOREIGN KEY (`id`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE `user` (
+CREATE TABLE IF NOT EXISTS `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(32) DEFAULT NULL,
   `password` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+INSERT INTO `user` (`username`, `password`)
+SELECT 'admin', '5c52ae919796c37b531b6ad8bfb194574376c741b49ddaeef394568b3c19ebf5' FROM DUAL
+WHERE NOT EXISTS (SELECT * FROM `user`);

@@ -57,6 +57,11 @@ function create_user {
 }
 
 ##
+# Database configuration, as dbconfig_common refuses to work
+function copy_databse_config {
+    
+}
+##
 # Database configuration
 . /usr/share/debconf/confmodule
 
@@ -68,7 +73,7 @@ create_user
 dbc_generate_include_owner="root:resolver"
 dbc_generate_include_perms="0644"
 dbc_generate_include_args="-o template_infile=/usr/share/doc/resolver/resolver/resolver.cfg.example"
-dbc_generate_include=template:/etc/resolver/resolver.cfg
+dbc_generate_include="template:/etc/resolver/resolver.cfg"
 
 dbc_go resolver $@
 
@@ -100,10 +105,9 @@ rm /etc/resolver/resolver.cfg.bak
         apache_install
 #       if [ -f /usr/sbin/apache2ctl ]; then
 #       else
-        if [ $? -ne 0 ]; then
-                echo "Failed to restart Apache server. Please restart it manually."
-        fi
 #fi
+
+db_stop
 
 #DEBHELPER#
 
