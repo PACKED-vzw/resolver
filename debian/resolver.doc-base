@@ -3,9 +3,7 @@ Title: Resolver Manual
 Author: Packed vzw
 Abstract: This manual describes what resolver is
  and how it can be used.
-Section: unknown
+Section: Data Management
 
 Format: text
-Files: /usr/doc/resolver/INSTALL.md
-
-
+Files: /usr/share/doc/resolver/resolver/INSTALL.md.gz

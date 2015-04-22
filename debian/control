@@ -1,12 +1,12 @@
 Source: resolver
-Section: main
+Section: web
 Priority: optional
 Maintainer: Pieter De Praetere <pieter@packed.be>
 Build-Depends:	debhelper (>= 9),
 		python,
 		dh-python,
 		python-setuptools
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Homepage: https://github.com/PACKED-vzw/resolver
 X-Python-Version: >= 2.7
 #Vcs-Git: git://git.debian.org/collab-maint/resolver.git
@@ -33,7 +33,23 @@ Depends:	${misc:Depends},
 		dbconfig-common,
 		apache2,
 		supervisor,
+		adduser,
 		${python:Depends}
 Recommends:	mysql-client
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Description: tool for creating, managing, and using persistent URIs.
+ A persistent URI (or URL) allows for generalized curation
+ of HTTP URI's on the World Wide Web. A Persistent URI is
+ an address that causes a redirection to another web resource.
+ If the address of a web resource changes location, a PURL
+ pointing to it can be updated. A user of a PURL always uses
+ the same web address although the location of resource may
+ have changed. Thus a PURL resolver service allows the
+ management of hyperlink integrity.
+ .
+ Persistent URI's make the unambiguous dereferencing of web resources on the
+ linked data web and the objects these resources may represent in the real
+ world possible.
+ .
+ More information on the usage of the tool and its purpose can be found
+ on the wiki.
+ .

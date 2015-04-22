@@ -1,0 +1,37 @@
+.\"
+.\" (C) Copyright 2015 Pieter De Praetere <pieter@packed.be>,
+.\"
+.TH PACKED-RESOLVER 1
+.SH NAME
+resolver \- a tool for creating, managing, and using persistent URIs
+.SH SYNOPSIS
+resolver is a \fIwsgi\fR\-app run using the \fIgunicorn\fR-server package and the \fIapache\fR web
+server as a proxy server.
+Start by executing \fB/usr/share/resolver/bin/start_server.sh\fR or use the provided supervisor configuration.
+.SH FILES
+.I /etc/resolver/resolver.cfg
+.RS
+The configuration file for the resolver package.
+.RE
+.I /etc/resolver/resolver_server.cfg
+.RS
+The configuration file for the gunicorn server and start_server.sh
+.SH DESCRIPTION
+The Resolver application is a tool for creating, managing, and using persistent URIs.
+
+A persistent URI (or URL) allows for generalized curation of HTTP URI's on the World Wide Web.
+A Persistent URI is an address that causes a redirection to another web resource. If the address
+of a web resource changes location, a PURL pointing to it can be updated. A user of a PURL
+always uses the same web address although the location of resource may have changed. Thus a
+PURL resolver service allows the management of hyperlink integrity.
+
+Persistent URI's make the unambiguous dereferencing of web resources on the linked data web
+and the objects these resources may represent in the real world possible.
+
+More information on the usage of the tool and its purpose can be found on the wiki.
+.SH SEE ALSO
+The programs are documented fully by
+ "INSTALL.md" ,
+available in /usr/share/doc/resolver/resolver/INSTALL.md.
+.SH AUTHOR
+Packed vzw \- <it@packed.be>
