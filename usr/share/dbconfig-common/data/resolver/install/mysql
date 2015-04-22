@@ -89,6 +89,3 @@ CREATE TABLE IF NOT EXISTS `user` (
   `password` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
-INSERT INTO `user` (`username`, `password`)
-SELECT 'admin', '5c52ae919796c37b531b6ad8bfb194574376c741b49ddaeef394568b3c19ebf5' FROM DUAL
-WHERE NOT EXISTS (SELECT * FROM `user`);
