@@ -15,7 +15,7 @@ function showDocument(id) {
         success: function (data) {
             if(!data.errors) {
                 current_document = id;
-                action = base_url + '/resolver/document/edit/'+id+'.json';
+                action = base_url + 'resolver/document/edit/'+id+'.json';
 
                 $("#btnMSubmit").html('Save');
                 $("#btnDelete").show();
@@ -71,7 +71,7 @@ $(document).ready(function () {
         $("#dataInputs").show();
         $("#representationInputs").hide();
         $("#docModal").modal('show');
-        action = base_url + '/resolver/document/data/'+entity_id;
+        action = base_url + 'resolver/document/data/'+entity_id;
     });
 
     $("#btnRepresentationAdd").click(function(event){
@@ -80,7 +80,7 @@ $(document).ready(function () {
         $("#dataInputs").hide();
         $("#representationInputs").show();
         $("#docModal").modal('show');
-        action = base_url + '/resolver/document/representation/'+entity_id;
+        action = base_url + 'resolver/document/representation/'+entity_id;
     });
 
     $("#btnMSubmit").click(function(event){
