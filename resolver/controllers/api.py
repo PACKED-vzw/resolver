@@ -12,7 +12,6 @@ from resolver.util import log
 from resolver import csrf
 
 
-# TODO: privilege checking
 # TODO: Logging
 
 
@@ -88,6 +87,8 @@ def check_privilege(func):
 @csrf.exempt
 @app.route("/api/login", methods=["POST"])
 def login():
+    # TODO: rate limiting
+
     if session.get('username'):
         raise Exception("TODO")
     form = SigninForm(csrf_enabled=False)
@@ -105,8 +106,16 @@ def login():
     return json.dumps({'errors': errors}), 403
 
 
+@app.route("/api/logout")
+@check_privilege
+def logout():
+    session.pop('username', None)
+    return "", 204
+
+
 @csrf.exempt
 @app.route("/api/entity", methods=["GET"])
+@check_privilege
 def get_entities():
     entities = db.session.query(Entity.id, Entity.title)
     data = [{"PID": id, "title": title} for (id, title) in entities]
@@ -115,6 +124,7 @@ def get_entities():
 
 @csrf.exempt
 @app.route("/api/entity", methods=["POST"])
+@check_privilege
 def create_entity():
     form = EntityForm(csrf_enabled=False)
     if form.validate_on_submit():
@@ -150,6 +160,7 @@ def create_entity():
 
 @csrf.exempt
 @app.route("/api/entity/<id>", methods=["GET"])
+@check_privilege
 def get_entity(id):
     ent = Entity.query.filter(Entity.id == id).first()
     if ent:
@@ -166,6 +177,7 @@ def get_entity(id):
 
 @csrf.exempt
 @app.route("/api/entity/<id>", methods=["PUT"])
+@check_privilege
 def update_entity(id):
     try:
         data = json.loads(request.data)
@@ -212,6 +224,7 @@ def update_entity(id):
 
 @csrf.exempt
 @app.route("/api/entity/<id>", methods=["DELETE"])
+@check_privilege
 def delete_entity(id):
     ent = Entity.query.filter(Entity.id == id).first()
     if ent:
@@ -225,6 +238,7 @@ def delete_entity(id):
 
 @csrf.exempt
 @app.route("/api/document", methods=["POST"])
+@check_privilege
 def create_document():
     try:
         data = json.loads(request.data)
@@ -278,6 +292,7 @@ def create_document():
 
 @csrf.exempt
 @app.route("/api/document/<id>", methods=["GET"])
+@check_privilege
 def get_document(id):
     doc = Document.query.filter(Document.id == id).first()
     if not doc:
@@ -341,6 +356,7 @@ def update_representation(data, doc):
 
 @csrf.exempt
 @app.route("/api/document/<id>", methods=["PUT"])
+@check_privilege
 def update_document(id):
     try:
         data = json.loads(request.data)
@@ -368,6 +384,7 @@ def update_document(id):
 
 @csrf.exempt
 @app.route("/api/document/<id>", methods=["DELETE"])
+@check_privilege
 def delete_document(id):
     doc = Document.query.filter(Document.id == id).first()
     if not doc:
