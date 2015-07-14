@@ -37,7 +37,7 @@ class Document(db.Model):
         raise Exception("Implement me")
 
     def to_dict(self):
-        return {'url':self.url,
+        return {'url':self.url if self.url else "",
                 'enabled':self.enabled,
                 'id':self.id,
                 'type':self.type,

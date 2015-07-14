@@ -2,6 +2,7 @@ from flask import redirect, request, render_template, flash, session
 from functools import update_wrapper
 import json
 from jsonschema import validate, ValidationError
+import operator
 from resolver import app
 from resolver.exception import *
 from resolver.model import *
@@ -12,6 +13,65 @@ from resolver import csrf
 
 
 # TODO: privilege checking
+# TODO: Logging
+
+
+entity_schema = {
+    "properties": {
+        "domain": {"type": "string"},
+        "type": {"type": "string",
+                 "enum": ["work", "concept", "event", "agent"]},
+        "id": {"type": "string"},
+        "title": {"type": "string"},
+        "documents": {"type": "array",
+                      "items": {"type": "integer"}},
+        "persistentURIs": {"type": "array",
+                           "items": {"type": "string"}}
+    },
+    "required": ["type", "id"]
+}
+
+
+document_schema = {
+    "oneOf": [
+        {"$ref": "#/definitions/data"},
+        {"$ref": "#/definitions/representation"}
+    ],
+    "definitions": {
+        "document": {
+            "properties": {
+                "id": {"type": "integer"},
+                "entity": {"type": "string"},
+                "enabled": {"type": "boolean"},
+                "notes": {"type": "string"},
+                "url": {"type": "string"},
+                "type": {"type": "string",
+                         "enum": ["data", "representation"]},
+                "resolves": {"type": "boolean"}
+            },
+            "required": ["entity", "enabled", "type"]
+        },
+        "data": {
+            "allOf": [
+                {"$ref": "#/definitions/document"},
+                {"properties":
+                    {"format": {"type": "string",
+                                "enum": ["html", "json", "pdf", "xml"]},
+                     "type": {"type": "string", "enum": ["data"]}},
+                 "required": ["format"]}]
+        },
+        "representation": {
+            "allOf": [
+                {"$ref": "#/definitions/document"},
+                {"properties":
+                     {"order": {"type": "integer"},
+                      "reference": {"type": "boolean"},
+                      "label": {"type": "string"},
+                      "type": {"type": "string", "enum": ["representation"]}},
+                 "required": ["reference"]}]
+        }
+    }
+}
 
 
 def check_privilege(func):
@@ -64,7 +124,7 @@ def create_entity():
                          id=form.id.data)
         except EntityPIDExistsException:
             return '{"errors":[{"title": "Duplicate ID for entity"}]}', 409
-        except EntityCollisionException as e:
+        except EntityCollisionException:
             return json.dumps({'errors':
                  [{'title': 'ID Collision',
                    'detail': 'The provided ID collides with the existing ID \'%s\'' %
@@ -107,7 +167,47 @@ def get_entity(id):
 @csrf.exempt
 @app.route("/api/entity/<id>", methods=["PUT"])
 def update_entity(id):
-    pass
+    try:
+        data = json.loads(request.data)
+        validate(data, entity_schema)
+
+        ent = Entity.query.filter(Entity.id == id).first()
+        if not ent:
+            return '{"errors":[{"title": "Entity not found"}]}', 404
+
+        ent_str = str(ent)
+
+        try:
+            ent.id = data["id"]
+            ent.title = data.get("title", "")
+            ent.type = data["type"]
+        except EntityPIDExistsException:
+            db.session.rollback()
+            return '{"errors":[{"title": "Duplicate ID for entity"}]}', 409
+        except EntityCollisionException:
+            db.session.rollback()
+            return json.dumps({'errors':
+                 [{'title': 'ID Collision',
+                   'detail': 'The provided ID collides with the existing ID \'%s\'' %
+                             e.original_id}]}), 409
+
+        db.session.commit()
+        log(ent.id, "Changed entity from `%s' to `%s'" % (ent_str, ent))
+
+        data = {'documents': [doc.id for doc in ent.documents],
+                'domain': app.config['BASE_URL'],
+                'id': ent.id,
+                'persistentURIs': ent.persistent_uris,
+                'title': ent.title,
+                'type': ent.type}
+        return json.dumps({'data': data})
+    except ValueError:
+        return '{"errors":[{"title": "Malformed request",' \
+               ' "detail":"Expected correctly formatted JSON data"}]}', 400
+    except ValidationError as e:
+        print e
+        return '{"errors":[{"title": "Malformed request",' \
+               ' "detail":"JSON data does not confirm to schema"}]}', 400
 
 
 @csrf.exempt
@@ -121,47 +221,6 @@ def delete_entity(id):
         return "", 204
     else:
         return '{"errors":[{"title": "Entity not found"}]}', 404
-
-document_schema = {
-    "oneOf": [
-        {"$ref": "#/definitions/data"},
-        {"$ref": "#/definitions/representation"}
-    ],
-    "definitions": {
-        "document": {
-            "properties": {
-                "id": {"type": "integer"},
-                "entity": {"type": "string"},
-                "enabled": {"type": "boolean"},
-                "notes": {"type": "string"},
-                "url": {"type": "string"},
-                "type": {"type": "string",
-                         "enum": ["data", "representation"]},
-                "resolves": {"type": "boolean"}
-            },
-            "required": ["entity", "enabled", "type"]
-        },
-        "data": {
-            "allOf": [
-                {"$ref": "#/definitions/document"},
-                {"properties":
-                    {"format": {"type": "string",
-                                "enum": ["html", "json", "pdf", "xml"]},
-                     "type": {"type": "string", "enum": ["data"]}},
-                 "required": ["format"]}]
-        },
-        "representation": {
-            "allOf": [
-                {"$ref": "#/definitions/document"},
-                {"properties":
-                     {"order": {"type": "integer"},
-                      "reference": {"type": "boolean"},
-                      "label": {"type": "string"},
-                      "type": {"type": "string", "enum": ["representation"]}},
-                 "required": ["reference"]}]
-        }
-    }
-}
 
 
 @csrf.exempt
@@ -190,7 +249,7 @@ def create_document():
                     ref.reference = False
             elif not ref:
                 return '{"errors":[{"title": "Reference error",' \
-                       ' "detail":"At least one reference representation is required}]}', 400
+                       ' "detail":"At least one reference representation is required"}]}', 400
 
             highest = Representation.query.\
                 filter(Document.entity_id == ent.id).\
@@ -226,10 +285,85 @@ def get_document(id):
     return json.dumps({'data': doc.to_dict()})
 
 
+def update_data(data, doc):
+    docs = Data.query.filter(Document.entity_id == doc.entity_id,
+                             Data.format == data['format']).all()
+    if len(docs) != 0:
+        db.session.rollback()
+        return '{"errors":[{"title": "Duplicate data format for entity"}]}', 400
+
+    doc.format = data["format"]
+    db.session.commit()
+
+    return json.dumps({'data': doc.to_dict()})
+
+
+def update_representation(data, doc):
+    ref = Representation.query.filter(Document.entity_id == doc.entity_id,
+                                      Representation.reference == True).first()
+    if data["reference"]:
+        if ref:
+            ref.reference = False
+        doc.reference = True
+    elif not ref:
+        db.session.rollback()
+        return '{"errors":[{"title": "Reference error",' \
+               ' "detail":"At least one reference representation is required"}]}', 400
+
+    if 'order' in data and doc.order != data['order']:
+        old_order = doc.order
+        new_order = data['order']
+        if new_order <= 0:
+            db.session.rollback()
+            return '{"errors":[{"title": "Order error",' \
+                   ' "detail":"Order must be larger than or equal to 1"}]}', 400
+
+        max_order = Representation.query.filter(Document.entity_id == doc.entity_id).count()
+        if new_order > max_order:
+            db.session.rollback()
+            return '{"errors":[{"title": "Order error",' \
+                   ' "detail":"Order too high"}]}', 400
+
+        docs = Representation.query.filter(Document.entity_id == doc.entity_id,
+                                           Representation.order <= max(new_order, old_order),
+                                           Representation.order >= min(new_order, old_order))\
+            .order_by(Representation.order.asc()).all()
+        op = operator.add if new_order < old_order else operator.sub
+
+        for d in docs:
+            d.order = op(d.order, 1)
+
+        doc.order = new_order
+
+    db.session.commit()
+    return json.dumps({'data': doc.to_dict()})
+
+
 @csrf.exempt
 @app.route("/api/document/<id>", methods=["PUT"])
 def update_document(id):
-    pass
+    try:
+        data = json.loads(request.data)
+        validate(data, document_schema)
+
+        doc = Document.query.filter(Document.id == id).first()
+        if not doc:
+            return '{"errors":[{"title": "Document not found"}]}', 404
+
+        doc.enabled = data["enabled"]
+        doc.url = data.get('url', '')
+        doc.notes = data.get('notes', '')
+
+        if data['type'] == 'data':
+            return update_data(data, doc)
+        else:
+            return update_representation(data, doc)
+    except ValueError:
+        return '{"errors":[{"title": "Malformed request",' \
+               ' "detail":"Expected correctly formatted JSON data"}]}', 400
+    except ValidationError:
+        return '{"errors":[{"title": "Malformed request",' \
+               ' "detail":"JSON data does not confirm to schema"}]}', 400
 
 
 @csrf.exempt
