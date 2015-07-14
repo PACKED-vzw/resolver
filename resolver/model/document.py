@@ -69,6 +69,8 @@ class Document(db.Model):
 
     @url.setter
     def url(self, url):
+        # TODO: URL validation here
+
         old = self._url
         if url:
             u = urlparse(url)
