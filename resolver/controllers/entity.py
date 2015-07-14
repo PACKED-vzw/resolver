@@ -1,5 +1,7 @@
 import csv, tempfile
 from flask import redirect, request, render_template, flash, make_response
+from sqlalchemy.sql import or_
+import json
 from resolver import app
 from resolver.model import Entity, Document, Data, Representation,\
     document_types, data_formats
@@ -13,13 +15,53 @@ import resolver.kvstore as kvstore
 
 @app.route('/resolver/entity')
 @check_privilege
-def admin_list_entities(form=False, show_form=False):
+def admin_list_entities(form=None, show_form=None):
+    if "application/json" in request.headers["Accept"]:
+        return admin_list_entities_dynamic()
+
     entities = Entity.query.all()
     form = form if form else EntityForm()
     return render_template("resolver/entities.html", title="Entities",
                            entities=entities, form=form,
                            titles_enabled=kvstore.get('titles_enabled'),
                            show_form=show_form)
+
+
+def admin_list_entities_dynamic():
+    entity_link = "<a href=\"/resolver/entity/{0}\">{0}</a>"
+    remove_link = "<a class=\"link-delete-entity\" id=\"{0}\"><span class=\"glyphicon glyphicon-remove\"></span></a>"
+    log_link = "<a href=\"/resolver/log/id/{0}\"><span class=\"glyphicon glyphicon-time\"></span></a>"
+
+    order_column = int(request.args["order[0][column]"])
+    order_dir = request.args["order[0][dir]"]
+
+    if order_column == 0:
+        order_column = Entity.type
+    elif order_column == 1:
+        order_column = Entity.id
+    elif order_column == 2:
+        order_column = Entity.title
+    else:
+        return json.dumps({'error': 'Can\'t sort on this column.'})
+
+    order_column = order_column.asc() if order_dir == "asc" else order_column.desc()
+
+    # TODO: search for type too?
+    search_str = "%%%s%%" % request.args["search[value]"]
+    full_query = Entity.query.filter(or_(Entity.id.like(search_str),
+                                         Entity.title.like(search_str)))
+    entities = full_query\
+        .order_by(order_column)\
+        .offset(int(request.args["start"]))\
+        .limit(int(request.args["length"])).all()
+    data = [[e.type, entity_link.format(e.id), e.title, e.active_documents,
+             remove_link.format(e.id), log_link.format(e.id)] for e in entities]
+
+    return json.dumps({'draw': int(request.args["draw"]),
+                       'recordsTotal': Entity.query.count(),
+                       'recordsFiltered': full_query.count(),
+                       'data': data})
+
 
 @app.route('/resolver/entity', methods=["POST"])
 @check_privilege
@@ -49,6 +91,7 @@ def admin_new_entity():
         return redirect("/resolver/entity/%s" % ent.id)
     else:
         return admin_list_entities(form=form, show_form=True)
+
 
 @app.route('/resolver/entity/<id>')
 @check_privilege
