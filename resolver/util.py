@@ -19,7 +19,7 @@ def import_log (import_id, action):
     :param import_id id of the import
     :param action action performed
     """
-    l = ImportLog (import_id, session.get ('username'), action)
+    l = ImportLog(import_id, session.get('username'), action)
     app.logger.info (l)
     db.session.add (l)
     db.session.commit ()

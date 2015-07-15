@@ -22,6 +22,7 @@ def admin_csv_import():
     import_id = str (time.time ())
     rows = 0
     count_pids = 0
+
     def allowed(filename):
         return ('.' in filename) and\
             (filename.rsplit('.', 1)[1].lower() == 'csv')
@@ -36,7 +37,7 @@ def admin_csv_import():
         flash("File not allowed", "warning")
         return redirect("/resolver/csv")
 
-    #log("is starting a CSV import session...")
+    # log("is starting a CSV import session...")
 
     reader = UnicodeReader(file)
     # NOTE: we always assume the first row is a header
@@ -55,20 +56,23 @@ def admin_csv_import():
     for record in reader:
         id = record[0]
         # Skip wrong types now
+        # TODO: do we actually fail on importing a wrong type?
         if not record[1] in entity_types:
             failures.append((id, "Wrong entity type `%s'" % record[1]))
             continue
         if not record[3] in document_types:
             failures.append((id, "Wrong document type `%s'" % record[3]))
             continue
+
         rows = rows + 1
         if records.get(id, False):
             records[id].append(record)
-            import_log (import_id, "Appended representation to PID %s" % str (id))
+            import_log(import_id, "Appended document to PID %s" % id)
         else:
             records[id] = [record]
             count_pids = count_pids + 1
-            import_log (import_id, "Added new PID %s" % str (id))
+            print id
+            import_log(import_id, "Added new PID %s" % id)
 
     for id, record_list in records.iteritems():
         clean_id = cleanID(id)
@@ -112,7 +116,13 @@ def admin_csv_import():
                     doc.enabled = record[5]
                     doc.notes = record[6]
                 else:
-                    doc = Representation(id, record[9], url=url,
+                    if record[9] and record[9] != "":
+                        order = int(record[9])
+                    else:
+                        order = Representation.query\
+                            .filter(Document.entity_id == id).count() + 1
+
+                    doc = Representation(id, order, url=url,
                                          enabled=record[5], notes=record[6])
                     db.session.add(doc)
                     log(id, "Added representation document `%s'" % doc)
