@@ -93,17 +93,18 @@ def admin_csv_import():
             ent.title = record[2]
             ent.type = record[1]
 
-            url = record[4] if record[4]!='None' else ''
+            url = record[4] if record[4] != 'None' else ''
+            enabled = record[5] == '1'
 
             if record[3] == 'data':
                 doc = Data.query.filter(Data.format == record[7],
                                         Document.entity_id == id).first()
                 if doc:
                     doc.url = url
-                    doc.enabled = record[5]
+                    doc.enabled = enabled
                     doc.notes = record[6]
                 else:
-                    doc = Data(id, record[7], url=url, enabled=record[5],
+                    doc = Data(id, record[7], url=url, enabled=enabled,
                                notes=record[6])
                     db.session.add(doc)
                     log(id, "Added data document `%s'" % doc)
@@ -113,7 +114,7 @@ def admin_csv_import():
                              Representation.order == record[9]).first()
                 if doc:
                     doc.url = url
-                    doc.enabled = record[5]
+                    doc.enabled = enabled
                     doc.notes = record[6]
                 else:
                     if record[9] and record[9] != "":
@@ -123,11 +124,11 @@ def admin_csv_import():
                             .filter(Document.entity_id == id).count() + 1
 
                     doc = Representation(id, order, url=url,
-                                         enabled=record[5], notes=record[6])
+                                         enabled=enabled, notes=record[6])
                     db.session.add(doc)
                     log(id, "Added representation document `%s'" % doc)
 
-                reference = True if record[8] == '1' else False
+                reference = record[8] == '1'
                 if reference:
                     ref = Representation.query.\
                           filter(Document.entity_id == id,
