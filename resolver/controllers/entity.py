@@ -19,11 +19,10 @@ def admin_list_entities(form=None, show_form=None):
     if "application/json" in request.headers["Accept"]:
         return admin_list_entities_dynamic()
 
-    entities = Entity.query.all()
+    # entities = Entity.query.all()
     form = form if form else EntityForm()
-    return render_template("resolver/entities.html", title="Entities",
-                           entities=entities, form=form,
-                           titles_enabled=kvstore.get('titles_enabled'),
+    return render_template("resolver/entities.html", title="Entities", # entities=entities,
+                           form=form, titles_enabled=kvstore.get('titles_enabled'),
                            show_form=show_form)
 
 
