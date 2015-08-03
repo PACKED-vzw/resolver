@@ -100,7 +100,7 @@ def admin_view_entity(id, form=None):
         form = form if form else EntityForm(obj=ent)
         return render_template("resolver/entity.html", title="Entity",
                                entity=ent, documents=ent.documents, form=form,
-                               data_formats=data_formats,
+                               data_formats=data_formats, new_form=EntityForm(),
                                titles_enabled=kvstore.get('titles_enabled'))
     else:
         flash("Entity not found!", "danger")
