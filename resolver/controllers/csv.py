@@ -12,20 +12,30 @@ from resolver.util import log, UnicodeWriter, UnicodeReader, cleanID, import_log
 def admin_csv():
     return render_template('resolver/csv.html', title='Import & Export')
 
+
+def file_allowed(filename):
+    return ('.' in filename) and \
+           (filename.rsplit('.', 1)[1].lower() == 'csv')
+
+
 @app.route('/resolver/csv/import', methods=["POST"])
 @check_privilege
 def admin_csv_import():
+    # First, we go over the list of all records and gather them in a dictionary, indexed on the PID.
+    # Afterwards, for each PID, we check if the PID is already in the database or not
+    # - If it isn't: the new entity is created using the data from the first record in the CSV file
+    # - If it is (no collision): the entity is updated with the data from the first record in the CSV file
+    # - If it is (collision): error!
+    # Data documents are updated iff there is a document of the same format
+    # Representation documents are updated iff there is a document with the same order
+
     # TODO: Function too big!
     # TODO: logging?
-    ##
+
     # Create id for the import logging function (id = unique identifier of this import action)
-    import_id = str (time.time ())
+    import_id = str(time.time())
     rows = 0
     count_pids = 0
-
-    def allowed(filename):
-        return ('.' in filename) and\
-            (filename.rsplit('.', 1)[1].lower() == 'csv')
 
     file = request.files['file']
 
@@ -33,11 +43,9 @@ def admin_csv_import():
         flash("No file provided", "warning")
         return redirect("/resolver/csv")
 
-    if not allowed(file.filename):
+    if not file_allowed(file.filename):
         flash("File not allowed", "warning")
         return redirect("/resolver/csv")
-
-    # log("is starting a CSV import session...")
 
     reader = UnicodeReader(file)
     # NOTE: we always assume the first row is a header
@@ -47,9 +55,6 @@ def admin_csv_import():
         file.seek(0)
         reader = UnicodeReader(file, delimiter=';')
         reader.next() # Skip header again
-
-    # This removes all entities, associated documents/data, hits, ...
-    Entity.query.delete()
 
     records = {}
     failures = []
@@ -64,14 +69,13 @@ def admin_csv_import():
             failures.append((id, "Wrong document type `%s'" % record[3]))
             continue
 
-        rows = rows + 1
+        rows += 1
         if records.get(id, False):
             records[id].append(record)
             import_log(import_id, "Appended document to PID %s" % id)
         else:
             records[id] = [record]
-            count_pids = count_pids + 1
-            print id
+            count_pids += 1
             import_log(import_id, "Added new PID %s" % id)
 
     for id, record_list in records.iteritems():
@@ -88,17 +92,16 @@ def admin_csv_import():
             db.session.flush()
             log(ent.id, "Added entity `%s'" % ent)
 
-        id = ent.id
-        for record in record_list:
-            ent.title = record[2]
-            ent.type = record[1]
+        ent.title = record_list[0][2]
+        ent.type = record_list[0][1]
 
+        for record in record_list:
             url = record[4] if record[4] != 'None' else ''
             enabled = record[5] == '1'
 
             if record[3] == 'data':
                 doc = Data.query.filter(Data.format == record[7],
-                                        Document.entity_id == id).first()
+                                        Document.entity_id == ent.id).first()
                 if doc:
                     doc.url = url
                     doc.enabled = enabled
@@ -110,7 +113,7 @@ def admin_csv_import():
                     log(id, "Added data document `%s'" % doc)
             elif record[3] == 'representation':
                 doc = Representation.query.\
-                      filter(Document.entity_id == id,
+                      filter(Document.entity_id == ent.id,
                              Representation.order == record[9]).first()
                 if doc:
                     doc.url = url
@@ -121,7 +124,7 @@ def admin_csv_import():
                         order = int(record[9])
                     else:
                         order = Representation.query\
-                            .filter(Document.entity_id == id).count() + 1
+                            .filter(Document.entity_id == ent.id).count() + 1
 
                     doc = Representation(id, order, url=url,
                                          enabled=enabled, notes=record[6])
@@ -131,7 +134,7 @@ def admin_csv_import():
                 reference = record[8] == '1'
                 if reference:
                     ref = Representation.query.\
-                          filter(Document.entity_id == id,
+                          filter(Document.entity_id == ent.id,
                                  Representation.reference == True).first()
                     if ref:
                         ref.reference = False
