@@ -53,59 +53,73 @@ function create_user {
                 # Create log directory
                 mkdir -p /var/log/resolver
         fi
-        chown -R resolver:adm /var/log/resolver
+        chown -R resolver: /var/log/resolver
 }
 
 ##
 # Database configuration, as dbconfig_common refuses to work
-function copy_databse_config {
-    
+function copy_database_config {
+    ##
+    # DB configuration is created in /etc/dbconfig-common/resolver.conf
+    database_host=$(cat /etc/dbconfig-common/resolver.conf | grep '^dbc_dbserver' | sed -r "s/^dbc_dbserver='(.*)'$/\1/")
+    database_user=$(cat /etc/dbconfig-common/resolver.conf | grep '^dbc_dbuser' | sed -r "s/^dbc_dbuser='(.*)'$/\1/")
+    database_password=$(cat /etc/dbconfig-common/resolver.conf | grep '^dbc_dbpass' | sed -r "s/^dbc_dbpass='(.*)'$/\1/")
+    database_db=$(cat /etc/dbconfig-common/resolver.conf | grep '^dbc_dbname' | sed -r "s/^dbc_dbname='(.*)'$/\1/")
+    ##
+    # Copy to our configuration file
+    if [ "$database_host" = "" ]; then
+        # dbconfig-common leaves this empty when it's localhost
+        database_host="localhost"
+    fi
+    sed -i.bak      -e "s/_DBC_DBSERVER_/$database_host/" \
+                    -e "s/_DBC_DBUSER_/$database_user/"  \
+                    -e "s/_DBC_DBPASS_/$database_password/" \
+                    -e "s/_DBC_DBNAME_/$database_db/" /etc/resolver/resolver.cfg
+    rm /etc/resolver/resolver.cfg.bak
 }
-##
-# Database configuration
-. /usr/share/debconf/confmodule
 
-. /usr/share/dbconfig-common/dpkg/postinst.mysql
 
-# Create user
-create_user
+if [ "$1" = "configure" ]; then
 
-dbc_generate_include_owner="root:resolver"
-dbc_generate_include_perms="0644"
-dbc_generate_include_args="-o template_infile=/usr/share/doc/resolver/resolver/resolver.cfg.example"
-dbc_generate_include="template:/etc/resolver/resolver.cfg"
+        ##
+        # Database configuration
+        . /usr/share/debconf/confmodule
 
-dbc_go resolver $@
-
-SECRET_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-SALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-
-sed -i.bak      -e 's/__BASE_URL__/http:\/\/localhost/' \
-                -e s/__SECRET_KEY__/$SECRET_KEY/ \
-                -e s/__SALT__/$SALT/ /etc/resolver/resolver.cfg
-rm /etc/resolver/resolver.cfg.bak
-
-#if [ "$1" = "configure" ]; then
+        . /usr/share/dbconfig-common/dpkg/postinst.mysql
 
         # Create user
-#       create_user
+        create_user
+
+        dbc_generate_include_owner="root:resolver"
+        dbc_generate_include_perms="0644"
+        dbc_generate_include_args="-o template_infile=/usr/share/doc/resolver/resolver/resolver.cfg.example"
+        dbc_generate_include="template:/etc/resolver/resolver.cfg"
+
+        dbc_go resolver $@
+
+        SECRET_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+        SALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+
+        sed -i.bak      -e 's/__BASE_URL__/http:\/\/localhost/' \
+                        -e s/__SECRET_KEY__/$SECRET_KEY/ \
+                        -e s/__SALT__/$SALT/ /etc/resolver/resolver.cfg
+        rm /etc/resolver/resolver.cfg.bak
+
+        copy_database_config
 
         # Enable supervisor
         supervisor_install
-#       if [ -f /usr/sbin/supervisorctl ]; then
-                supervisorctl reread
-                supervisorctl update
+        supervisorctl reread
+        supervisorctl update
         service supervisor restart
-#       else
+
         if [ $? -ne 0 ]; then
                 echo "Failed to execute supervisorctl. Please execute supervisorctl reread and supervisorctl update by hand."
         fi
 
         # Enable apache
         apache_install
-#       if [ -f /usr/sbin/apache2ctl ]; then
-#       else
-#fi
+fi
 
 db_stop
 
