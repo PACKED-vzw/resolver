@@ -55,22 +55,12 @@
             <th>Type</th>
             <th>PID</th>
             {% if titles_enabled %}<th>Title</th>{% endif %}
-            <th>Active Documents</th>
+            <th class="nosort">Active Documents</th>
             <th class="nosort">Remove</th>
             <th class="nosort">Logs</th>
           </tr>
         </thead>
         <tbody>
-          {% for entity in entities %}
-          <tr>
-            <td>{{ entity.type | capitalize }}</td>
-            <td><a href="/resolver/entity/{{ entity.id }}">{{ entity.id }}</a></td>
-            {% if titles_enabled %}<td>{% if entity.title %}{{ entity.title }}{% else %}<em>Untitled</em>{% endif %}</td>{% endif %}
-            <td>{{ entity.active_documents }}</td>
-            <td><a class="link-delete-entity" id="{{entity.id}}"><span class="glyphicon glyphicon-remove"></span></a></td>
-            <td><a href="/resolver/log/id/{{entity.id}}"><span class="glyphicon glyphicon-time"></span></a></td>
-          </tr>
-          {% endfor %}
         </tbody>
       </table></div>
     </div>
@@ -78,6 +68,8 @@
     <script>
       $(document).ready(function() {
           $('#entitiesTable').dataTable({
+                  serverSide: true,
+                  ajax: base_url + 'resolver/entity',
                   "info":false,
                   "order": [[ 1, "asc" ]],
                   "iDisplayLength": 25,

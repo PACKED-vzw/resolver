@@ -2,193 +2,235 @@
 {% extends "resolver/layout.html" %}
 {% block body %}
 
-<script type="text/javascript">var entity_id="{{entity.id}}";</script>
+  <script type="text/javascript">var entity_id="{{entity.id}}";</script>
 
-    <div class="panel panel-default">
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <strong>PID:</strong> {{entity.id}}
+    </div>
+  </div>
+
+  <div class="panel-group" id="accordion">
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+          Add entity ...
+        </a>
+      </h4>
+    </div>
+    <div id="collapseOne" class="panel-collapse collapse">
       <div class="panel-body">
-        <strong>PID:</strong> {{entity.id}}
+        <form action="/resolver/entity" method="POST" role="form" class="form-horizontal">
+          <div class="form-group">
+            <div class="col-sm-2 text-right">
+              <strong>Domein</strong>
+            </div>
+            <div class="col-sm-10">
+                {{ config['BASE_URL'] }}
+            </div>
+          </div>
+          <div class="form-group">
+              {{ render_field(new_form.type) }}
+          </div>
+          <div class="form-group">
+              {{ render_field(new_form.id, placeholder="ID") }}
+          </div>
+            {% if titles_enabled %}
+              <div class="form-group">
+                  {{ render_field(new_form.title, placeholder="Title") }}
+              </div>
+            {% endif %}
+          <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                {{ new_form.csrf_token }}
+              <button type="submit" class="btn btn-default">Add</button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
+  </div>
 
-    <div class="panel-group" id="accordion">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">
-            <a data-toggle="collapse" data-target="#collapseForm" href="#collapseForm">
-              Entity ...
-            </a>
-          </h3>
-        </div>
-        <div class="panel-collapse collapse" id="collapseForm">
-          <div class="panel-body">
-            <form action="/resolver/entity/edit/{{ entity.id }}" method="POST" role="form" class="form-horizontal">
-              <div class="form-group">
-                <div class="col-sm-2 text-right">
-                  <strong>Domain</strong>
-                </div>
-                <div class="col-sm-10">
-                  {{ config['BASE_URL'] }}
-                </div>
-              </div>
-              <div class="form-group">
-                {{ render_field(form.type) }}
-              </div>
-              <div class="form-group">
-                {{ render_field(form.id, placeholder="ID") }}
-              </div>
-              {% if titles_enabled %}
-              <div class="form-group">
-                {{ render_field(form.title, placeholder="Title") }}
-              </div>
-              {% endif %}
-              <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                  {{ form.csrf_token }}
-                  <button type="submit" class="btn btn-primary">Save</button>
-                  <a id="{{entity.id}}" class="btn btn-danger link-delete-entity">Delete</a>
-                </div>
-              </div>
-            </form>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <a data-toggle="collapse" data-target="#collapseForm" href="#collapseForm" data-parent="#accordion">
+          Edit entity ...
+        </a>
+      </h3>
+    </div>
+    <div class="panel-collapse collapse" id="collapseForm">
+      <div class="panel-body">
+        <form action="/resolver/entity/edit/{{ entity.id }}" method="POST" role="form" class="form-horizontal">
+          <div class="form-group">
+            <div class="col-sm-2 text-right">
+              <strong>Domain</strong>
+            </div>
+            <div class="col-sm-10">
+                {{ config['BASE_URL'] }}
+            </div>
           </div>
-        </div>
+          <div class="form-group">
+              {{ render_field(form.type) }}
+          </div>
+          <div class="form-group">
+              {{ render_field(form.id, placeholder="ID") }}
+          </div>
+            {% if titles_enabled %}
+              <div class="form-group">
+                  {{ render_field(form.title, placeholder="Title") }}
+              </div>
+            {% endif %}
+          <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                {{ form.csrf_token }}
+              <button type="submit" class="btn btn-primary">Save</button>
+              <a id="{{entity.id}}" class="btn btn-danger link-delete-entity">Delete</a>
+            </div>
+          </div>
+        </form>
       </div>
+    </div>
+  </div>
 
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">
-            <a data-toggle="collapse" data-target="#collapseDocs" href="#collapseDocs">
-              Documents ...
-            </a>
-          </h3>
-        </div>
-        <div class="panel-collapse collapse in" id="collapseDocs">
-          {% if documents %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <a data-toggle="collapse" data-target="#collapseDocs" href="#collapseDocs" data-parent="#accordion">
+          Documents ...
+        </a>
+      </h3>
+    </div>
+    <div class="panel-collapse collapse in" id="collapseDocs">
+        {% if documents %}
           <table class="table table-striped">
             <thead>
-              <tr>
-                <th>Status</th>
-                <th>Type</th>
-                <th>Options</th>
-              </tr>
+            <tr>
+              <th>Status</th>
+              <th>Type</th>
+              <th>Options</th>
+            </tr>
             </thead>
             <tbody>
-              {% for document in documents %}
+            {% for document in documents %}
               <tr>
                 <td>
-                  {% if document.url %}
-                  {% if document.resolves %}
-                  <span class="glyphicon glyphicon-ok green"></span>
-                  {% else %}
-                  <span class="glyphicon glyphicon-warning-sign red"></span>
-                  {% endif %}
-                  {% else %}
-                  <span class="glyphicon glyphicon-remove red"></span>
-                  {% endif %}
+                    {% if document.url %}
+                        {% if document.resolves %}
+                          <span class="glyphicon glyphicon-ok green"></span>
+                        {% else %}
+                          <span class="glyphicon glyphicon-warning-sign red"></span>
+                        {% endif %}
+                    {% else %}
+                      <span class="glyphicon glyphicon-remove red"></span>
+                    {% endif %}
                 </td>
                 <td>
                   <a href="javascript:void(0);" onclick="showDocument('{{ document.id }}');">
-                  {% if document.type == 'data' %}
-                  Data ({{document.format}})
-                  {% else %}
-                  {% if document.reference %}<strong>{% endif %}
-                  {% if document.label %}
-                  {{ document.label }} ({{document.order}})
-                  {% else %}
-                  Representation ({{document.order}})
-                  {% endif %}
-                  {% if document.reference %}</strong>{% endif %}
-                  {% endif %}
+                      {% if document.type == 'data' %}
+                        Data ({{document.format}})
+                      {% else %}
+                          {% if document.reference %}<strong>{% endif %}
+                      {% if document.label %}
+                          {{ document.label }} ({{document.order}})
+                      {% else %}
+                        Representation ({{document.order}})
+                      {% endif %}
+                      {% if document.reference %}</strong>{% endif %}
+                      {% endif %}
                   </a>
                 </td>
                 <td>
-                  {% if document.type == 'data' %}
-                  {% else %}
-                  <a href="/resolver/document/representation/up/{{document.id}}">
-                    <span class="glyphicon glyphicon-chevron-up"></span>
-                  </a>
-                  <a href="/resolver/document/representation/down/{{document.id}}">
-                    <span class="glyphicon glyphicon-chevron-down"></span>
-                  </a>
-                  {% endif %}
+                    {% if document.type == 'data' %}
+                    {% else %}
+                      <a href="/resolver/document/representation/up/{{document.id}}">
+                        <span class="glyphicon glyphicon-chevron-up"></span>
+                      </a>
+                      <a href="/resolver/document/representation/down/{{document.id}}">
+                        <span class="glyphicon glyphicon-chevron-down"></span>
+                      </a>
+                    {% endif %}
                 </td>
               </tr>
-              {% endfor %}
+            {% endfor %}
             </tbody>
           </table>
-          {% else %}
+        {% else %}
           <div class="panel-body">
             No documents yet
           </div>
-          {% endif %}
-          <div class="panel-footer clearfix">
-            <div class="pull-right">
-              <button type="button" class="btn btn-primary" id="btnDataAdd">Add data</button>
-              <button type="button" class="btn btn-primary" id="btnRepresentationAdd">Add representation</button>
-            </div>
-          </div>
+        {% endif %}
+      <div class="panel-footer clearfix">
+        <div class="pull-right">
+          <button type="button" class="btn btn-primary" id="btnDataAdd">Add data</button>
+          <button type="button" class="btn btn-primary" id="btnRepresentationAdd">Add representation</button>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">
-            <a data-toggle="collapse" data-target="#collapseURIs" href="#collapseURIs">
-              Persistent URIs ...
-            </a>
-          </h3>
-        </div>
-        <div class="panel-collapse collapse" id="collapseURIs">
-          <div class="list-group">
-            {% for uri in entity.persistent_uris %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <a data-toggle="collapse" data-target="#collapseURIs" href="#collapseURIs" data-parent="#accordion">
+          Persistent URIs ...
+        </a>
+      </h3>
+    </div>
+    <div class="panel-collapse collapse" id="collapseURIs">
+      <div class="list-group">
+          {% for uri in entity.persistent_uris %}
             <a class="list-group-item" href="{{uri}}" target="_blank">{{uri}}</a>
-            {% endfor %}
-          </div>
-        </div>
+          {% endfor %}
       </div>
+    </div>
+  </div>
 
-    <div class="modal fade" id="docModal" tabindex="-1" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal"><span>&times;</span><span class="sr-only">Close</span></button>
-            <h4 class="modal-title">Document details</h4>
+  <div class="modal fade" id="docModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">Document details</h4>
+        </div>
+        <div id="docModalForm" class="modal-body">
+          <div id="resolveAlert" class="alert alert-warning">
+            The system indicates that the current URL might not be available!
           </div>
-          <div id="docModalForm" class="modal-body">
-            <div id="resolveAlert" class="alert alert-warning">
-              The system indicates that the current URL might not be available!
-            </div>
-            <div id="editErrors"></div>
-            <form role="form" class="form-horizontal" id="docEditForm" action="javascript:void(0);">
+          <div id="editErrors"></div>
+          <form role="form" class="form-horizontal" id="docEditForm" action="javascript:void(0);">
               <span id="dataInputs">
                 <div class="form-group">
                   <label for="dataFormat" class="col-sm-2 control-label">Format</label>
                   <div class="col-sm-10">
                     <select class="form-control" id="dataFormat" name="format">
-                      {% for format in data_formats %}
-                      <option value="{{ format }}">{{ format }}</option>
-                      {% endfor %}
+                        {% for format in data_formats %}
+                          <option value="{{ format }}">{{ format }}</option>
+                        {% endfor %}
                     </select>
                   </div>
                 </div>
               </span>
-              <div class="form-group">
-                <label for="url" class="col-sm-2 control-label">URL</label>
-                <div class="col-sm-10">
-                  <input class="form-control" id="editUrl" name="url" placeholder="URL" type="text" value="">
-                </div>
+            <div class="form-group">
+              <label for="url" class="col-sm-2 control-label">URL</label>
+              <div class="col-sm-10">
+                <input class="form-control" id="editUrl" name="url" placeholder="URL" type="text" value="">
               </div>
-              <div class="form-group">
-                <label for="enabled" class="col-sm-2 control-label">Enabled</label>
-                <div class="col-sm-10">
-                  <input id="editEnabled" name="enabled" type="checkbox" value="y">
-                </div>
+            </div>
+            <div class="form-group">
+              <label for="enabled" class="col-sm-2 control-label">Enabled</label>
+              <div class="col-sm-10">
+                <input id="editEnabled" name="enabled" type="checkbox" value="y">
               </div>
-              <div class="form-group">
-                <label for="notes" class="col-sm-2 control-label">Notes</label>
-                <div class="col-sm-10">
-                  <textarea class="form-control" id="editNotes" name="notes"></textarea>
-                </div>
+            </div>
+            <div class="form-group">
+              <label for="notes" class="col-sm-2 control-label">Notes</label>
+              <div class="col-sm-10">
+                <textarea class="form-control" id="editNotes" name="notes"></textarea>
               </div>
+            </div>
               <span id="representationInputs">
                 <div class="form-group">
                   <label for="representationLabel" class="col-sm-2 control-label">Label</label>
@@ -203,25 +245,25 @@
                   </div>
                 </div>
               </span>
-              <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <!--<button type="submit" class="btn btn-primary">Edit</button>-->
-                </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <!--<button type="submit" class="btn btn-primary">Edit</button>-->
               </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <div class="pull-left" id="indicator" style="display:none;">
-              <img src="/static/img/loading.gif" style="height:34px;">
-              Loading . . .
             </div>
-
-            <button type="button" class="btn btn-primary" id="btnMSubmit"></button>
-            <button type="button" class="btn btn-danger" id="btnMDelete">Delete</button>
-            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <div class="pull-left" id="indicator" style="display:none;">
+            <img src="/static/img/loading.gif" style="height:34px;">
+            Loading . . .
           </div>
+
+          <button type="button" class="btn btn-primary" id="btnMSubmit"></button>
+          <button type="button" class="btn btn-danger" id="btnMDelete">Delete</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
+  </div>
 {% endblock %}

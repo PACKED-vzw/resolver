@@ -1,0 +1,577 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "0.1",
+        "title": "Resolver API"
+    },
+    "paths": {
+        "/api/login": {
+            "post": {
+                "description": "Authenticate the current user.\n",
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "formData",
+                        "description": "Username of the user",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "password",
+                        "in": "formData",
+                        "description": "Password of the user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Authentication successful"
+                    },
+                    "403": {
+                        "description": "Authentication failure",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "errors": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "get": {
+                "description": "Log out and de-authenticate.\n",
+                "responses": {
+                    "204": {
+                        "description": "Logged out successfully"
+                    },
+                    "403": {
+                        "description": "Not logged in"
+                    }
+                }
+            }
+        },
+        "/api/entity": {
+            "get": {
+                "description": "Get all entities.\n",
+                "responses": {
+                    "200": {
+                        "description": "All entities",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "PID": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new entity.\n",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "formData",
+                        "description": "Persistent ID of the entity",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "type",
+                        "in": "formData",
+                        "description": "Type of the entity (work, concept, event, agent)",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "title",
+                        "in": "formData",
+                        "description": "Optional title",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successful creation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Entity"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error with request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "errors": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "409": {
+                        "description": "Duplicate ID or ID collision",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "errors": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/entity/{id}": {
+            "get": {
+                "description": "Get information on the provided entity.\n",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent ID of the entity",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Entity found",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Entity"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Entity not found"
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing entity.\n",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent ID of the entity",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "entityData",
+                        "in": "body",
+                        "description": "Updated entity data (changes to domain and persistent URIs will be ignored)",
+                        "schema": {
+                            "$ref": "#/definitions/Entity"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Entity update successful",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Entity"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Entity not found"
+                    },
+                    "409": {
+                        "description": "Duplicate ID or ID collision",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "errors": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove the entity.\n",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Persistent ID of the entity",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Entity removed"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Entity not found"
+                    }
+                }
+            }
+        },
+        "/api/document": {
+            "post": {
+                "description": "Create a new document for an entity\n",
+                "parameters": [
+                    {
+                        "name": "document",
+                        "in": "body",
+                        "description": "Document to be created (keys such as `resolves`, `id`, and `order` are ignored)",
+                        "schema": {
+                            "$ref": "#/definitions/Document"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Document created",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Document"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error with request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "errors": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/document/{ID}": {
+            "get": {
+                "description": "Get document with provided ID.\n",
+                "parameters": [
+                    {
+                        "name": "ID",
+                        "in": "path",
+                        "description": "ID of the document",
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document found",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Document"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    }
+                }
+            },
+            "put": {
+                "description": "Get all entities.\n",
+                "parameters": [
+                    {
+                        "name": "ID",
+                        "in": "path",
+                        "description": "ID of the document",
+                        "type": "integer"
+                    },
+                    {
+                        "name": "documentData",
+                        "in": "body",
+                        "description": "Updated document data, keys such as `resolves`, `id`, and `order` are ignored. The entity id can also not be changed.",
+                        "schema": {
+                            "$ref": "#/definitions/Document"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document updated",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Document"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error with request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "errors": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete the document.\n",
+                "parameters": [
+                    {
+                        "name": "ID",
+                        "in": "path",
+                        "description": "ID of the document",
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Document deleted"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Error": {
+            "description": "Error object as seen in the JSON API standard.\n",
+            "required": [
+                "title"
+            ],
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                }
+            }
+        },
+        "Document": {
+            "discriminator": "documentType",
+            "required": [
+                "entity",
+                "enabled",
+                "type"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "entity": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "data",
+                        "representation"
+                    ]
+                },
+                "resolves": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Data": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/Document"
+                },
+                {
+                    "properties": {
+                        "format": {
+                            "type": "string",
+                            "enum": [
+                                "html",
+                                "json",
+                                "pdf",
+                                "xml"
+                            ]
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "data"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "format"
+                    ]
+                }
+            ]
+        },
+        "Representation": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/Document"
+                },
+                {
+                    "properties": {
+                        "order": {
+                            "type": "integer"
+                        },
+                        "reference": {
+                            "type": "boolean"
+                        },
+                        "label": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "representation"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "reference"
+                    ]
+                }
+            ]
+        },
+        "Entity": {
+            "required": [
+                "type",
+                "id"
+            ],
+            "properties": {
+                "domain": {
+                    "type": "string",
+                    "description": "Domain on which the entity is registered"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "work",
+                        "concept",
+                        "event",
+                        "agent"
+                    ],
+                    "description": "Type of the entity"
+                },
+                "id": {
+                    "type": "string",
+                    "description": "Persistent ID of the entity"
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Optional title of the entity"
+                },
+                "documents": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "description": "List of document IDs associated with the entity"
+                },
+                "persistentURIs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "List of all persistent URIs associated with the entity"
+                }
+            }
+        }
+    }
+}
