@@ -2,7 +2,7 @@ import csv, tempfile, cStringIO, time
 from flask import request, render_template, flash, make_response, redirect
 from resolver import app
 from resolver.model import Entity, Document, Data, Representation,\
-    entity_types, document_types
+    entity_types, document_types, data_formats
 from resolver.database import db
 from resolver.controllers.user import check_privilege
 from resolver.util import log, UnicodeWriter, UnicodeReader, cleanID, import_log
@@ -18,6 +18,7 @@ def file_allowed(filename):
            (filename.rsplit('.', 1)[1].lower() == 'csv')
 
 
+# TODO: script for imports
 @app.route('/resolver/csv/import', methods=["POST"])
 @check_privilege
 def admin_csv_import():
@@ -100,6 +101,9 @@ def admin_csv_import():
             enabled = record[5] == '1'
 
             if record[3] == 'data':
+                if not(record[7] and record[7] in data_formats):
+                    failures.append((id, "Format missing or invalid for PID `%s'" % ent.id))
+                    continue
                 doc = Data.query.filter(Data.format == record[7],
                                         Document.entity_id == ent.id).first()
                 if doc:
