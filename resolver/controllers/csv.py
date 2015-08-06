@@ -184,16 +184,16 @@ def admin_csv_export():
         for document in entity.documents:
             if type(document) == Data:
                 writer.writerow([entity.id, entity.type, entity.title, 'data',
-                                 unicode(document.url),
+                                 unicode(document.url) if document.url else '',
                                  '1' if document.enabled else '0',
-                                 unicode(document.notes),
+                                 unicode(document.notes) if document.notes else '',
                                  document.format, '', ''])
             else:
                 writer.writerow([entity.id, entity.type, entity.title,
                                  'representation',
-                                 unicode(document.url),
+                                 unicode(document.url) if document.url else '',
                                  '1' if document.enabled else '0',
-                                 unicode(document.notes),
+                                 unicode(document.notes) if document.notes else '',
                                  '',
                                  '1' if document.reference else '0',
                                  unicode(document.order)])
