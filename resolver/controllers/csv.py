@@ -204,3 +204,12 @@ def admin_csv_export():
     response.headers["Content-Type"] = 'text/csv'
     file.close()
     return response
+
+
+@app.route('/resolver/csv/purge')
+@check_privilege
+def purge_database():
+    Entity.query.delete()
+    db.session.commit()
+    flash("Database has been purged", "success")
+    return redirect('/resolver/csv')
