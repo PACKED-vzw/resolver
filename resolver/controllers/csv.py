@@ -1,7 +1,7 @@
 import csv, tempfile, cStringIO, time
-from flask import request, render_template, flash, make_response, redirect
+from flask import request, render_template, flash, make_response, redirect, session
 from resolver import app
-from resolver.model import Entity, Document, Data, Representation, TempFile,\
+from resolver.model import Entity, Document, Data, Representation,\
     entity_types, document_types, data_formats
 from resolver.database import db
 from resolver.controllers.user import check_privilege
@@ -172,12 +172,10 @@ def admin_csv_import():
 
     db.session.commit()
     if failures:
-        tf = TempFile(write_bad_records(bad_records))
-        db.session.add(tf)
-        db.session.commit()
+        session['bad_records'] = write_bad_records(bad_records)
         flash("There were some errors during import", 'warning')
         return render_template('resolver/csv.html', title='Import & Export',
-                               failures=failures, tempfile=tf.id)
+                               failures=failures)
 
     flash('Import successful', 'success')
     return render_template ('resolver/csv.html', title="Import & Export",
@@ -195,13 +193,12 @@ def write_bad_records(records):
     return file.name
 
 
-@app.route('/resolver/csv/records/<int:id>')
-def get_bad_records(id):
-    tf = TempFile.query.filter(TempFile.id == id).first()
-    if not tf:
+@app.route('/resolver/csv/records')
+def get_bad_records():
+    if not session.get('bad_records'):
         flash("File not found", 'warning')
         return redirect("/resolver/csv")
-    file = open(tf.path)
+    file = open(session.get('bad_records'))
     response = make_response(file.read())
     response.headers["Content-Disposition"] = 'attachment; filename="export.csv"'
     response.headers["Content-Type"] = 'text/csv'
