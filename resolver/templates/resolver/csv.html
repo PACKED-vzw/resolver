@@ -44,4 +44,34 @@
     <a href="/resolver/csv/export" class="btn btn-primary btn-lg btn-block">Export</a>
   </div>
 </div>
+
+    <div class="panel panel-danger">
+        <div class="panel-heading">
+            <h3 class="panel-title">Purge database</h3>
+        </div>
+        <div class="panel-body">
+            <button type="button" class="btn btn-danger btn-lg btn-block" data-toggle="modal" data-target="#purgeModal">
+                Purge database
+            </button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="purgeModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Warning</h4>
+                </div>
+                <div class="modal-body">
+                    This will remove all entities and associated documents from the database.
+                    Are you sure you want to continue?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                    <a href="/resolver/csv/purge" class="btn btn-danger">Purge</a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

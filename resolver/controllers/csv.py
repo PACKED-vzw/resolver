@@ -223,16 +223,16 @@ def admin_csv_export():
         for document in entity.documents:
             if type(document) == Data:
                 writer.writerow([entity.id, entity.type, entity.title, 'data',
-                                 unicode(document.url),
+                                 unicode(document.url) if document.url else '',
                                  '1' if document.enabled else '0',
-                                 unicode(document.notes),
+                                 unicode(document.notes) if document.notes else '',
                                  document.format, '', ''])
             else:
                 writer.writerow([entity.id, entity.type, entity.title,
                                  'representation',
-                                 unicode(document.url),
+                                 unicode(document.url) if document.url else '',
                                  '1' if document.enabled else '0',
-                                 unicode(document.notes),
+                                 unicode(document.notes) if document.notes else '',
                                  '',
                                  '1' if document.reference else '0',
                                  unicode(document.order)])
@@ -243,3 +243,12 @@ def admin_csv_export():
     response.headers["Content-Type"] = 'text/csv'
     file.close()
     return response
+
+
+@app.route('/resolver/csv/purge')
+@check_privilege
+def purge_database():
+    Entity.query.delete()
+    db.session.commit()
+    flash("Database has been purged", "success")
+    return redirect('/resolver/csv')
