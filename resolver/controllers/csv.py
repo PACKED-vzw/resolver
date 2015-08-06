@@ -120,7 +120,7 @@ def admin_csv_import():
                     doc.enabled = enabled
                     doc.notes = record[6]
                 else:
-                    doc = Data(id, record[7], url=url, enabled=enabled,
+                    doc = Data(ent.id, record[7], url=url, enabled=enabled,
                                notes=record[6])
                     db.session.add(doc)
                     log(id, "Added data document `%s'" % doc)
@@ -139,7 +139,7 @@ def admin_csv_import():
                         order = Representation.query\
                             .filter(Document.entity_id == ent.id).count() + 1
 
-                    doc = Representation(id, order, url=url,
+                    doc = Representation(ent.id, order, url=url,
                                          enabled=enabled, notes=record[6])
                     db.session.add(doc)
                     log(id, "Added representation document `%s'" % doc)
