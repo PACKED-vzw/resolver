@@ -1,11 +1,15 @@
 import csv, tempfile, cStringIO, time
 from flask import request, render_template, flash, make_response, redirect
 from resolver import app
-from resolver.model import Entity, Document, Data, Representation,\
+from resolver.model import Entity, Document, Data, Representation, TempFile,\
     entity_types, document_types, data_formats
 from resolver.database import db
 from resolver.controllers.user import check_privilege
 from resolver.util import log, UnicodeWriter, UnicodeReader, cleanID, import_log
+from tempfile import NamedTemporaryFile
+
+_csv_header = ['PID', 'entity type', 'title', 'document type', 'URL',
+               'enabled', 'notes', 'format', 'reference', 'order']
 
 @app.route('/resolver/csv')
 @check_privilege
@@ -59,15 +63,18 @@ def admin_csv_import():
 
     records = {}
     failures = []
+    bad_records = []
     for record in reader:
         id = record[0]
         # Skip wrong types now
         # TODO: do we actually fail on importing a wrong type?
         if not record[1] in entity_types:
             failures.append((id, "Wrong entity type `%s'" % record[1]))
+            bad_records.append(record)
             continue
         if not record[3] in document_types:
             failures.append((id, "Wrong document type `%s'" % record[3]))
+            bad_records.append(record)
             continue
 
         rows += 1
@@ -86,6 +93,7 @@ def admin_csv_import():
         if ent:
             if not ent.original_id == id:
                 failures.append((id, "PID collision with `%s'" % ent.original_id))
+                bad_records += record_list
                 continue
         else:
             ent = Entity(id)
@@ -103,6 +111,7 @@ def admin_csv_import():
             if record[3] == 'data':
                 if not(record[7] and record[7] in data_formats):
                     failures.append((id, "Format missing or invalid for PID `%s'" % ent.id))
+                    bad_records.append(record)
                     continue
                 doc = Data.query.filter(Data.format == record[7],
                                         Document.entity_id == ent.id).first()
@@ -163,12 +172,42 @@ def admin_csv_import():
 
     db.session.commit()
     if failures:
+        tf = TempFile(write_bad_records(bad_records))
+        db.session.add(tf)
+        db.session.commit()
         flash("There were some errors during import", 'warning')
         return render_template('resolver/csv.html', title='Import & Export',
-                               failures=failures)
+                               failures=failures, tempfile=tf.id)
 
     flash('Import successful', 'success')
-    return render_template ('resolver/csv.html', title="Import & Export", import_log_id=import_id, rows=rows, count_pids=count_pids)
+    return render_template ('resolver/csv.html', title="Import & Export",
+                            import_log_id=import_id, rows=rows, count_pids=count_pids)
+
+
+def write_bad_records(records):
+    file = NamedTemporaryFile(delete=False)
+    writer = UnicodeWriter(file)
+    writer.writerow(_csv_header)
+    for record in records:
+        writer.writerow(record)
+    file.close()
+    print file.name
+    return file.name
+
+
+@app.route('/resolver/csv/records/<int:id>')
+def get_bad_records(id):
+    tf = TempFile.query.filter(TempFile.id == id).first()
+    if not tf:
+        flash("File not found", 'warning')
+        return redirect("/resolver/csv")
+    file = open(tf.path)
+    response = make_response(file.read())
+    response.headers["Content-Disposition"] = 'attachment; filename="export.csv"'
+    response.headers["Content-Type"] = 'text/csv'
+    file.close()
+    return response
+
 
 @app.route('/resolver/csv/export')
 @check_privilege
@@ -177,8 +216,8 @@ def admin_csv_export():
     entities = Entity.query.all()
     file = cStringIO.StringIO()
     writer = UnicodeWriter(file)
-    writer.writerow(['PID', 'entity type', 'title', 'document type', 'URL',
-                     'enabled', 'notes', 'format', 'reference', 'order']) # TODO add column persistent_link (as separate export?)
+    writer.writerow(_csv_header)
+    # TODO add column persistent_link (as separate export?)
     # TODO ignore column persistent_link while importing (but column is not required)
     for entity in entities:
         for document in entity.documents:
@@ -200,7 +239,7 @@ def admin_csv_export():
 
     file.seek(0)
     response = make_response(file.read())
-    response.headers["Content-Disposition"] = 'attachment; filename="export.csv"'
+    response.headers["Content-Disposition"] = 'attachment; filename="badrecords.csv"'
     response.headers["Content-Type"] = 'text/csv'
     file.close()
     return response
