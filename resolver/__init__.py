@@ -4,6 +4,8 @@ from flask_wtf.csrf import CsrfProtect
 from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
 
+VERSION = "1.5"
+
 app = Flask(__name__)
 app.config.from_pyfile('../resolver.cfg')
 

@@ -1,6 +1,6 @@
 from flask import flash, redirect, render_template
 from BeautifulSoup import BeautifulSoup
-from resolver import app
+from resolver import app, VERSION
 from resolver.controllers.user import check_privilege
 from resolver.forms import SettingsForm
 import resolver.kvstore as kvstore
@@ -15,7 +15,7 @@ def admin_settings(form=None):
                                   'domains':kvstore.get('domains')})
 
     return render_template('resolver/settings.html', title='Settings',
-                           form=form)
+                           form=form, version=VERSION)
 
 @app.route('/resolver/settings', methods=["POST"])
 @check_privilege
