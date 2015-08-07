@@ -190,7 +190,7 @@ def admin_csv_import():
 
 
 def write_bad_records(records):
-    file = NamedTemporaryFile(delete=False)
+    file = NamedTemporaryFile(delete=False, suffix='.csv')
     writer = UnicodeWriter(file)
     writer.writerow(_csv_header)
     for record in records:
