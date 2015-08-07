@@ -87,10 +87,9 @@ def check_privilege(func):
 @csrf.exempt
 @app.route("/resolver/api/login", methods=["POST"])
 def login():
-    # TODO: rate limiting
-
+    # TODO: rate limiting?
     if session.get('username'):
-        raise Exception("TODO")
+        return json.dumps({'errors': [{'title': 'Already logged in'}]}), 403
     form = SigninForm(csrf_enabled=False)
     if form.validate_on_submit():
         user = User.query.filter(User.username == form.username.data).first()
