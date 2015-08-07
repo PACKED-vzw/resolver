@@ -12,9 +12,6 @@ from resolver.util import log
 from resolver import csrf
 
 
-# TODO: Logging
-
-
 entity_schema = {
     "properties": {
         "domain": {"type": "string"},
@@ -137,7 +134,7 @@ def create_entity():
             return json.dumps({'errors':
                  [{'title': 'ID Collision',
                    'detail': 'The provided ID collides with the existing ID \'%s\'' %
-                             e.original_id}]}), 409
+                             ent.original_id}]}), 409
         db.session.add(ent)
         db.session.flush()
         db.session.add(Data(ent.id, 'html'))
@@ -312,6 +309,7 @@ def update_data(data, doc):
     return json.dumps({'data': doc.to_dict()})
 
 
+# TODO: this code for updating order etc should be model code
 def update_representation(data, doc):
     ref = Representation.query.filter(Document.entity_id == doc.entity_id,
                                       Representation.reference == True).first()
