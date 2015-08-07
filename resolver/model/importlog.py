@@ -9,6 +9,7 @@ class ImportLog(db.Model):
     __tablename__ = 'ImportLog'
     id = db.Column(db.Integer, primary_key=True)
     import_id = db.Column(db.String(ID_MAX))
+    # XXX: Do not add a foreign key constraint referencing User
     user = db.Column(db.String(32))
     timestamp = db.Column(db.DateTime)
     data = db.Column(db.Text)

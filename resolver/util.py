@@ -1,13 +1,14 @@
 # -*- coding: utf-8-unix -*-
 import csv, codecs, cStringIO, re
 from unidecode import unidecode
-from flask import session
+from flask import session, has_request_context
 from resolver import app
 from resolver.database import db
 from resolver.model import Log, ImportLog
 
 def log(entity, action):
-    l = Log(entity, session.get('username'), action)
+    username = session.get('username') if has_request_context() else "_command_line_"
+    l = Log(entity, username, action)
     app.logger.info(l)
     db.session.add(l)
     db.session.commit()
@@ -19,7 +20,8 @@ def import_log (import_id, action):
     :param import_id id of the import
     :param action action performed
     """
-    l = ImportLog(import_id, session.get('username'), action)
+    username = session.get('username') if has_request_context() else "_command_line_"
+    l = ImportLog(import_id, username, action)
     app.logger.info (l)
     db.session.add (l)
     db.session.commit ()

@@ -22,36 +22,7 @@ def file_allowed(filename):
            (filename.rsplit('.', 1)[1].lower() == 'csv')
 
 
-# TODO: script for imports
-@app.route('/resolver/csv/import', methods=["POST"])
-@check_privilege
-def admin_csv_import():
-    # First, we go over the list of all records and gather them in a dictionary, indexed on the PID.
-    # Afterwards, for each PID, we check if the PID is already in the database or not
-    # - If it isn't: the new entity is created using the data from the first record in the CSV file
-    # - If it is (no collision): the entity is updated with the data from the first record in the CSV file
-    # - If it is (collision): error!
-    # Data documents are updated iff there is a document of the same format
-    # Representation documents are updated iff there is a document with the same order
-
-    # TODO: Function too big!
-    # TODO: logging?
-
-    # Create id for the import logging function (id = unique identifier of this import action)
-    import_id = str(time.time())
-    rows = 0
-    count_pids = 0
-
-    file = request.files['file']
-
-    if not file:
-        flash("No file provided", "warning")
-        return redirect("/resolver/csv")
-
-    if not file_allowed(file.filename):
-        flash("File not allowed", "warning")
-        return redirect("/resolver/csv")
-
+def import_file(file):
     reader = UnicodeReader(file)
     # NOTE: we always assume the first row is a header
     # As this feature is mainly used for imports/edits from Excel, it is
@@ -60,6 +31,11 @@ def admin_csv_import():
         file.seek(0)
         reader = UnicodeReader(file, delimiter=';')
         reader.next() # Skip header again
+
+    # Create id for the import logging function (id = unique identifier of this import action)
+    import_id = str(time.time())
+    rows = 0
+    count_pids = 0
 
     records = {}
     failures = []
@@ -88,8 +64,8 @@ def admin_csv_import():
 
     for id, record_list in records.iteritems():
         clean_id = cleanID(id)
-        ent = Entity.query.\
-              filter(Entity.id == clean_id).first()
+        ent = Entity.query. \
+            filter(Entity.id == clean_id).first()
         if ent:
             if not ent.original_id == id:
                 failures.append((id, "PID collision with `%s'" % ent.original_id))
@@ -125,9 +101,9 @@ def admin_csv_import():
                     db.session.add(doc)
                     log(id, "Added data document `%s'" % doc)
             elif record[3] == 'representation':
-                doc = Representation.query.\
-                      filter(Document.entity_id == ent.id,
-                             Representation.order == record[9]).first()
+                doc = Representation.query. \
+                    filter(Document.entity_id == ent.id,
+                           Representation.order == record[9]).first()
                 if doc:
                     doc.url = url
                     doc.enabled = enabled
@@ -136,8 +112,8 @@ def admin_csv_import():
                     if record[9] and record[9] != "":
                         order = int(record[9])
                     else:
-                        order = Representation.query\
-                            .filter(Document.entity_id == ent.id).count() + 1
+                        order = Representation.query \
+                                    .filter(Document.entity_id == ent.id).count() + 1
 
                     doc = Representation(ent.id, order, url=url,
                                          enabled=enabled, notes=record[6])
@@ -146,9 +122,9 @@ def admin_csv_import():
 
                 reference = record[8] == '1'
                 if reference:
-                    ref = Representation.query.\
-                          filter(Document.entity_id == ent.id,
-                                 Representation.reference == True).first()
+                    ref = Representation.query. \
+                        filter(Document.entity_id == ent.id,
+                               Representation.reference == True).first()
                     if ref:
                         ref.reference = False
 
@@ -157,9 +133,9 @@ def admin_csv_import():
             db.session.flush()
 
     for id in records:
-        reps = Representation.query.\
-               filter(Document.entity_id == id).\
-               order_by(Representation.order.asc()).all()
+        reps = Representation.query. \
+            filter(Document.entity_id == id). \
+            order_by(Representation.order.asc()).all()
         i = 1
         has_reference = False
         for rep in reps:
@@ -171,6 +147,37 @@ def admin_csv_import():
             reps[0].reference = True
 
     db.session.commit()
+
+    return (import_id, rows, count_pids, failures, bad_records)
+
+
+
+# TODO: script for imports
+@app.route('/resolver/csv/import', methods=["POST"])
+@check_privilege
+def admin_csv_import():
+    # First, we go over the list of all records and gather them in a dictionary, indexed on the PID.
+    # Afterwards, for each PID, we check if the PID is already in the database or not
+    # - If it isn't: the new entity is created using the data from the first record in the CSV file
+    # - If it is (no collision): the entity is updated with the data from the first record in the CSV file
+    # - If it is (collision): error!
+    # Data documents are updated iff there is a document of the same format
+    # Representation documents are updated iff there is a document with the same order
+
+    # TODO: Function too big!
+
+    file = request.files['file']
+
+    if not file:
+        flash("No file provided", "warning")
+        return redirect("/resolver/csv")
+
+    if not file_allowed(file.filename):
+        flash("File not allowed", "warning")
+        return redirect("/resolver/csv")
+
+    import_id, rows, count_pids, failures, bad_records = import_file(file)
+
     if failures:
         session['bad_records'] = write_bad_records(bad_records)
         flash("There were some errors during import", 'warning')
@@ -189,7 +196,6 @@ def write_bad_records(records):
     for record in records:
         writer.writerow(record)
     file.close()
-    print file.name
     return file.name
 
 
