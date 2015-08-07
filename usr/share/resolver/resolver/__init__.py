@@ -35,9 +35,10 @@ def internal_error(e):
     return render_template('error.html', title='Server Error',
                            message=e), 500
 
-import resolver.controllers
-
 csrf = CsrfProtect()
 csrf.init_app(app)
+
+# resolver.controllers.api requires resolver.csrf
+import resolver.controllers
 
 wsgi_app = RemoteUserMiddleware(app.wsgi_app)
