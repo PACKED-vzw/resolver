@@ -7,6 +7,7 @@ from resolver.database import db
 from resolver.controllers.user import check_privilege
 from resolver.util import log, UnicodeWriter, UnicodeReader, cleanID, import_log
 from tempfile import NamedTemporaryFile
+from datetime import datetime
 
 _csv_header = ['PID', 'entity type', 'title', 'document type', 'URL',
                'enabled', 'notes', 'format', 'reference', 'order']
@@ -205,8 +206,9 @@ def get_bad_records():
         flash("File not found", 'warning')
         return redirect("/resolver/csv")
     file = open(session.get('bad_records'))
+    filename = "badrecords_%s.csv" % datetime.now().strftime('%d%m%Y_%H%M%S')
     response = make_response(file.read())
-    response.headers["Content-Disposition"] = 'attachment; filename="export.csv"'
+    response.headers["Content-Disposition"] = 'attachment; filename="%s.csv"' % filename
     response.headers["Content-Type"] = 'text/csv'
     file.close()
     return response
@@ -241,8 +243,9 @@ def admin_csv_export():
                                  unicode(document.order)])
 
     file.seek(0)
+    filename = "export_%s.csv" % datetime.now().strftime('%d%m%Y_%H%M%S')
     response = make_response(file.read())
-    response.headers["Content-Disposition"] = 'attachment; filename="badrecords.csv"'
+    response.headers["Content-Disposition"] = 'attachment; filename="%s.csv"' % filename
     response.headers["Content-Type"] = 'text/csv'
     file.close()
     return response
