@@ -34,12 +34,20 @@ class RepresentationForm(DocumentForm):
                                   validators.Length(max=64)])
 
 class SigninForm(Form):
+    username = StringField('Username', [validators.required()])
+
+    password = PasswordField('Password', [validators.required()])
+
+class UserForm(Form):
     username = StringField('Username', [validators.required(),
                                         validators.Length(min=3, max=32)])
     password = PasswordField('Password', [validators.required(),
                                           validators.Length(min=7, max=64)])
+    confirm = PasswordField('Confirm', [validators.required()])
 
-class UserForm(SigninForm):
+class ResetForm(Form):
+    password = PasswordField('Password', [validators.required(),
+                                          validators.Length(min=7, max=64)])
     confirm = PasswordField('Confirm', [validators.required()])
 
 class SettingsForm(Form):
