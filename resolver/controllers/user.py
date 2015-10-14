@@ -98,11 +98,12 @@ def admin_delete_user(username):
 @app.route('/resolver/user/<username>')
 @check_privilege
 def admin_view_user(username):
+    form = UserForm()
     user = User.query.filter(User.username == username).first()
     if not user:
         flash("User not found", "warning")
         return redirect("/resolver/user")
-    return render_template("resolver/user.html", title="Edit user", user=user)
+    return render_template("resolver/user.html", title="Edit user", user=user, form=form))
 
 @app.route('/resolver/user/<username>', methods=["POST"])
 @check_privilege
