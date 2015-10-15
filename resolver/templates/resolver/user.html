@@ -16,14 +16,17 @@
             <td>
               <form action="/resolver/user/{{ user.username }}" class="form-inline" role="form" method="POST">
                 <div class="form-group">
-                  <label class="sr-only" for="password">Password</label>
-                  <input type="password" class="form-control" id="password" name="password" placeholder="New password">
-                    <input type="hidden" name="csrf_token" value="{{  csrf_token () }}" />
+                  {{ render_field(form.password, placeholder="New password") }}
                 </div>
                 <div class="form-group">
-                    {{ form.csrf_token }}
+                  {{ render_field(form.confirm, placeholder="Confirm new password") }}
                 </div>
-                <button type="submit" class="btn btn-default">Save</button>
+                <div class="form-group">
+                  <div class="col-sm-offset-2 col-sm-10">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-default">Save</button>
+                  </div>
+                </div>
               </form>
             </td>
           </tr>
