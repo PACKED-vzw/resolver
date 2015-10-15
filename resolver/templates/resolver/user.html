@@ -1,3 +1,4 @@
+{% from "_formhelpers.html" import render_field %}
 {% extends "resolver/layout.html" %}
 {% block body %}
     <div class="panel panel-default">
@@ -13,7 +14,7 @@
           <tr>
             <td><strong>Change password</strong></td>
             <td>
-              <form class="form-inline" role="form" method="POST">
+              <form action="/resolver/user/{{ user.username }}" class="form-inline" role="form" method="POST">
                 <div class="form-group">
                   <label class="sr-only" for="password">Password</label>
                   <input type="password" class="form-control" id="password" name="password" placeholder="New password">
