@@ -8,10 +8,11 @@ from flask import redirect, request, render_template
 
 DEFAULT_FORMAT = 'html'
 
+
 @app.route('/collection/<id>')
 @app.route('/collection/<id>/<slug>')
-@app.route('/collection/<etype>/id/<id>')
-@app.route('/collection/<etype>/id/<id>/<slug>')
+#@app.route('/collection/<etype>/id/<id>')
+#@app.route('/collection/<etype>/id/<id>/<slug>')
 def landing_page(id, etype=None, slug=None):
     ent = Entity.query.filter(Entity.id == id).first()
 
@@ -37,6 +38,7 @@ def landing_page(id, etype=None, slug=None):
     return render_template('landing.html',
                            title=title,
                            documents=docs)
+
 
 @app.route('/collection/<dtype>/<id>')
 @app.route('/collection/<dtype>/<id>/<opt1>')
