@@ -1,0 +1,3 @@
+PID;entity type;title;document type;URL;enabled;notes;format;reference;order
+1;work;Hoofdpagina;data;https://incubator.projectcest.be/api.php?action=query&titles=Hoofdpagina&prop=revisions&rvprop=content&format=json;1;;json;;
+1;work;Hoofdpagina;representation;https://incubator.projectcest.be/wiki/Hoofdpagina;1;;html;;
