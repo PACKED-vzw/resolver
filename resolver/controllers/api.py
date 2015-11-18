@@ -1,11 +1,12 @@
-from flask import redirect, request, render_template, flash, session
+from flask import redirect, request, render_template, flash, session, Response
 from functools import update_wrapper
 import json
 from jsonschema import validate, ValidationError
 import operator
-from resolver import app
+from resolver import app, lm
 from resolver.exception import *
 from resolver.model import *
+from resolver.model.user import pwd_context
 from resolver.database import db
 from resolver.forms import SigninForm, EntityForm
 from resolver.util import log
@@ -70,44 +71,34 @@ document_schema = {
 }
 
 
+def requires_authentication():
+    return Response(
+        'Could not verify your access level for that URL.\n'
+        'Log in using proper credentials.', 401,
+        {'WWW-Authenticate': 'Basic realm="Login Required"'}
+    )
+
+
+def check_authorization(username, password):
+    user = User.query.filter(User.username == username).first()
+    if not user:
+        return requires_authentication()
+    return pwd_context.verify(password, user.password)
+
+
+
 def check_privilege(func):
-    """Decorator to provide easy access control to functions."""
+    """
+    Use Basic authentication
+    :param func:
+    :return:
+    """
     def inner(*args, **kwargs):
-        if not session.get('username'):
-            return '{"errors":[{"title": "Authentication required"}]}', 403
-        else:
-            return func(*args, **kwargs)
-
+        auth = request.authorization
+        if not auth or not check_authorization(auth.username, auth.password):
+            return requires_authentication()
+        return func(*args, **kwargs)
     return update_wrapper(inner, func)
-
-
-@csrf.exempt
-@app.route("/resolver/api/login", methods=["POST"])
-def login():
-    # TODO: rate limiting?
-    if session.get('username'):
-        return json.dumps({'errors': [{'title': 'Already logged in'}]}), 403
-    form = SigninForm(csrf_enabled=False)
-    if form.validate_on_submit():
-        user = User.query.filter(User.username == form.username.data).first()
-        if not user:
-            return '{"errors":[{"title": "Username not found"}]}', 403
-        if not user.verify_password(form.password.data):
-            return '{"errors":[{"title": "Wrong password"}]}', 403
-        session['username'] = user.username
-        return "", 204
-    errors = [{'title': 'Malformed parameter',
-               'detail': 'Field %s: %s' % (field, ' '.join(error))}
-              for field, error in form.errors.iteritems()]
-    return json.dumps({'errors': errors}), 403
-
-
-@app.route("/resolver/api/logout")
-@check_privilege
-def logout():
-    session.pop('username', None)
-    return "", 204
-
 
 @csrf.exempt
 @app.route("/resolver/api/entity", methods=["GET"])

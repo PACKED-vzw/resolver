@@ -1,4 +1,3 @@
-from hashlib import sha256
 from resolver import app
 from resolver.database import db
 from passlib.context import CryptContext
