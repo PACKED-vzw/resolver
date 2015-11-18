@@ -145,6 +145,8 @@ Now install the required python packages using pip, Pythons' package manager too
 pip install -r requirements.txt
 ```
 
+> Note that, if you are using supervisor (see below), the name of your virtual environment must be the same as the value of SERVER_NAME and RESOLVER_NAME. Otherwise, the application will fail.
+
 ### Configure the application settings file
 
 Copy the example settings file and start editing this new file. In this example, we will use the `vi` editor.
