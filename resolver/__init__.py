@@ -1,6 +1,7 @@
 import os, logging
 from flask import Flask, render_template
 from flask_wtf.csrf import CsrfProtect
+from flask.ext.login import LoginManager
 from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
 
@@ -8,6 +9,9 @@ VERSION = "1.5"
 
 app = Flask(__name__)
 app.config.from_pyfile('../resolver.cfg')
+
+lm = LoginManager()
+lm.init_app(app)
 
 if os.environ.get('HEROKU', False):
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY',
