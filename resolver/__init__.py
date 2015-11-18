@@ -5,7 +5,7 @@ from flask.ext.login import LoginManager
 from resolver.remoteusermiddleware import RemoteUserMiddleware
 from resolver.exception import NotFoundException
 
-VERSION = "1.5"
+VERSION = "dev-master"
 
 app = Flask(__name__)
 app.config.from_pyfile('../resolver.cfg')
