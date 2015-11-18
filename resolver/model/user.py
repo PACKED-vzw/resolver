@@ -1,26 +1,27 @@
 from hashlib import sha256
 from resolver import app
 from resolver.database import db
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["pbkdf2_sha512", "sha512_crypt", "bcrypt"], default="pbkdf2_sha512")
 
 
 def hash_password(password):
-    m = sha256()
-    m.update(app.config['SALT'] + password)
-    return m.hexdigest()
+    return pwd_context.encrypt(password)
 
 
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(32))
-    password = db.Column(db.String(64))
+    username = db.Column(db.String(64), unique=True)
+    password = db.Column(db.String(256))
 
     def __init__(self, username, password):
         self.username = username
         self.password = hash_password(password)
 
     def verify_password(self, password):
-        return self.password == hash_password(password)
+        return pwd_context.verify(password, self.password)
 
     def change_password(self, password):
         self.password = hash_password(password)
