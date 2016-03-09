@@ -206,7 +206,7 @@ def get_bad_records():
         flash("File not found", 'warning')
         return redirect("/resolver/csv")
     file = open(session.get('bad_records'))
-    filename = "badrecords_%s.csv" % datetime.now().strftime('%d%m%Y_%H%M%S')
+    filename = "badrecords_%s" % datetime.now().strftime('%d%m%Y_%H%M%S')
     response = make_response(file.read())
     response.headers["Content-Disposition"] = 'attachment; filename="%s.csv"' % filename
     response.headers["Content-Type"] = 'text/csv'
