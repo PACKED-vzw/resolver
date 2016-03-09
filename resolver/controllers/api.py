@@ -220,47 +220,58 @@ def get_entity(id):
 @app.route("/resolver/api/entity/<id>", methods=["PUT"])
 @check_privilege
 def update_entity(id):
-    try:
-        data = json.loads(request.data)
-        validate(data, entity_schema)
-
-        ent = Entity.query.filter(Entity.id == id).first()
-        if not ent:
-            return '{"errors":[{"title": "Entity not found"}]}', 404
-
-        ent_str = str(ent)
-
+    if request.headers['Content-Type'] == 'application/x-www-form-urlencoded' \
+        or request.headers['Content-Type'] == 'multipart/form-data':
+        form = EntityForm(csrf_enabled=False)
+        data = {
+            'id': form.id.data,
+            'title': form.title.data,
+            'type': form.type.data
+        }
+    else:
         try:
-            ent.id = data["id"]
-            ent.title = data.get("title", "")
-            ent.type = data["type"]
-        except EntityPIDExistsException:
-            db.session.rollback()
-            return '{"errors":[{"title": "Duplicate ID for entity"}]}', 409
-        except EntityCollisionException:
-            db.session.rollback()
-            return json.dumps({'errors':
-                 [{'title': 'ID Collision',
-                   'detail': 'The provided ID collides with the existing ID \'%s\'' %
-                             e.original_id}]}), 409
+            data = json.loads(request.data)
+            validate(data, entity_schema)
+        except ValueError:
+            return '{"errors":[{"title": "Malformed request",' \
+                   ' "detail":"Expected correctly formatted JSON data"}]}', 400
+        except ValidationError as e:
+            print e
+            return '{"errors":[{"title": "Malformed request",' \
+                   ' "detail":"JSON data does not confirm to schema"}]}', 400
 
-        db.session.commit()
-        log(ent.id, "Changed entity from `%s' to `%s'" % (ent_str, ent))
 
-        data = {'documents': [doc.id for doc in ent.documents],
-                'domain': app.config['BASE_URL'],
-                'id': ent.id,
-                'persistentURIs': ent.persistent_uris,
-                'title': ent.title,
-                'type': ent.type}
-        return json.dumps({'data': data})
-    except ValueError:
-        return '{"errors":[{"title": "Malformed request",' \
-               ' "detail":"Expected correctly formatted JSON data"}]}', 400
-    except ValidationError as e:
-        print e
-        return '{"errors":[{"title": "Malformed request",' \
-               ' "detail":"JSON data does not confirm to schema"}]}', 400
+    ent = Entity.query.filter(Entity.id == id).first()
+    if not ent:
+        return '{"errors":[{"title": "Entity not found"}]}', 404
+
+    ent_str = str(ent)
+
+    try:
+        ent.id = data["id"]
+        ent.title = data.get("title", "")
+        ent.type = data["type"]
+    except EntityPIDExistsException:
+        db.session.rollback()
+        return '{"errors":[{"title": "Duplicate ID for entity"}]}', 409
+    except EntityCollisionException:
+        db.session.rollback()
+        return json.dumps({'errors':
+                               [{'title': 'ID Collision',
+                                 'detail': 'The provided ID collides with the existing ID \'%s\'' %
+                                           e.original_id}]}), 409
+
+    db.session.commit()
+    log(ent.id, "Changed entity from `%s' to `%s'" % (ent_str, ent))
+
+    data = {'documents': [doc.id for doc in ent.documents],
+            'domain': app.config['BASE_URL'],
+            'id': ent.id,
+            'persistentURIs': ent.persistent_uris,
+            'title': ent.title,
+            'type': ent.type}
+    return json.dumps({'data': data})
+
 
 
 @csrf.exempt
