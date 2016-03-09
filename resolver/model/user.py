@@ -20,14 +20,14 @@ class User(db.Model):
     def __init__(self, username, password):
         self.username = username
         self.password = hash_password(password)
-        self.auth_token = pwd_context.encrypt(username, app.config['SECRET_KEY'])
+        self.auth_token = pwd_context.encrypt('{0}{1}'.format(username, app.config['SECRET_KEY']))
 
     def verify_password(self, password):
         return pwd_context.verify(password, self.password)
 
     def change_password(self, password):
         self.password = hash_password(password)
-        self.auth_token = pwd_context.encrypt(self.username, app.config['SECRET_KEY'])
+        self.auth_token = pwd_context.encrypt('{0}{1}'.format(self.username, app.config['SECRET_KEY']))
 
     @property
     def is_authenticated(self):
