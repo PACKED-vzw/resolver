@@ -1,7 +1,8 @@
-from flask import redirect, request, render_template, flash, session, Response
+from flask import redirect, request, render_template, flash, session, Response, g
 from functools import update_wrapper
 import json
 from jsonschema import validate, ValidationError
+from flask.ext.login import login_user, logout_user, current_user, login_required
 import operator
 from resolver import app, lm
 from resolver.exception import *
@@ -95,10 +96,63 @@ def check_privilege(func):
     """
     def inner(*args, **kwargs):
         auth = request.authorization
+
+        # Kept for backwards compatibility
+        if not auth and g.user is not None:
+            if g.user.is_authenticated:
+                return func(*args, **kwargs)
+            else:
+                redirect('/resolver/api/login', 401)
+
         if not auth or not check_authorization(auth.username, auth.password):
             return requires_authentication()
         return func(*args, **kwargs)
     return update_wrapper(inner, func)
+
+
+@lm.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
+
+@app.before_request
+def before_request():
+    g.user = current_user
+
+
+def old_login(func):
+    def inner(*args, **kwargs):
+        if current_user.is_authenticated:
+            return func(*args, **kwargs)
+        else:
+            return redirect("/resolver/api/login", 401)
+    #func.provide_automatic_options = False
+    return update_wrapper(inner, func)
+
+##
+# Deprecated routes
+@csrf.exempt
+@app.route('/resolver/api/login', methods=["POST"])
+def depr_login():
+    if g.user is not None and g.user.is_authenticated:
+        return "", 204
+    form = SigninForm(csrf_enabled=False)
+    if form.validate_on_submit():
+        user = User.query.filter(User.username == form.username.data).first()
+        if not user:
+            return '{"errors": [{"title": "Username not found"}]}', 403
+        login_user(user)
+        return "", 204
+    return '{"errors": [{"title": "You need to provide a username and password!"}]}'
+
+
+@app.route("/resolver/api/logout")
+@old_login
+def depr_logout():
+    logout_user()
+    return redirect("/resolver/api/login")
+#
+##
 
 @csrf.exempt
 @app.route("/resolver/api/entity", methods=["GET"])
