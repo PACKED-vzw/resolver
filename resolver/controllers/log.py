@@ -3,6 +3,7 @@ from resolver import app
 from resolver.controllers.user import check_privilege
 from resolver.model import Log, ImportLog
 
+
 @app.route('/resolver/log/id/<id>')
 @app.route('/resolver/log/limit/<int:limit>')
 @check_privilege
@@ -26,6 +27,7 @@ def export_log(id=None, limit=None):
     response.headers["Content-Type"] = 'text/plain'
 
     return response
+
 
 @app.route ('/resolver/log/import/<id>')
 @check_privilege
