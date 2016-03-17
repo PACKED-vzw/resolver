@@ -23,41 +23,6 @@ The instructions target intallation on an [Ubuntu](http://www.ubuntu.com/) or [D
 
 The installation instructions assume that all services are running on the same host.
 
-### Installing from a debian package
-For debian-based systems, an experimental debian package is provided for single-instance installations. This package requires minimal configuration steps.
-
-#### Requirements
-You need to enable the unstable repository for debian in you ```sources.list```. Add the following to ```/etc/apt/sources.list```:
-```
-deb http://http.us.debian.org/debian unstable main
-```
-
-#### Installation
-Download the package from [this](http://packages.resolver.be/resolver_1.0.0-1_all.deb) website.
-
-Install it using your package manager tool (apt or dpkg).
-
-Edit the configuration file at ```/etc/resolver/resolver.cfg``` and change the BASE_URL variable to the full url of your application (e.g. ```http://myresolver.resolver.be```), with protocol but without trailing /.
-
-Edit the configuration file at ```/etc/apache2/sites-available/resolver.conf``` and change the SERVER_NAME variable to your FQDN (e.g. ```myresolver.resolver.be```).
-
-Restart the supervisor-managed resolver application:
-```
-service supervisor restart
-```
-
-Restart your webserver:
-```
-service apache2 restart
-```
-
-Execute the following command to create the default administrator user (username ```admin```; password ```default```):
-```
-python /usr/share/resolver/bin/initialise.py
-```
-
-Navigate to your server using your web browser to check whether everything worked.
-
 ## Requirements
 
 You will need SSH or terminal access and a user account with appropriate administrative permissions to execute the following commands. Packages might already be installed on your system.
