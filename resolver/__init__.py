@@ -28,6 +28,7 @@ handler.setLevel(logging.INFO)
 handler.setFormatter(logging.Formatter('[%(levelname)s] %(asctime)s -- %(message)s'))
 app.logger.addHandler(handler)
 
+
 @app.errorhandler(404)
 @app.errorhandler(NotFoundException)
 def page_not_found(e):
