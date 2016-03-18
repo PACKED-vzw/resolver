@@ -4,8 +4,8 @@ import multiprocessing
 # See http://docs.gunicorn.org/en/latest/settings.html
 
 # Address to bind to. By default it is localhost.
-proxy_name = 'resolver.app' # The address to bind to.
-proxy_port = '8080' # The port to bind to
+proxy_name = '127.20.0.1' # The address to bind to.
+proxy_port = '8080' # The port to bind to.
 bind = '{0}:{1}'.format(proxy_name, proxy_port)
 
 # Workers
@@ -14,6 +14,6 @@ workers = multiprocessing.cpu_count() * 2 + 1
 
 # Timeout
 # As the resolver sometimes parses large files, we set this to a minimum
-# of 900 seconds (15 minutes). Increase if you get Proxy errors and timeouts.
+# of 900 seconds (15 minutes). Increase if you get proxy errors and timeouts.
 timeout = 900
 graceful_timeout = 900

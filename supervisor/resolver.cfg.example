@@ -1,0 +1,6 @@
+##
+# Configuration settings for supervisor
+##
+RESOLVER_USER="user"
+RESOLVER_NAME="resolver_name"
+RESOLVER_DIR="resolver_dir"
