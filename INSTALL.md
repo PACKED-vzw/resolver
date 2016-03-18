@@ -85,14 +85,14 @@ sudo adduser resolver
 
 ### Deploy the codebase
 
-Switch to the newly created resolver user and deploy the codebase in the home folder using `git`.
+Switch to the newly created resolver user and download the latest release.
 
 ```bash
 su - resolver
-git clone https://github.com/PACKED-vzw/resolver.git resolver
+curl https://codeload.github.com/PACKED-vzw/resolver/tar.gz/v1.6.1 | tar xvz
 ```
 
-You should end up with a new directory `/home/resolver/resolver` which contains the application code.
+You should end up with a new directory `/home/resolver/resolver-1.6.1` which contains the application code.
 
 ### Virtual Enviroment
 
@@ -250,6 +250,38 @@ sudo service apache2 reload
 
 ## <a name="gunicorn">The Gunicorn WSGI HTTP server</a>
 
+All configuration options for Gunicorn are in a configuration file inside the `gunicorn` directory. Copy `resolver.cfg.example` to `resolver.cfg` and update the parameters to suit your installation. The default options will result in a working installation, but usually you will want to change the `proxy_name` and `proxy_port` settings.
+
+```python
+import multiprocessing
+##
+# Gunicorn configuration file
+# See http://docs.gunicorn.org/en/latest/settings.html
+
+# Address to bind to. By default it is localhost.
+proxy_name = '127.0.0.1' # The address to bind to.
+proxy_port = '8080' # The port to bind to.
+bind = '{0}:{1}'.format(proxy_name, proxy_port)
+
+# Workers
+# Recommended: 2x CPU count + 1
+workers = multiprocessing.cpu_count() * 2 + 1
+
+# Timeout
+# As the resolver sometimes parses large files, we set this to a minimum
+# of 900 seconds (15 minutes). Increase if you get proxy errors and timeouts.
+timeout = 900
+graceful_timeout = 900
+```
+
+To start Gunicorn, you can either execute `run_gunicorn.sh` from the project root (e.g. `/home/resolver/resolver`) or start Gunicorn directly.
+
+```bash
+gunicorn -c gunicorn/resolver.cfg resolver:wsgi_app
+```
+
+### 1.6.x and earlier
+
 You can start Gunicorn from the command line manually running by this command running the project root (`/home/resolver/resolver`). Make sure you are logged in as the `resolver` user we've created earlier.
 
 ```bash
@@ -363,12 +395,27 @@ Change the following settings:
 * ```RESOLVER_DIRECTORY```: directory where the resolver application resides (e.g. /srv/resolver).
 * ```RESOLVER_USER```: user under which to run the application (must own the RESOLVER_DIRECTORY).
 
+The configuration options for the supervisor script are in `supervisor/resolver.cfg`. Copy `supervisor/resolver.cfg.example` to `supervisor/resolver.cfg` and update the following configuration parameters:
+* ```RESOLVER_USER```: user under which to run the application (same as above).
+* ```RESOLVER_NAME```: name of the resolver application (same as above).
+* ```RESOLVER_DIR```: directory where the resolver application resides (where resolver.cfg is stored) (e.g. /srv/resolver).
+
+```
+##
+# Configuration settings for supervisor
+##
+RESOLVER_USER="user"
+RESOLVER_NAME="resolver_name"
+RESOLVER_DIR="resolver_dir"
+```
+
+#### 1.6.x and earlier
 Edit the ```start_server.sh``` script in the ```supervisor```-directory and update the following configuration settings:
 * ```RESOLVER_USER```: user under which to run the application (same as above).
 * ```RESOLVER_NAME```: name of the resolver application (same as above).
 * ```PROXY_NAME```: either FQDN or IP-address on which gunicorn must run (e.g. 127.0.0.1 or proxy.resolver.be).
 * ```PROXY_PORT```: port on which gunicorn must listen (e.g. 8080).
-* ```RESOLVER_DIR```: directory where the resolver application resides (where resolver.cfg is stored) (same as above).
+* ```RESOLVER_DIR```: directory where the resolver application resides (where resolver.cfg is stored) (e.g. /srv/resolver).
 
 Reload supervisor to enact to any updates:
 
