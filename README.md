@@ -1,7 +1,6 @@
 Resolver
 ========
 
-[![Latest Version](https://img.shields.io/github/release/PACKED-vzw/resolver.svg?style=flat-square)](https://github.com/PACKED-vzw/resolver/releases)
 [![Software License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg?style=flat-square)](LICENSE.md)
 
 The Resolver application is a tool for creating, managing, and using *persistent URIs*.
