@@ -274,7 +274,7 @@ timeout = 900
 graceful_timeout = 900
 ```
 
-To start Gunicorn, you can either execute `run_gunicorn.sh` from the project root (e.g. `/home/resolver/resolver`) or start Gunicorn directly.
+To start Gunicorn, you can either execute `run_gunicorn.sh` from the project root (e.g. `/home/resolver/resolver`) or start Gunicorn directly. Make sure you are logged in as the `resolver` user we've created earlier.
 
 ```bash
 gunicorn -c gunicorn/resolver.cfg resolver:wsgi_app
@@ -452,6 +452,9 @@ Every instance must have its own port configured for gunicorn to listen on. It i
 
 For reasons of clarity, it is recommended you configure a different (sub)domain for every instance of gunicorn (e.g. s1.proxy.resolver.be and s2.proxy.resolver.be).
 
+Update the Gunicorn configuration file (see [this section](#gunicorn) for more information). Set `proxy_name` to your new subdomain (e.g. `s1.proxy.resolver.be`) and `proxy_port` to your new port (e.g. `8080`).
+
+##### 1.6.x and earlier
 Starting the gunicorn server (see [this section](#gunicorn) for more information) thus changes like this:
 
 ```
