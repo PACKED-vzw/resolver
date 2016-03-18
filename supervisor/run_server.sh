@@ -40,7 +40,7 @@ else
         . "$server_name""/bin/activate"
 fi
 
-if "$proxy_name" != "" ]; then
+if [ "$proxy_name" != "" ]; then
     exec gunicorn -w 4 -b "$proxy_name"":""$port" resolver:wsgi_app --timeout 900 --graceful-timeout 900
 else
     exec gunicorn -c "$c_dir/gunicorn/resolver.cfg" resolver:wsgi_app
