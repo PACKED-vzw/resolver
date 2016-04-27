@@ -21,7 +21,7 @@ Currently, the resolver has two stable branches: 1.5.0 and 1.6.0. All stable rel
 
 ## Installation
 
-See `INSTALL.md` for detailed instructions.
+See [`INSTALL.md`](https://github.com/PACKED-vzw/resolver/blob/master/INSTALL.md) for detailed instructions.
 
 ## Contributing
 
