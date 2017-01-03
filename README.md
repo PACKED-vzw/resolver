@@ -1,7 +1,7 @@
 Resolver
 ========
 
-[![Software License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg?style=flat-square)](LICENSE.md)
+[![Software License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg?style=flat-square)](LICENSE.md) [![Build Status](https://travis-ci.org/PACKED-vzw/resolver.svg?branch=master)](https://travis-ci.org/PACKED-vzw/resolver)
 
 
 The Resolver application is a tool for creating, managing, and using *persistent URIs*.
