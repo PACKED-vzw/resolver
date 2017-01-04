@@ -27,6 +27,7 @@ def slugify(text):
 # TODO: make types a property of Entity?
 entity_types = ('work', 'agent', 'concept', 'event')
 
+
 class Entity(db.Model):
     __tablename__ = 'entity'
     _id = db.Column('id', db.String(ID_MAX), primary_key=True)
@@ -58,6 +59,14 @@ class Entity(db.Model):
             return [url, url+'/%s'%self.slug]
         else:
             return [url]
+
+    @property
+    def work_pid(self):
+        url = '{base_url}/collection/{entity_id}'.format(
+            base_url=app.config['BASE_URL'],
+            entity_id=self.id
+        )
+        return url
 
     @property
     def persistent_uris(self):
