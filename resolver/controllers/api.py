@@ -138,13 +138,7 @@ def create_entity():
         db.session.add(Representation(ent.id, 1, reference=True))
         db.session.commit()
         log(ent.id, "Created entity `%s'" % ent)
-        data = {'documents': [doc.id for doc in ent.documents],
-                'domain': app.config['BASE_URL'],
-                'id': ent.id,
-                'persistentURIs': ent.persistent_uris,
-                'title': ent.title,
-                'type': ent.type}
-        return RestApi().response(status=201, data={'data': data})
+        return RestApi().response(status=201, data={'data': EntityApi().output(entity=ent)})
     errors = [{'title': 'Malformed parameter',
                'detail': 'Field %s: %s' % (field, ' '.join(error))}
               for field, error in form.errors.iteritems()]
@@ -228,13 +222,7 @@ def update_entity(id):
     db.session.commit()
     log(ent.id, "Changed entity from `%s' to `%s'" % (ent_str, ent))
 
-    data = {'documents': [doc.id for doc in ent.documents],
-            'domain': app.config['BASE_URL'],
-            'id': ent.id,
-            'persistentURIs': ent.persistent_uris,
-            'title': ent.title,
-            'type': ent.type}
-    return RestApi().response(data={'data': data})
+    return RestApi().response(data={'data': EntityApi().output(entity=ent)})
 
 
 @csrf.exempt
