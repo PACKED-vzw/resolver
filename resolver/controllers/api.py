@@ -217,6 +217,23 @@ def get_entity(id):
 
 
 @csrf.exempt
+@app.route('/resolver/api/entity/original/<string:original_id>', methods=['GET'])
+@check_privilege
+def get_entity_by_original_id(original_id):
+    existing_entity = Entity.query.filter(Entity.original_id == original_id).first()
+    if existing_entity:
+        data = {'documents': [doc.id for doc in existing_entity.documents],
+                'domain': app.config['BASE_URL'],
+                'id': existing_entity.id,
+                'persistentURIs': existing_entity.persistent_uris,
+                'title': existing_entity.title,
+                'type': existing_entity.type}
+        return json.dumps({'data': data})
+    else:
+        return '{"errors":[{"title": "Entity not found"}]}', 404
+
+
+@csrf.exempt
 @app.route("/resolver/api/entity/<id>", methods=["PUT"])
 @check_privilege
 def update_entity(id):
