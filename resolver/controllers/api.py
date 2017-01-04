@@ -1,4 +1,5 @@
 from flask import redirect, request, render_template, flash, session, Response, g
+from resolver.modules.views.rest import RestApi, ErrorRestApi
 from functools import update_wrapper
 import json
 from jsonschema import validate, ValidationError
@@ -8,68 +9,11 @@ from resolver import app, lm
 from resolver.exception import *
 from resolver.model import *
 from resolver.model.user import pwd_context
+from resolver.model.schemas import *
 from resolver.database import db
 from resolver.forms import SigninForm, EntityForm
 from resolver.util import log
 from resolver import csrf
-
-
-entity_schema = {
-    "properties": {
-        "domain": {"type": "string"},
-        "type": {"type": "string",
-                 "enum": ["work", "concept", "event", "agent"]},
-        "id": {"type": "string"},
-        "title": {"type": "string"},
-        "documents": {"type": "array",
-                      "items": {"type": "integer"}},
-        "persistentURIs": {"type": "array",
-                           "items": {"type": "string"}}
-    },
-    "required": ["type", "id"]
-}
-
-
-document_schema = {
-    "oneOf": [
-        {"$ref": "#/definitions/data"},
-        {"$ref": "#/definitions/representation"}
-    ],
-    "definitions": {
-        "document": {
-            "properties": {
-                "id": {"type": "integer"},
-                "entity": {"type": "string"},
-                "enabled": {"type": "boolean"},
-                "notes": {"type": "string"},
-                "url": {"type": "string"},
-                "type": {"type": "string",
-                         "enum": ["data", "representation"]},
-                "resolves": {"type": "boolean"}
-            },
-            "required": ["entity", "enabled", "type"]
-        },
-        "data": {
-            "allOf": [
-                {"$ref": "#/definitions/document"},
-                {"properties":
-                    {"format": {"type": "string",
-                                "enum": ["html", "json", "pdf", "xml"]},
-                     "type": {"type": "string", "enum": ["data"]}},
-                 "required": ["format"]}]
-        },
-        "representation": {
-            "allOf": [
-                {"$ref": "#/definitions/document"},
-                {"properties":
-                     {"order": {"type": "integer"},
-                      "reference": {"type": "boolean"},
-                      "label": {"type": "string"},
-                      "type": {"type": "string", "enum": ["representation"]}},
-                 "required": ["reference"]}]
-        }
-    }
-}
 
 
 def requires_authentication():
@@ -85,7 +29,6 @@ def check_authorization(username, password):
     if not user:
         return requires_authentication()
     return pwd_context.verify(password, user.password)
-
 
 
 def check_privilege(func):
@@ -140,10 +83,10 @@ def depr_login():
     if form.validate_on_submit():
         user = User.query.filter(User.username == form.username.data).first()
         if not user:
-            return '{"errors": [{"title": "Username not found"}]}', 403
+            return ErrorRestApi().response(status=403, errors=['Username not found.'])
         login_user(user)
         return "", 204
-    return '{"errors": [{"title": "You need to provide a username and password!"}]}'
+    return ErrorRestApi().response(status=401, errors=['You need to provide a username and password.'])
 
 
 @app.route("/resolver/api/logout")
@@ -154,13 +97,14 @@ def depr_logout():
 #
 ##
 
+
 @csrf.exempt
 @app.route("/resolver/api/entity", methods=["GET"])
 @check_privilege
 def get_entities():
     entities = db.session.query(Entity.id, Entity.title)
     data = [{"PID": id, "title": title} for (id, title) in entities]
-    return json.dumps({"data": data})
+    return RestApi().response(data={'data': data})
 
 
 @csrf.exempt
@@ -174,12 +118,12 @@ def create_entity():
                          title=form.title.data,
                          id=form.id.data)
         except EntityPIDExistsException:
-            return '{"errors":[{"title": "Duplicate ID for entity"}]}', 409
-        except EntityCollisionException:
-            return json.dumps({'errors':
-                 [{'title': 'ID Collision',
-                   'detail': 'The provided ID collides with the existing ID \'%s\'' %
-                             ent.original_id}]}), 409
+            return ErrorRestApi().response(status=409, errors=['Duplicate ID for entity.'])
+        except EntityCollisionException as e:
+            return ErrorRestApi().response(status=409, errors=[{
+                'title': 'ID Collision',
+                'detail': 'The provided ID \'{0}\' collides with the existing ID \'{1}\''.format(form.id.data, e.original_id)
+            }])
         db.session.add(ent)
         db.session.flush()
         db.session.add(Data(ent.id, 'html'))
@@ -192,11 +136,11 @@ def create_entity():
                 'persistentURIs': ent.persistent_uris,
                 'title': ent.title,
                 'type': ent.type}
-        return json.dumps({'data': data}), 201
+        return RestApi().response(status=201, data={'data': data})
     errors = [{'title': 'Malformed parameter',
                'detail': 'Field %s: %s' % (field, ' '.join(error))}
               for field, error in form.errors.iteritems()]
-    return json.dumps({'errors': errors}), 400
+    return ErrorRestApi().response(status=400, errors=errors)
 
 
 @csrf.exempt
@@ -211,9 +155,9 @@ def get_entity(id):
                 'persistentURIs': ent.persistent_uris,
                 'title': ent.title,
                 'type': ent.type}
-        return json.dumps({'data': data})
+        return RestApi().response(data={'data': data})
     else:
-        return '{"errors":[{"title": "Entity not found"}]}', 404
+        return ErrorRestApi().response(status=404, errors=['Entity not found.'])
 
 
 @csrf.exempt
@@ -228,17 +172,19 @@ def get_entity_by_original_id(original_id):
                 'persistentURIs': existing_entity.persistent_uris,
                 'title': existing_entity.title,
                 'type': existing_entity.type}
-        return json.dumps({'data': data})
+        return RestApi().response(data={'data': data})
     else:
-        return '{"errors":[{"title": "Entity not found"}]}', 404
+        return ErrorRestApi().response(status=404, errors=['Entity not found.'])
 
 
 @csrf.exempt
 @app.route("/resolver/api/entity/<id>", methods=["PUT"])
 @check_privilege
 def update_entity(id):
-    if request.headers['Content-Type'] == 'application/x-www-form-urlencoded' \
-        or request.headers['Content-Type'] == 'multipart/form-data':
+    # With form-data, you also get the boundary after the first ';'
+    content_type = request.headers['Content-Type'].split(';')
+    if content_type[0] == 'application/x-www-form-urlencoded' \
+            or content_type[0] == 'multipart/form-data':
         form = EntityForm(csrf_enabled=False)
         data = {
             'id': form.id.data,
@@ -249,18 +195,22 @@ def update_entity(id):
         try:
             data = json.loads(request.data)
             validate(data, entity_schema)
-        except ValueError:
-            return '{"errors":[{"title": "Malformed request",' \
-                   ' "detail":"Expected correctly formatted JSON data"}]}', 400
+        except ValueError as e:
+            errors = [{
+                'title': 'Malformed request',
+                'detail': 'Expected correctly formatted JSON data: {0}'.format(e)
+            }]
+            return ErrorRestApi().response(status=400, errors=errors)
         except ValidationError as e:
-            print e
-            return '{"errors":[{"title": "Malformed request",' \
-                   ' "detail":"JSON data does not confirm to schema"}]}', 400
-
+            errors = [{
+                'title': 'Malformed request',
+                'detail': 'JSON data does not conform to schema: {0}'.format(e)
+            }]
+            return ErrorRestApi().response(status=400, errors=errors)
 
     ent = Entity.query.filter(Entity.id == id).first()
     if not ent:
-        return '{"errors":[{"title": "Entity not found"}]}', 404
+        return ErrorRestApi().response(status=404, errors=['Entity not found.'])
 
     ent_str = str(ent)
 
@@ -270,13 +220,14 @@ def update_entity(id):
         ent.type = data["type"]
     except EntityPIDExistsException:
         db.session.rollback()
-        return '{"errors":[{"title": "Duplicate ID for entity"}]}', 409
-    except EntityCollisionException:
+        return ErrorRestApi().response(status=409, errors=['Duplicate ID \'{0}\' for entity.'.format(data['id'])])
+    except EntityCollisionException as e:
         db.session.rollback()
-        return json.dumps({'errors':
-                               [{'title': 'ID Collision',
-                                 'detail': 'The provided ID collides with the existing ID \'%s\'' %
-                                           e.original_id}]}), 409
+        errors = [{
+            'title': 'ID collision',
+            'detail': 'The provided ID \'{0}\' collides with the existing ID \'{0}\'.'.format(data['id'], e.original_id)
+        }]
+        return ErrorRestApi().response(status=409, errors=errors)
 
     db.session.commit()
     log(ent.id, "Changed entity from `%s' to `%s'" % (ent_str, ent))
@@ -287,8 +238,7 @@ def update_entity(id):
             'persistentURIs': ent.persistent_uris,
             'title': ent.title,
             'type': ent.type}
-    return json.dumps({'data': data})
-
+    return RestApi().response(data={'data': data})
 
 
 @csrf.exempt
@@ -302,7 +252,7 @@ def delete_entity(id):
         log(id, "Removed the entity `%s'" % ent)
         return "", 204
     else:
-        return '{"errors":[{"title": "Entity not found"}]}', 404
+        return ErrorRestApi().response(status=404, errors=['Entity not found.'])
 
 
 @csrf.exempt
@@ -315,13 +265,14 @@ def create_document():
 
         ent = Entity.query.filter(Entity.id == data['entity']).first()
         if not ent:
-            return '{"errors":[{"title": "Entity not found"}]}', 400
+            return ErrorRestApi().response(status=400, errors=['Entity not found.'])
 
         if data['type'] == 'data':
             docs = Data.query.filter(Document.entity_id == ent.id,
                                      Data.format == data['format']).all()
             if len(docs) != 0:
-                return '{"errors":[{"title": "Duplicate data format for entity"}]}', 400
+                return ErrorRestApi().response(status=400, errors=['Duplicate data format \'{0}\' for entity.'
+                                               .format(data['format'])])
             doc = Data(ent.id, data['format'], data.get('url', ''),
                        data['enabled'], data.get('notes', ''))
         else:
@@ -331,8 +282,11 @@ def create_document():
                 if ref:
                     ref.reference = False
             elif not ref:
-                return '{"errors":[{"title": "Reference error",' \
-                       ' "detail":"At least one reference representation is required"}]}', 400
+                errors = [{
+                    'title': 'Reference error',
+                    'detail': 'At least one reference representation is required.'
+                }]
+                return ErrorRestApi().response(status=400, errors=errors)
 
             highest = Representation.query.\
                 filter(Document.entity_id == ent.id).\
@@ -350,13 +304,19 @@ def create_document():
         db.session.commit()
         log(doc.entity_id, "Added %s document `%s'" % (data['type'], doc))
 
-        return json.dumps({'data': doc.to_dict()}), 201
-    except ValueError:
-        return '{"errors":[{"title": "Malformed request",' \
-               ' "detail":"Expected correctly formatted JSON data"}]}', 400
-    except ValidationError:
-        return '{"errors":[{"title": "Malformed request",' \
-               ' "detail":"JSON data does not confirm to schema"}]}', 400
+        return RestApi().response(status=201, data={'data': doc.to_dict()})
+    except ValueError as e:
+        errors = [{
+            'title': 'Malformed request',
+            'detail': 'Expected correctly formatted JSON data: {0}'.format(e)
+        }]
+        return ErrorRestApi().response(status=400, errors=errors)
+    except ValidationError as e:
+        errors = [{
+            'title': 'Malformed request',
+            'detail': 'JSON data does not conform to schema: {0}'.format(e)
+        }]
+        return ErrorRestApi().response(status=400, errors=errors)
 
 
 @csrf.exempt
@@ -365,8 +325,8 @@ def create_document():
 def get_document(id):
     doc = Document.query.filter(Document.id == id).first()
     if not doc:
-        return '{"errors":[{"title":"Document not found"}]}', 404
-    return json.dumps({'data': doc.to_dict()})
+        return ErrorRestApi().response(status=404, errors=['Document not found.'])
+    return RestApi().response(status=201, data={'data': doc.to_dict()})
 
 
 def update_data(data, doc):
@@ -374,12 +334,13 @@ def update_data(data, doc):
                              Data.format == data['format']).all()
     if len(docs) != 0:
         db.session.rollback()
-        return '{"errors":[{"title": "Duplicate data format for entity"}]}', 400
+        return ErrorRestApi().response(status=400, errors=['Duplicate data format \'{0}\' for entity \'{1}\'.'
+                                                           .format(data['format'], doc.entity_id)])
 
     doc.format = data["format"]
     db.session.commit()
 
-    return json.dumps({'data': doc.to_dict()})
+    return RestApi().response(status=200, data={'data': doc.to_dict()})
 
 
 # TODO: this code for updating order etc should be model code
@@ -392,22 +353,31 @@ def update_representation(data, doc):
         doc.reference = True
     elif not ref:
         db.session.rollback()
-        return '{"errors":[{"title": "Reference error",' \
-               ' "detail":"At least one reference representation is required"}]}', 400
+        errors = [{
+            'title': 'Reference error',
+            'detail': 'At least one reference representation is required.'
+        }]
+        return ErrorRestApi().response(status=400, errors=errors)
 
     if 'order' in data and doc.order != data['order']:
         old_order = doc.order
         new_order = data['order']
         if new_order <= 0:
             db.session.rollback()
-            return '{"errors":[{"title": "Order error",' \
-                   ' "detail":"Order must be larger than or equal to 1"}]}', 400
+            errors = [{
+                'title': 'Order error',
+                'detail': 'Order must be larger than or equal to 1.'
+            }]
+            return ErrorRestApi().response(status=400, errors=errors)
 
         max_order = Representation.query.filter(Document.entity_id == doc.entity_id).count()
         if new_order > max_order:
             db.session.rollback()
-            return '{"errors":[{"title": "Order error",' \
-                   ' "detail":"Order too high"}]}', 400
+            errors = [{
+                'title': 'Order error',
+                'detail': 'Order too high.'
+            }]
+            return ErrorRestApi().response(status=400, errors=errors)
 
         docs = Representation.query.filter(Document.entity_id == doc.entity_id,
                                            Representation.order <= max(new_order, old_order),
@@ -421,7 +391,7 @@ def update_representation(data, doc):
         doc.order = new_order
 
     db.session.commit()
-    return json.dumps({'data': doc.to_dict()})
+    return RestApi().response(status=200, data={'data': doc.to_dict()})
 
 
 @csrf.exempt
@@ -434,7 +404,7 @@ def update_document(id):
 
         doc = Document.query.filter(Document.id == id).first()
         if not doc:
-            return '{"errors":[{"title": "Document not found"}]}', 404
+            return ErrorRestApi().response(status=404, errors=['Document not found.'])
 
         doc.enabled = data["enabled"]
         doc.url = data.get('url', '')
@@ -444,12 +414,18 @@ def update_document(id):
             return update_data(data, doc)
         else:
             return update_representation(data, doc)
-    except ValueError:
-        return '{"errors":[{"title": "Malformed request",' \
-               ' "detail":"Expected correctly formatted JSON data"}]}', 400
-    except ValidationError:
-        return '{"errors":[{"title": "Malformed request",' \
-               ' "detail":"JSON data does not confirm to schema"}]}', 400
+    except ValueError as e:
+        errors = [{
+            'title': 'Malformed request',
+            'detail': 'Expected correctly formatted JSON data: {0}'.format(e)
+        }]
+        return ErrorRestApi().response(status=400, errors=errors)
+    except ValidationError as e:
+        errors = [{
+            'title': 'Malformed request',
+            'detail': 'JSON data does not conform to schema: {0}'.format(e)
+        }]
+        return ErrorRestApi().response(status=400, errors=errors)
 
 
 @csrf.exempt
@@ -458,14 +434,13 @@ def update_document(id):
 def delete_document(id):
     doc = Document.query.filter(Document.id == id).first()
     if not doc:
-        return '{"errors":[{"title":"Document not found"}]}', 404
+        return ErrorRestApi().response(status=404, errors=['Document not found.'])
     if isinstance(doc, Representation):
         if doc.reference:
             count = Representation.query.\
                 filter(Document.entity_id == doc.entity_id).count()
             if count > 1:
-                return '{"errors":[{"title":"Can not delete reference representation"}]}', \
-                       409
+                return ErrorRestApi().response(status=409, errors=['Can not delete reference representation.'])
             db.session.delete(doc)
             db.session.flush()
         i = 1

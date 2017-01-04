@@ -2,10 +2,12 @@ class NotFoundException(Exception):
     def __init__(self):
         self.message = "Not Found"
 
+
 class EntityPIDExistsException(Exception):
     """This exception is raised if an entity's PID is not unique"""
     def __init__(self):
         self.message = "Duplicate PID"
+
 
 class EntityCollisionException(Exception):
     """This exception is raise if two distinct PIDs are mapped onto the same
