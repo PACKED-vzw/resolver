@@ -14,10 +14,14 @@ More information on the usage of the tool and its purpose can be found on the [w
 
 ## Download
 
-Currently, the resolver has two stable branches: 1.5.0 and 1.6.0. All stable releases will get bugfixes for 18 months after their original release date.
+Currently, the resolver has one stable branch: 1.7.0 and two deprecated branches. All stable releases will get bugfixes for 18 months after their original release date.
 
-* Download the latest release of the 1.5.0-branch (stable, supported until 2017-02-04) [here](https://github.com/PACKED-vzw/resolver/releases/tag/v1.5.2).
-* Download the latest release of the 1.6.0-branch (stable, supported until 2017-09-07) [here](https://github.com/PACKED-vzw/resolver/releases/tag/v1.6.1).
+### Latest stable release
+* Download the latest release of the 1.7.0-branch (stable, supported until 2018-06-03) [here](https://github.com/PACKED-vzw/resolver/releases/tag/v1.7.2).
+
+### Deprecated branches (still supported)
+* Download the latest release of the 1.5.0-branch (deprecated, supported until 2017-02-04) [here](https://github.com/PACKED-vzw/resolver/releases/tag/v1.5.2).
+* Download the latest release of the 1.6.1-branch (deprecated, supported until 2017-09-07) [here](https://github.com/PACKED-vzw/resolver/releases/tag/v1.6.1).
 
 ## Installation
 
