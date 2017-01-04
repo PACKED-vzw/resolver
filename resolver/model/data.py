@@ -4,7 +4,8 @@ from resolver.model import Document
 from resolver.util import log
 import resolver.kvstore as kvstore
 
-data_formats = ('html', 'json', 'xml', 'pdf')
+data_formats = ['html', 'json', 'xml', 'pdf', 'csv']
+
 
 class Data(Document):
     __tablename__ = 'data'
@@ -16,7 +17,7 @@ class Data(Document):
     _format = db.Column('format', db.Enum(*data_formats, name='Format'))
 
     __mapper_args__ = {
-        'polymorphic_identity':'data'
+        'polymorphic_identity': 'data'
     }
 
     def __init__(self, entity, format, url=None, enabled=True, notes=None):
