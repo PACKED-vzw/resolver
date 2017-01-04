@@ -7,6 +7,7 @@ import resolver.kvstore as kvstore
 
 document_types = ('data', 'representation')
 
+
 class Document(db.Model):
     __tablename__ = 'document'
     id = db.Column(db.Integer, primary_key=True)
@@ -23,8 +24,8 @@ class Document(db.Model):
                            backref='document')
 
     __mapper_args__ = {
-        'polymorphic_identity':'document',
-        'polymorphic_on':type
+        'polymorphic_identity': 'document',
+        'polymorphic_on': type
     }
 
     def __init__(self, entity_id, url=None, enabled=True, notes=None):

@@ -12,6 +12,7 @@ from resolver.model.user import pwd_context
 from resolver.model.schemas import *
 from resolver.database import db
 from resolver.forms import SigninForm, EntityForm
+from resolver.modules.views.api.entity import EntityApi
 from resolver.util import log
 from resolver import csrf
 
@@ -37,6 +38,7 @@ def check_privilege(func):
     :param func:
     :return:
     """
+
     def inner(*args, **kwargs):
         auth = request.authorization
 
@@ -50,6 +52,7 @@ def check_privilege(func):
         if not auth or not check_authorization(auth.username, auth.password):
             return requires_authentication()
         return func(*args, **kwargs)
+
     return update_wrapper(inner, func)
 
 
@@ -69,8 +72,10 @@ def old_login(func):
             return func(*args, **kwargs)
         else:
             return redirect("/resolver/api/login", 401)
-    #func.provide_automatic_options = False
+
+    # func.provide_automatic_options = False
     return update_wrapper(inner, func)
+
 
 ##
 # Deprecated routes
@@ -94,6 +99,8 @@ def depr_login():
 def depr_logout():
     logout_user()
     return redirect("/resolver/api/login")
+
+
 #
 ##
 
@@ -122,7 +129,8 @@ def create_entity():
         except EntityCollisionException as e:
             return ErrorRestApi().response(status=409, errors=[{
                 'title': 'ID Collision',
-                'detail': 'The provided ID \'{0}\' collides with the existing ID \'{1}\''.format(form.id.data, e.original_id)
+                'detail': 'The provided ID \'{0}\' collides with the existing ID \'{1}\''.format(form.id.data,
+                                                                                                 e.original_id)
             }])
         db.session.add(ent)
         db.session.flush()
@@ -147,15 +155,9 @@ def create_entity():
 @app.route("/resolver/api/entity/<id>", methods=["GET"])
 @check_privilege
 def get_entity(id):
-    ent = Entity.query.filter(Entity.id == id).first()
-    if ent:
-        data = {'documents': [doc.id for doc in ent.documents],
-                'domain': app.config['BASE_URL'],
-                'id': ent.id,
-                'persistentURIs': ent.persistent_uris,
-                'title': ent.title,
-                'type': ent.type}
-        return RestApi().response(data={'data': data})
+    out_data = EntityApi().get(id)
+    if out_data:
+        return RestApi().response(data={'data': out_data})
     else:
         return ErrorRestApi().response(status=404, errors=['Entity not found.'])
 
@@ -164,15 +166,9 @@ def get_entity(id):
 @app.route('/resolver/api/entity/original/<string:original_id>', methods=['GET'])
 @check_privilege
 def get_entity_by_original_id(original_id):
-    existing_entity = Entity.query.filter(Entity.original_id == original_id).first()
-    if existing_entity:
-        data = {'documents': [doc.id for doc in existing_entity.documents],
-                'domain': app.config['BASE_URL'],
-                'id': existing_entity.id,
-                'persistentURIs': existing_entity.persistent_uris,
-                'title': existing_entity.title,
-                'type': existing_entity.type}
-        return RestApi().response(data={'data': data})
+    out_data = EntityApi().get_original(original_id)
+    if out_data:
+        return RestApi().response(data={'data': out_data})
     else:
         return ErrorRestApi().response(status=404, errors=['Entity not found.'])
 
@@ -288,8 +284,8 @@ def create_document():
                 }]
                 return ErrorRestApi().response(status=400, errors=errors)
 
-            highest = Representation.query.\
-                filter(Document.entity_id == ent.id).\
+            highest = Representation.query. \
+                filter(Document.entity_id == ent.id). \
                 order_by(Representation.order.desc()).first()
             if highest:
                 order = highest.order + 1
@@ -335,7 +331,7 @@ def update_data(data, doc):
     if len(docs) != 0:
         db.session.rollback()
         return ErrorRestApi().response(status=400, errors=['Duplicate data format \'{0}\' for entity \'{1}\'.'
-                                                           .format(data['format'], doc.entity_id)])
+                                       .format(data['format'], doc.entity_id)])
 
     doc.format = data["format"]
     db.session.commit()
@@ -381,7 +377,7 @@ def update_representation(data, doc):
 
         docs = Representation.query.filter(Document.entity_id == doc.entity_id,
                                            Representation.order <= max(new_order, old_order),
-                                           Representation.order >= min(new_order, old_order))\
+                                           Representation.order >= min(new_order, old_order)) \
             .order_by(Representation.order.asc()).all()
         op = operator.add if new_order < old_order else operator.sub
 
@@ -437,16 +433,16 @@ def delete_document(id):
         return ErrorRestApi().response(status=404, errors=['Document not found.'])
     if isinstance(doc, Representation):
         if doc.reference:
-            count = Representation.query.\
+            count = Representation.query. \
                 filter(Document.entity_id == doc.entity_id).count()
             if count > 1:
                 return ErrorRestApi().response(status=409, errors=['Can not delete reference representation.'])
             db.session.delete(doc)
             db.session.flush()
         i = 1
-        reps = Representation.query.\
-               filter(Document.entity_id == doc.entity_id).\
-               order_by(Representation.order.asc()).all()
+        reps = Representation.query. \
+            filter(Document.entity_id == doc.entity_id). \
+            order_by(Representation.order.asc()).all()
         for rep in reps:
             rep.order = i
             i += 1
