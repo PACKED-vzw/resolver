@@ -107,7 +107,6 @@ def depr_logout():
 
 @csrf.exempt
 @app.route("/resolver/api/entity", methods=["GET"])
-@check_privilege
 def get_entities():
     entities = db.session.query(Entity.id, Entity.title)
     data = [{"PID": id, "title": title} for (id, title) in entities]
@@ -147,7 +146,6 @@ def create_entity():
 
 @csrf.exempt
 @app.route("/resolver/api/entity/<id>", methods=["GET"])
-@check_privilege
 def get_entity(id):
     out_data = EntityApi().get(id)
     if out_data:
@@ -158,7 +156,6 @@ def get_entity(id):
 
 @csrf.exempt
 @app.route('/resolver/api/entity/original/<string:original_id>', methods=['GET'])
-@check_privilege
 def get_entity_by_original_id(original_id):
     out_data = EntityApi().get_original(original_id)
     if out_data:
@@ -305,7 +302,6 @@ def create_document():
 
 @csrf.exempt
 @app.route("/resolver/api/document/<id>", methods=["GET"])
-@check_privilege
 def get_document(id):
     doc = Document.query.filter(Document.id == id).first()
     if not doc:
