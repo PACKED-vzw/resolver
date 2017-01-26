@@ -7,26 +7,27 @@ function jobFinished(job_id) {
     $.ajax({
         url: '/resolver/api/importer/' + job_id + '/status',
         method: 'GET',
+        error: function (data) {
+            $('#i_status').replaceWith('<span id="i_status">Failed</span>');
+            $('#i_status_message').replaceWith('<p>The import job has failed. Redirecting to the error page.</p>');
+        },
         success: function (data) {
+            var url;
             if (data.status == 'Running') {
                 setTimeout(function () {
-                    jobFinished(job_id)
+                    jobFinished(job_id);
                 }, 5000);
-            } else {
-                $('#i_status').replaceWith('Finished');
+            } else if (data.status == 'Finished') {
+                $('#i_status').replaceWith('<span id="i_status">Finished</span>');
                 $('#i_status_message').replaceWith('<p>The import job has finished. Redirecting to the results page.</p>');
-                setTimeout(function () {
-                    window.location.replace('/resolver/api/importer/' + job_id + '/finished');
-                }, 10000);
+                url = '/resolver/csv/import/' + job_id + '/finished';
+                window.location.replace(url);
+            } else {
+                $('#i_status').replaceWith('<span id="i_status">Failed</span>');
+                $('#i_status_message').replaceWith('<p>The import job has failed. Redirecting to the error page.</p>');
+                url = '/resolver/csv/import/' + job_id + '/failed';
+                window.location.replace(url);
             }
-        },
-        error: function (jqXHR, status, error) {
-            $('#i_status').replaceWith('Failed');
-            $('#i_status_message').replaceWith('<p>The import job has failed. Redirecting to the error page.</p>');
-            setTimeout(function () {
-                window.location.replace('/resolver/api/importer/' + job_id + '/failed');
-            }, 10000);
         }
     });
-    //('/resolver/api/importer/' + job_id + '/status')
 }

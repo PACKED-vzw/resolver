@@ -7,10 +7,10 @@ from flask import request, render_template, flash, make_response, redirect, sess
 from resolver import app
 from resolver.controllers.user import check_privilege
 from resolver.database import db
-from resolver.model import Entity, Document, Data, Representation, \
-    entity_types, document_types, data_formats
-from resolver.util import log, UnicodeWriter, UnicodeReader, cleanID, import_log
+from resolver.model import Entity, Data
+from resolver.util import UnicodeWriter
 from resolver.modules.importer.csv_redis import CSVRedisWrapper, RedisJobMissing
+from resolver.modules.importer.legacy import import_file
 
 _csv_header = ['PID', 'entity type', 'title', 'document type', 'URL',
                'enabled', 'notes', 'format', 'reference', 'order']
@@ -53,10 +53,24 @@ def admin_csv_import():
         flash("File not allowed", "warning")
         return redirect("/resolver/csv")
 
-    csv_wrapper = CSVRedisWrapper()
-    csv_wrapper.csv_import(csv_fileobj=file)
+    if app.config['USE_REDIS'] is True:
+        csv_wrapper = CSVRedisWrapper()
+        csv_wrapper.csv_import(csv_fileobj=file)
 
-    return redirect(url_for('admin_csv_import_status', job_id=csv_wrapper.job.id))
+        return redirect(url_for('admin_csv_import_status', job_id=csv_wrapper.job.id))
+
+    else:
+        import_id, rows, count_pids, failures, bad_records = import_file(file)
+
+        if failures:
+            session['bad_records'] = write_bad_records(bad_records)
+            flash("There were some errors during import", 'warning')
+            return render_template('resolver/csv.html', title='Import & Export',
+                                   failures=failures)
+
+        flash('Import successful', 'success')
+        return render_template('resolver/csv.html', title="Import & Export",
+                               import_log_id=import_id, rows=rows, count_pids=count_pids)
 
 
 @app.route('/resolver/csv/import/<string:job_id>/status')
@@ -68,11 +82,6 @@ def admin_csv_import_status(job_id):
     except RedisJobMissing:
         abort(404)
         return ''
-
-    if csv_wrapper.finished():
-        return redirect(url_for('admin_csv_import_finished', job_id=job_id))
-    if csv_wrapper.failed():
-        return redirect(url_for('admin_csv_import_failed', job_id=job_id))
 
     return render_template('resolver/csv_status.html', title='Job {0}: status'.format(job_id), job_id=job_id)
 
