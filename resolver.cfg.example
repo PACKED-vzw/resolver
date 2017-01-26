@@ -15,3 +15,5 @@ SALT = "different-random-value"
 
 USE_REDIS = True
 REDIS_TIMEOUT = 3600
+REDIS_HOST = "localhost"
+REDIS_PORT = 6379

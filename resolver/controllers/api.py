@@ -13,6 +13,7 @@ from resolver.model.schemas import *
 from resolver.database import db
 from resolver.forms import SigninForm, EntityForm
 from resolver.modules.views.api.entity import EntityViewApi
+from resolver.modules.importer.csv_redis import CSVRedisWrapper, RedisJobMissing
 from resolver.util import log
 from resolver import csrf
 
@@ -436,3 +437,34 @@ def delete_document(id):
         (doc, doc.entity))
     db.session.commit()
     return "", 204
+
+
+##
+# CSV importer functions
+##
+@csrf.exempt
+@app.route('/resolver/api/importer/<string:job_id>/status', methods=['GET'])
+@check_privilege
+def api_job_status(job_id):
+    csv_wrapper = CSVRedisWrapper()
+    try:
+        csv_wrapper.get_job(job_id)
+    except RedisJobMissing:
+        errors = [{
+            'title': 'Job Not Found',
+            'detail': 'Could not find the job with id {0}'.format(job_id)
+        }]
+        return ErrorRestApi().response(status=404, errors=errors)
+
+    status = {
+        'job': job_id,
+        'status': 'Running'
+    }
+    status_code = 202
+    if csv_wrapper.failed():
+        status['status'] = 'Failed'
+        status_code = 400
+    elif csv_wrapper.finished():
+        status['status'] = 'Finished'
+        status_code = 200
+    return RestApi().response(status=status_code, data=status)

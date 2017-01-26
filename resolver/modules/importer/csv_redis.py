@@ -6,24 +6,84 @@ from resolver.modules.importer.csv import CSVImporter
 from resolver.util import UnicodeReader
 from resolver import app
 
+
+class RedisJobMissing(Exception):
+    pass
+
 # Also: check for failed queue
 
 
+class CSVRedisWrapper:
+    def __init__(self, job=None):
+        self.connection = redis.Redis(
+            host=app.config['REDIS_HOST'],
+            port=app.config['REDIS_PORT']
+        )
+        self.q_queue = Queue(connection=self.connection)
+        self.q_failed = Queue(connection=self.connection)
+        self.__job = job
+
+    def csv_import(self, csv_fileobj):
+        c = CSVRedis(csv_fileobj=csv_fileobj, queue=self.q_queue)
+        self.__job = c.job
+
+    def get_job(self, job_id):
+        self.__job = self.q_queue.fetch_job(job_id)
+        if self.__job is None:
+            raise RedisJobMissing()
+
+    @property
+    def job(self):
+        return self.__job
+
+    def finished(self):
+        if self.__job is None:
+            raise RedisJobMissing()
+        if self.__job.result is not None:
+            return True
+        return False
+
+    def failed(self):
+        if self.__job is None:
+            raise RedisJobMissing()
+        try:
+            if self.__job.failed is True:
+                return True
+        except AttributeError:
+            return False
+        return False
+
+    def bad_records(self):
+        if self.__job is None:
+            raise RedisJobMissing()
+        if self.finished():
+            return self.job.result[0]
+        return []
+
+    def failures(self):
+        if self.__job is None:
+            raise RedisJobMissing()
+        if self.finished():
+            return self.job.result[1]
+        return []
+
+
 class CSVRedis:
-    def __init__(self, csv_filename):
+    def __init__(self, csv_fileobj, queue):
         self.import_id = str(time.time())
-        self.conn = redis.Redis()
-        self.queue = Queue(connection=self.conn)
-        self.failed = Queue('failed', connection=self.conn)
-        csv_file = open(csv_filename, 'r')
-        csv_fh = UnicodeReader(csv_file)
+        self.queue = queue
+
+        csv_fh = UnicodeReader(csv_fileobj)
+
+        # Redis/cPickle can't handle open file objects, so convert to array
         rows = []
         for line in csv_fh:
             rows.append(line)
+
         self.job = self.queue.enqueue_call(
             func=redis_import,
             args=(rows, self.import_id),
-            timeout=3600
+            timeout=app.config['REDIS_TIMEOUT']
         )
 
 
@@ -35,10 +95,13 @@ def redis_import(rows, import_id):
     current = [None]
     i = 0
     for row in rows:
+        # If they have the same original_ID (row[0]), they are data/representations for the same entity
+        # and must be put together in the row_pack for CSVImporter()
         if row[0] == current[0]:
             row_pack.append(row)
             current = row
         else:
+            # Do'nt try to import a row_pack that's empty
             if len(row_pack) > 0:
                 i += 1
                 app.logger.info('Enqueuing {0}.'.format(str(row_pack[0][0])))

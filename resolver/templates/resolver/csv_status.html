@@ -1,0 +1,17 @@
+{% extends "resolver/layout.html" %}
+{% block body %}
+    <script type="text/javascript">
+    var job_id = '{{ job_id }}';
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/csv.import.js') }}"></script>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Import job {{ job_id }}: <span id="i_status">Running</span></h3>
+  </div>
+  <div class="panel-body" id="i_status_message">
+      <p>The import job is still running.</p>
+  </div>
+</div>
+
+{% endblock %}
