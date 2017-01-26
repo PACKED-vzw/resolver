@@ -14,6 +14,7 @@ The Resolver project is a database driven web application based on the following
 | Database Server | MySQL or MariaDB | >= 5.5 |
 | HTTP Server | NGinX or Apache | N/A |
 | Process manager | Supervisor | N/A |
+| Job manager | Redis | N/A |
 
 The instructions are specifically geared towards a installation on a virtual private server (VPS) which exclusively hosts the Resolver. Contact your hosting provider to make sure your hosting plan covers the requirements outlined further in this document.
 
@@ -53,6 +54,12 @@ MySQL with Python bindings
 ```bash
 sudo apt-get install -y mysql-server python-mysqldb libmysqlclient-dev
 ```
+
+Redis
+
+Installing Redis is optional, but will help greatly if you have to import large CSV files.
+
+The installation instructions for Redis can be found in a [separate file](doc/REDIS.md).
 
 ## Create a new database
 
@@ -250,7 +257,7 @@ sudo service apache2 reload
 
 ## <a name="gunicorn">The Gunicorn WSGI HTTP server</a>
 
-All configuration options for Gunicorn are in a configuration file inside the `gunicorn` directory. Copy `resolver.cfg.example` to `resolver.cfg` and update the parameters to suit your installation. The default options will result in a working installation, but usually you will want to change the `proxy_name` and `proxy_port` settings.
+All configuration options for Gunicorn are in a configuration file inside the `gunicorn` directory. Copy `gunicorn/resolver.cfg.example` to `gunicorn/resolver.cfg` and update the parameters to suit your installation. The default options will result in a working installation, but usually you will want to change the `proxy_name` and `proxy_port` settings.
 
 ```python
 import multiprocessing
