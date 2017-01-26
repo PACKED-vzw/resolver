@@ -101,9 +101,10 @@ def admin_csv_import_finished(job_id):
         session['bad_records'] = write_bad_records(csv_wrapper.bad_records())
         flash("There were some errors during import", 'warning')
         return render_template('resolver/csv_success.html', title='Job {0}: finished'.format(job_id), job_id=job_id,
-                               failures=failures)
+                               failures=failures, import_id=csv_wrapper.import_id())
 
-    return render_template('resolver/csv_success.html', title='Job {0}: finished'.format(job_id), job_id=job_id)
+    return render_template('resolver/csv_success.html', title='Job {0}: finished'.format(job_id), job_id=job_id,
+                           import_id=csv_wrapper.import_id())
 
 
 @app.route('/resolver/csv/import/<string:job_id>/failed')

@@ -67,6 +67,11 @@ class CSVRedisWrapper:
             return self.job.result[1]
         return []
 
+    def import_id(self):
+        if self.__job is None:
+            raise RedisJobMissing()
+        return self.job.meta['import_id']
+
 
 class CSVRedis:
     def __init__(self, csv_fileobj, queue):
@@ -85,6 +90,8 @@ class CSVRedis:
             args=(rows, self.import_id),
             timeout=app.config['REDIS_TIMEOUT']
         )
+        self.job.meta['import_id'] = self.import_id
+        self.job.save()
 
 
 def redis_import(rows, import_id):

@@ -21,7 +21,7 @@ class CSVImporter:
     def store(self):
         e_api = EntityApi()
         try:
-            entity, documents = e_api.create_from_rows(self.records)
+            entity, documents = e_api.create_from_rows(self.records, self.import_id)
         except Exception as e:
             a_exc = traceback.format_exc().splitlines()
             error_msg = 'Entity {0}: {1}'.format(self.records[0][0], a_exc[-1])

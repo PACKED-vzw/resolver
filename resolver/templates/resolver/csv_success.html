@@ -8,8 +8,12 @@
         <div class="panel-heading">
             <h3 class="panel-title">Import job {{ job_id }}: <span id="i_status">Finished</span></h3>
         </div>
+    <div class="panel-body">
+        <div>
+            <p>Import successful. <a href="/resolver/log/import/{{ import_id }}">(log)</a></p>
+        </div>
         {% if failures %}
-            <div class="panel-body" id="i_status_failures">
+            <div id="i_status_failures">
                 <div class="panel panel-danger">
                     <div class="panel-heading">
                         <h4 class="panel-title">Some errors occurred</h4>
@@ -24,11 +28,8 @@
                     </div>
                 </div>
             </div>
-        {% else %}
-            <div class="panel-body" id="i_status_message">
-                <p>The import job completed successfully.</p>
-            </div>
         {% endif %}
+    </div>
     </div>
 
 {% endblock %}

@@ -3,7 +3,7 @@ from resolver.modules.api.data import DataApi
 from resolver.modules.api.representation import RepresentationApi
 from resolver.model.entity import Entity, EntityCollisionException, EntityPIDExistsException
 from resolver.model import document_types, data_formats, entity_types
-from resolver.util import cleanID
+from resolver.util import cleanID, import_log
 from resolver.database import db
 
 
@@ -26,7 +26,7 @@ class EntityApi(GenericApi):
     required_params = ('PID', 'entity_type')
     simple_params = keys
 
-    def create_from_rows(self, row_pack):
+    def create_from_rows(self, row_pack, import_id):
         rows = []
         for unclean_row in row_pack:
             rows.append(self.prepare_data(unclean_row))
@@ -40,6 +40,7 @@ class EntityApi(GenericApi):
             'title': rows[0]['title']
         }
         entity = self.create(entity_data)
+        import_log(import_id, 'Added entity {0}'.format(entity))
         documents = []
         for row in rows:
             # Add documents
@@ -55,6 +56,7 @@ class EntityApi(GenericApi):
                     'document_type': row['document_type']
                 }
                 document = DataApi().create(document_data)
+                import_log(import_id, 'Added document {0}'.format(document))
                 documents.append(document)
 
             # Add representations
@@ -70,11 +72,11 @@ class EntityApi(GenericApi):
                     'document_type': row['document_type']
                 }
                 document = RepresentationApi().create(representation_data)
+                import_log(import_id, 'Added representation {0}'.format(document))
                 documents.append(document)
 
             else:
-                pass
-                #raise UnrecognizedDocumentType(row['document_type'])
+                raise UnrecognizedDocumentType(row['document_type'])
 
         # Set the reference representation and the order if it isn't quite right
         representations = RepresentationApi().get_in_order(entity.id)
