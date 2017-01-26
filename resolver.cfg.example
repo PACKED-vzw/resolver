@@ -12,3 +12,6 @@ SSL_CERT = "/etc/mysql/certs/resolver-cert.pem"
 
 SECRET_KEY = "random-value"
 SALT = "different-random-value"
+
+USE_REDIS = True
+REDIS_TIMEOUT = 3600

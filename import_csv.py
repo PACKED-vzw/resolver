@@ -1,29 +1,27 @@
+from resolver.modules.importer.csv_redis import CSVRedis
 from resolver import app
-from resolver.controllers import csv
-import sys
+import time
 
 
-if __name__ == '__main__':
-    if len(sys.argv) != 2 or not csv.file_allowed(sys.argv[1]):
-        print "Please provide a csv file as argument"
-        exit()
+csv_filename = '/vagrant/large_csv.csv'
 
-    try:
-        file = open(sys.argv[1])
-        import_id, rows, count_pids, failures, bad_records = csv.import_file(file)
+c = CSVRedis(csv_filename)
 
-        if failures:
-            path = csv.write_bad_records(bad_records)
-            print "There were some errors whilst importing the dataset:"
-            for failure in failures:
-                print "PID %s: %s" % (failure[0], failure[1])
-            print ""
-            print "Bad records have been written to: %s" % path
-            print "-----------------------"
+while c.job.result is None:
+    print('Waiting for result')
+    time.sleep(5)
 
-        print "Imported %s rows with %s different PIDs" % (rows, count_pids)
-        print "An import log can be found at %s/resolver/log/import/%s" % (app.config['BASE_URL'], import_id)
+bad_records = open('/vagrant/bad.csv', 'w')
+failures = open('/vagrant/failures.csv', 'w')
 
-    except IOError:
-        print "Could not open file!"
-        exit()
+bad_records.write('Record')
+failures.write('Failure')
+
+for bad in c.job.result[0]:
+    bad_records.write('"{0}"\n'.format(bad))
+
+for fail in c.job.result[1]:
+    failures.write('"{0}"\n'.format(fail))
+
+bad_records.close()
+failures.close()

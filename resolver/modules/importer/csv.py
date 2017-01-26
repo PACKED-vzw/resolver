@@ -19,15 +19,16 @@ class CSVImporter:
         self.bad_records = []
 
     def store(self):
-        #entity, documents = EntityApi().create_from_rows(self.records)
+        e_api = EntityApi()
         try:
-            entity, documents = EntityApi().create_from_rows(self.records)
+            entity, documents = e_api.create_from_rows(self.records)
         except Exception as e:
             a_exc = traceback.format_exc().splitlines()
             error_msg = 'Entity {0}: {1}'.format(self.records[0][0], a_exc[-1])
             self.failures.append(error_msg)
-            self.bad_records.append(self.records)
+            self.bad_records += self.records
             app.logger.error(error_msg)
+            e_api.rollback()
         else:
             import_log(self.import_id, 'Added/updated PID {0}'.format(entity.id))
 

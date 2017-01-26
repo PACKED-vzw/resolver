@@ -113,6 +113,12 @@ class EntityApi(GenericApi):
             raise ItemDoesNotExist(Entity.id)
         return existing_entity
 
+    def read_by_original_id(self, original_id):
+        existing_entity = entity = Entity.query.filter(Entity.original_id == original_id).first()
+        if not existing_entity:
+            raise ItemDoesNotExist(original_id)
+        return existing_entity
+
     def prepare_data(self, csv_row):
         a_data = map(lambda x: '' if x is None else x, csv_row)
         t_data = zip(self.keys, a_data)
@@ -127,3 +133,6 @@ class EntityApi(GenericApi):
 
     def list(self):
         pass
+
+    def rollback(self):
+        db.session.rollback()
