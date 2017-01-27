@@ -128,13 +128,13 @@ class EntityApi(GenericApi):
         return d_data
 
     def update(self, object_id, object_data):
-        pass
+        raise NotImplementedError()
 
     def delete(self, object_id):
-        pass
+        raise NotImplementedError()
 
     def list(self):
-        pass
+        raise NotImplementedError()
 
     def rollback(self):
         db.session.rollback()

@@ -1,5 +1,12 @@
 language: python
 python:
   - "2.7"
+services:
+  - mysql
+  - redis-server
 install: "pip install -r requirements.txt"
+before_script:
+  - mysql -e 'create database resolver;'
+  - cp travis_config.cfg resolver.cfg
+  - python2.7 initialise.py
 script: py.test

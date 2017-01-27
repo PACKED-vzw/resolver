@@ -263,7 +263,7 @@ Set `USE_REDIS` to `True`.
 
 `REDIS_HOST` and `REDIS_PORT` must be set to the host (IP-address or FQDN) and port of your Redis server. If you have installed it using the default configuration, you can leave the settings as they are.
 
-`REDIS_TIMEOUT` is set to _3600 seconds_. If you have to import extremely large files and your jobs time out, you can increase this. THe default setting is fine for most cases though.
+`REDIS_TIMEOUT` is set to _3600 seconds_. If you have to import extremely large files and your jobs time out, you can increase this. The default setting is fine for most cases though.
 
 ```
 USE_REDIS = True

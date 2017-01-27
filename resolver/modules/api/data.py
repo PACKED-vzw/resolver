@@ -26,16 +26,16 @@ class DataApi(GenericApi):
         return new_document
 
     def read(self, object_id):
-        pass
+        raise NotImplementedError()
 
     def update(self, object_id, object_data):
-        pass
+        raise NotImplementedError()
 
     def delete(self, object_id):
-        pass
+        raise NotImplementedError()
 
     def list(self):
-        pass
+        raise NotImplementedError()
 
     def by_format_and_entity_id(self, d_format, entity_id):
         existing_document = Data.query.filter(and_(Data.format == d_format, Document.entity_id == entity_id)).first()

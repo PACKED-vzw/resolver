@@ -43,16 +43,16 @@ class RepresentationApi(GenericApi):
         return new_document
 
     def read(self, object_id):
-        pass
+        raise NotImplementedError()
 
     def update(self, object_id, object_data):
-        pass
+        raise NotImplementedError()
 
     def delete(self, object_id):
-        pass
+        raise NotImplementedError()
 
     def list(self):
-        pass
+        raise NotImplementedError()
 
     def by_entity_id_url_and_type(self, entity_id, url, document_type):
         existing_document = Representation.query.filter(and_(Document.entity_id == entity_id,
