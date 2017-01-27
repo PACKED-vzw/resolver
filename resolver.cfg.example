@@ -13,7 +13,7 @@ SSL_CERT = "/etc/mysql/certs/resolver-cert.pem"
 SECRET_KEY = "random-value"
 SALT = "different-random-value"
 
-USE_REDIS = True
+USE_REDIS = False
 REDIS_TIMEOUT = 3600
 REDIS_HOST = "localhost"
 REDIS_PORT = 6379
