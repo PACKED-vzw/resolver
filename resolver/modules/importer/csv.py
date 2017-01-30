@@ -22,9 +22,16 @@ class CSVImporter:
         e_api = EntityApi()
         try:
             entity, documents = e_api.create_from_rows(self.records, self.import_id)
+        #except UnicodeEncodeError as e:
+        #    a_exc = traceback.format_exc().splitlines()
+        #    error_msg = u'Entity {0}: {1}'.format(self.records[0][0], a_exc)
+        #    self.failures.append(error_msg)
+        #    self.bad_records += self.records
+        #    app.logger.error(error_msg)
+        #    e_api.rollback()
         except Exception as e:
             a_exc = traceback.format_exc().splitlines()
-            error_msg = 'Entity {0}: {1}'.format(self.records[0][0], a_exc[-1])
+            error_msg = u'Entity {0}: {1}'.format(self.records[0][0], a_exc[-1])
             self.failures.append(error_msg)
             self.bad_records += self.records
             app.logger.error(error_msg)

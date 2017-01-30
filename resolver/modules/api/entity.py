@@ -40,7 +40,7 @@ class EntityApi(GenericApi):
             'title': rows[0]['title']
         }
         entity = self.create(entity_data)
-        import_log(import_id, 'Added entity {0}'.format(entity))
+        import_log(import_id, u'Added entity {0}'.format(entity))
         documents = []
         for row in rows:
             # Add documents
@@ -56,7 +56,7 @@ class EntityApi(GenericApi):
                     'document_type': row['document_type']
                 }
                 document = DataApi().create(document_data)
-                import_log(import_id, 'Added document {0}'.format(document))
+                import_log(import_id, u'Added document {0}'.format(document))
                 documents.append(document)
 
             # Add representations
@@ -72,7 +72,7 @@ class EntityApi(GenericApi):
                     'document_type': row['document_type']
                 }
                 document = RepresentationApi().create(representation_data)
-                import_log(import_id, 'Added representation {0}'.format(document))
+                import_log(import_id, u'Added representation {0}'.format(document))
                 documents.append(document)
 
             else:
