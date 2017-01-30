@@ -1,4 +1,5 @@
-from resolver.modules.api.entity import EntityApi, ItemAlreadyExists, ItemDoesNotExist
+from resolver.modules.api.entity import EntityApi, ItemAlreadyExists, ItemDoesNotExist, UnrecognizedEntityType,\
+    UnrecognizedDataType, UnrecognizedDocumentType, EntityCollisionException
 from resolver.model import Entity, Document, Representation, Data
 from resolver.modules.api.tests import *
 
@@ -28,6 +29,49 @@ class EntityTest(ApiTest):
             assert d.entity_id == '1812-A'
         assert len(Data.query.all()) == 1
         assert len(Representation.query.all()) == 1
+
+    def test_unrecognizedentitytype_create_from_rows(self):
+        # ('PID', 'entity_type', 'title', 'document_type', 'url', 'enabled', 'notes', 'format', 'reference', 'order')
+        import_id = '123'
+        row_pack = [
+            [u'1812-A', u'exception', u'Naderend onweer', u'data',
+             u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
+             u'1', u'', u'html', u'', u'']
+        ]
+        self.assertRaises(UnrecognizedEntityType, EntityApi().create_from_rows, row_pack, import_id)
+
+    def test_unrecognizeddatatype_create_from_rows(self):
+        import_id = '123'
+        row_pack = [
+            [u'1813-A', u'work', u'Naderend onweer', u'data',
+             u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
+             u'1', u'', u'ldf', u'', u'']
+        ]
+        self.assertRaises(UnrecognizedDataType, EntityApi().create_from_rows, row_pack, import_id)
+
+    def test_unrecognizeddocumenttype_create_from_rows(self):
+        import_id = '123'
+        row_pack = [
+            [u'1813-A', u'work', u'Naderend onweer', u'exception',
+             u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
+             u'1', u'', u'html', u'', u'']
+        ]
+        self.assertRaises(UnrecognizedDocumentType, EntityApi().create_from_rows, row_pack, import_id)
+
+    def test_entitycollision_create_from_rows(self):
+        import_id = '123'
+        row_pack = [
+            [u'1814(A', u'work', u'Naderend onweer', u'data',
+             u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
+             u'1', u'', u'html', u'', u'']
+        ]
+        EntityApi().create_from_rows(row_pack, import_id)
+        row_pack = [
+            [u'1814_A', u'work', u'Naderende storm', u'data',
+             u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
+             u'1', u'', u'html', u'', u'']
+        ]
+        self.assertRaises(EntityCollisionException, EntityApi().create_from_rows, row_pack, import_id)
 
     def test_create(self):
         input_data = {

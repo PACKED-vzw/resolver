@@ -27,6 +27,8 @@ def import_log (import_id, action):
     db.session.commit ()
 
 _clean_re = re.compile(r'[\t !"#$%&\'()*/<=>?@\[\\\]^`{|}]+')
+
+
 def cleanID(ID):
     patterns = [
         # Exceptions

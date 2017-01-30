@@ -14,8 +14,12 @@ class ApiTest(TestCase):
         init_db()
 
     def tearDown(self):
-        db.session.remove()
+        self.clear()
         db.drop_all()
+        db.session.commit()
+
+    def clear(self):
+        db.session.remove()
         db.session.commit()
 
     def t_create(self, input_data_max, input_data_min, db_class, api_class):

@@ -51,6 +51,8 @@ class CSVRedisWrapper:
                 return True
         except AttributeError:
             return False
+        if self.q_failed.fetch_job(self.job.id):
+            return True
         return False
 
     def bad_records(self):
@@ -118,4 +120,12 @@ def redis_import(rows, import_id):
                 failures += c.failures
             row_pack = [row]
             current = row
+    # Off by one error
+    if len(row_pack) > 0:
+        i += 1
+        app.logger.info('Enqueuing {0}.'.format(str(row_pack[0][0])))
+        c = CSVImporter(records=row_pack, import_id=import_id)
+        c.store()
+        bad_records += c.bad_records
+        failures += c.failures
     return bad_records, failures

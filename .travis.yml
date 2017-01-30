@@ -9,4 +9,5 @@ before_script:
   - mysql -e 'create database resolver;'
   - cp travis_config.cfg resolver.cfg
   - python2.7 initialise.py
+  - rq worker > /dev/null 2>&1 &
 script: py.test

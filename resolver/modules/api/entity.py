@@ -98,7 +98,8 @@ class EntityApi(GenericApi):
         try:
             new_entity = self.read(cleaned_data['cleanPID'])
         except ItemDoesNotExist:
-            new_entity = Entity(cleaned_data['cleanPID'])
+            # CleanPID
+            new_entity = Entity(cleaned_data['PID'])
             db.session.add(new_entity)
         else:
             if new_entity.original_id != cleaned_data['PID']:
