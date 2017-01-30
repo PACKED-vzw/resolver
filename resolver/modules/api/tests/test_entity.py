@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from resolver.modules.api.entity import EntityApi, ItemAlreadyExists, ItemDoesNotExist, UnrecognizedEntityType,\
     UnrecognizedDataType, UnrecognizedDocumentType, EntityCollisionException
 from resolver.model import Entity, Document, Representation, Data
@@ -72,6 +73,17 @@ class EntityTest(ApiTest):
              u'1', u'', u'html', u'', u'']
         ]
         self.assertRaises(EntityCollisionException, EntityApi().create_from_rows, row_pack, import_id)
+
+    def test_unicode_create_from_rows(self):
+        import_id = '123'
+        row_pack = [
+            [u'1813-A', u'work', u'Le &àçèé£$^=°-)', u'data',
+             u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
+             u'1', u'', u'html', u'', u'']
+        ]
+        EntityApi().create_from_rows(row_pack, import_id)
+        d = EntityApi().read_by_original_id('1813-A')
+        assert d.title == u'Le &àçèé£$^=°-)'
 
     def test_create(self):
         input_data = {
