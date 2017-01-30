@@ -14,6 +14,7 @@ The Resolver project is a database driven web application based on the following
 | Database Server | MySQL or MariaDB | >= 5.5 |
 | HTTP Server | NGinX or Apache | N/A |
 | Process manager | Supervisor | N/A |
+| Job manager | Redis | N/A |
 
 The instructions are specifically geared towards a installation on a virtual private server (VPS) which exclusively hosts the Resolver. Contact your hosting provider to make sure your hosting plan covers the requirements outlined further in this document.
 
@@ -53,6 +54,12 @@ MySQL with Python bindings
 ```bash
 sudo apt-get install -y mysql-server python-mysqldb libmysqlclient-dev
 ```
+
+Redis
+
+Installing Redis is optional, but will help greatly if you have to import large CSV files.
+
+The installation instructions for Redis can be found in a [separate file](doc/REDIS.md).
 
 ## Create a new database
 
@@ -248,9 +255,40 @@ sudo service apache2 reload
 ```
 
 
+## Redis
+
+If you have elected to use Redis, you must change some settings in the configuration file.
+
+Set `USE_REDIS` to `True`.
+
+`REDIS_HOST` and `REDIS_PORT` must be set to the host (IP-address or FQDN) and port of your Redis server. If you have installed it using the default configuration, you can leave the settings as they are.
+
+`REDIS_TIMEOUT` is set to _3600 seconds_. If you have to import extremely large files and your jobs time out, you can increase this. The default setting is fine for most cases though.
+
+```
+USE_REDIS = True
+REDIS_TIMEOUT = 3600
+REDIS_HOST = "localhost"
+REDIS_PORT = 6379
+```
+
+
+### Workers
+
+Before you can use the Redis server, you must first start at least one worker (`rq worker`). The script `run_rq.sh` inside the `supervisor` directory can be used to do so, but must be configured first via `supervisor/REDIS.cfg`. Copy `supervisor/REDIS.cfg.example` to `supervisor/REDIS.cfg`.
+
+Set `REDIS_HOST` and `REDIS_PORT` to the same value you used in `resolver.cfg`.
+
+```
+REDIS_HOST="localhost"
+REDIS_PORT="6379"
+```
+
+It is recommended you use Supervisor to keep the workers running. If not, you must keep the terminal session open or use something like `nohup` or `screen`. See the section [Supervisor](#supervisor) below.
+
 ## <a name="gunicorn">The Gunicorn WSGI HTTP server</a>
 
-All configuration options for Gunicorn are in a configuration file inside the `gunicorn` directory. Copy `resolver.cfg.example` to `resolver.cfg` and update the parameters to suit your installation. The default options will result in a working installation, but usually you will want to change the `proxy_name` and `proxy_port` settings.
+All configuration options for Gunicorn are in a configuration file inside the `gunicorn` directory. Copy `gunicorn/resolver.cfg.example` to `gunicorn/resolver.cfg` and update the parameters to suit your installation. The default options will result in a working installation, but usually you will want to change the `proxy_name` and `proxy_port` settings.
 
 ```python
 import multiprocessing
@@ -360,7 +398,7 @@ ProxyPass / http://127.0.0.1:8080/ timeout=300
 
 The ``timeout`` argument accepts any value in seconds and sets the time apache waits for a reply to this value.
 
-### Supervisor
+### <a name="supervisor">Supervisor</a>
 
 Supervisor is a process manager which makes managing a number of long-running programs a trivial task by providing a consistent interface through which they can be monitored and controlled.
 
@@ -370,6 +408,8 @@ Install and start supervisor:
 sudo apt-get install supervisor
 sudo service supervisor restart
 ```
+
+#### Resolver
 
 Create a new configuration (e.g. resolver.conf) for the resolver application
 
@@ -409,7 +449,7 @@ RESOLVER_NAME="resolver_name"
 RESOLVER_DIR="resolver_dir"
 ```
 
-#### 1.6.x and earlier
+##### 1.6.x and earlier
 Edit the ```start_server.sh``` script in the ```supervisor```-directory and update the following configuration settings:
 * ```RESOLVER_USER```: user under which to run the application (same as above).
 * ```RESOLVER_NAME```: name of the resolver application (same as above).
@@ -423,6 +463,12 @@ Reload supervisor to enact to any updates:
 sudo supervisorctl reread
 sudo supervisorctl update
 ```
+
+#### Redis
+
+An example Supervisor configuration is provided at `supervisor/rq.conf`. Copy it to `/etc/supervisor/conf.d/rq.conf`.
+
+Set `RESOLVER_USER` and `RESOLVER_DIR` to the same values as in `resolver.conf` above.
 
 **At this point, the resolver service should now be operational and ready to be used.**
 

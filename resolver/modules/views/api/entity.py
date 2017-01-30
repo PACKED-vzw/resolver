@@ -1,22 +1,22 @@
-from resolver.model.entity import Entity
+from resolver.modules.api.entity import EntityApi, ItemDoesNotExist
 from resolver import app
 
 
-class EntityApi:
+class EntityViewApi:
 
     def get(self, entity_id):
-        entity = Entity.query.filter(Entity.id == entity_id).first()
-        if entity:
-            return self.output(entity)
-        else:
+        try:
+            existing_entity = EntityApi().read(entity_id)
+        except ItemDoesNotExist:
             return None
+        return self.output(existing_entity)
 
     def get_original(self, original_entity_id):
-        entity = Entity.query.filter(Entity.original_id == original_entity_id).first()
-        if entity:
-            return self.output(entity)
-        else:
+        try:
+            existing_entity = EntityApi().read_by_original_id(original_entity_id)
+        except ItemDoesNotExist:
             return None
+        return self.output(existing_entity)
 
     def output(self, entity):
         return {

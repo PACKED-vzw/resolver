@@ -1,0 +1,35 @@
+{% extends "resolver/layout.html" %}
+{% block body %}
+    <script type="text/javascript">
+        var job_id = '{{ job_id }}';
+    </script>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Import job {{ job_id }}: <span id="i_status">Finished</span></h3>
+        </div>
+    <div class="panel-body">
+        <div>
+            <p>Import successful. <a href="/resolver/log/import/{{ import_id }}">(log)</a></p>
+        </div>
+        {% if failures %}
+            <div id="i_status_failures">
+                <div class="panel panel-danger">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Some errors occurred</h4>
+                    </div>
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            {% for failure in failures %}
+                                <li class="list-group-item"><strong>Error:</strong> {{ failure }}</li>
+                            {% endfor %}
+                        </ul>
+                        <a href="/resolver/csv/records">Download records with issues</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    </div>
+
+{% endblock %}

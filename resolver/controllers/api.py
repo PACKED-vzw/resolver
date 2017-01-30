@@ -12,7 +12,8 @@ from resolver.model.user import pwd_context
 from resolver.model.schemas import *
 from resolver.database import db
 from resolver.forms import SigninForm, EntityForm
-from resolver.modules.views.api.entity import EntityApi
+from resolver.modules.views.api.entity import EntityViewApi
+from resolver.modules.importer.csv_redis import CSVRedisWrapper, RedisJobMissing
 from resolver.util import log
 from resolver import csrf
 
@@ -109,7 +110,7 @@ def depr_logout():
 @app.route("/resolver/api/entity", methods=["GET"])
 def get_entities():
     entities = db.session.query(Entity.id, Entity.title)
-    data = [{"PID": id, "title": title} for (id, title) in entities]
+    data = [{"PID": pid, "title": title} for (pid, title) in entities]
     return RestApi().response(data={'data': data})
 
 
@@ -137,7 +138,7 @@ def create_entity():
         db.session.add(Representation(ent.id, 1, reference=True))
         db.session.commit()
         log(ent.id, "Created entity `%s'" % ent)
-        return RestApi().response(status=201, data={'data': EntityApi().output(entity=ent)})
+        return RestApi().response(status=201, data={'data': EntityViewApi().output(entity=ent)})
     errors = [{'title': 'Malformed parameter',
                'detail': 'Field %s: %s' % (field, ' '.join(error))}
               for field, error in form.errors.iteritems()]
@@ -147,7 +148,7 @@ def create_entity():
 @csrf.exempt
 @app.route("/resolver/api/entity/<id>", methods=["GET"])
 def get_entity(id):
-    out_data = EntityApi().get(id)
+    out_data = EntityViewApi().get(id)
     if out_data:
         return RestApi().response(data={'data': out_data})
     else:
@@ -157,7 +158,7 @@ def get_entity(id):
 @csrf.exempt
 @app.route('/resolver/api/entity/original/<string:original_id>', methods=['GET'])
 def get_entity_by_original_id(original_id):
-    out_data = EntityApi().get_original(original_id)
+    out_data = EntityViewApi().get_original(original_id)
     if out_data:
         return RestApi().response(data={'data': out_data})
     else:
@@ -219,7 +220,7 @@ def update_entity(id):
     db.session.commit()
     log(ent.id, "Changed entity from `%s' to `%s'" % (ent_str, ent))
 
-    return RestApi().response(data={'data': EntityApi().output(entity=ent)})
+    return RestApi().response(data={'data': EntityViewApi().output(entity=ent)})
 
 
 @csrf.exempt
@@ -436,3 +437,34 @@ def delete_document(id):
         (doc, doc.entity))
     db.session.commit()
     return "", 204
+
+
+##
+# CSV importer functions
+##
+@csrf.exempt
+@app.route('/resolver/api/importer/<string:job_id>/status', methods=['GET'])
+@check_privilege
+def api_job_status(job_id):
+    csv_wrapper = CSVRedisWrapper()
+    try:
+        csv_wrapper.get_job(job_id)
+    except RedisJobMissing:
+        errors = [{
+            'title': 'Job Not Found',
+            'detail': 'Could not find the job with id {0}'.format(job_id)
+        }]
+        return ErrorRestApi().response(status=404, errors=errors)
+
+    status = {
+        'job': job_id,
+        'status': 'Running'
+    }
+    status_code = 202
+    if csv_wrapper.failed():
+        status['status'] = 'Failed'
+        status_code = 400
+    elif csv_wrapper.finished():
+        status['status'] = 'Finished'
+        status_code = 200
+    return RestApi().response(status=status_code, data=status)
