@@ -9,7 +9,7 @@ class RedisTest(ImporterTest):
 
     def test_import(self):
         r = CSVRedisWrapper()
-        f = open('modules/importer/tests/csv.csv', 'r')
+        f = open('resolver/modules/importer/tests/csv.csv', 'r')
         r.csv_import(f)
         assert r.job is not None
         assert r.failed() is False
