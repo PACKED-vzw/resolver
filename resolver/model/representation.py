@@ -32,17 +32,17 @@ class Representation(Document):
     def __repr__(self):
         if self.label:
             return '<Representation(%s), entity=%s, label=%s, url=%s, order=%s, ref=%s, enabled=%s>' %\
-                (self.id, self.entity_id, self.label, self.url, self.order,
+                (self.id, self.entity.id, self.label, self.url, self.order,
                  self.reference, self.enabled)
         else:
             return '<Representation(%s), entity=%s, url=%s, order=%s, ref=%s>' %\
-                (self.id, self.entity_id, self.url, self.order, self.reference)
+                (self.id, self.entity.id, self.url, self.order, self.reference)
 
     @property
     def persistent_uri(self):
         uri = app.config['BASE_URL']
         uri += '/collection/%s/representation/%s/%s' % (self.entity.type,
-                                                        self.entity_id,
+                                                        self.entity.id,
                                                         self.order)
         uris = [uri]
 
@@ -51,7 +51,7 @@ class Representation(Document):
         if self.reference:
             uris.append(app.config['BASE_URL'] +
                         '/collection/%s/representation/%s' % (self.entity.type,
-                                                              self.entity_id))
+                                                              self.entity.id))
 
         return uris
 

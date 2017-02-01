@@ -109,8 +109,8 @@ def depr_logout():
 @csrf.exempt
 @app.route("/resolver/api/entity", methods=["GET"])
 def get_entities():
-    entities = db.session.query(Entity.id, Entity.title)
-    data = [{"PID": pid, "title": title} for (pid, title) in entities]
+    entities = db.session.query(Entity.id, Entity.title, Entity.domain)
+    data = [{"PID": pid, "title": title, "domain": domain} for (pid, title, domain) in entities]
     return RestApi().response(data={'data': data})
 
 
@@ -123,7 +123,8 @@ def create_entity():
         try:
             ent = Entity(type=form.type.data,
                          title=form.title.data,
-                         id=form.id.data)
+                         id=form.id.data,
+                         domain=form.domain.data)
         except EntityPIDExistsException:
             return ErrorRestApi().response(status=409, errors=['Duplicate ID for entity.'])
         except EntityCollisionException as e:
@@ -177,7 +178,8 @@ def update_entity(id):
         data = {
             'id': form.id.data,
             'title': form.title.data,
-            'type': form.type.data
+            'type': form.type.data,
+            'domain': form.domain.data
         }
     else:
         try:
@@ -206,6 +208,7 @@ def update_entity(id):
         ent.id = data["id"]
         ent.title = data.get("title", "")
         ent.type = data["type"]
+        ent.domain = data["domain"]
     except EntityPIDExistsException:
         db.session.rollback()
         return ErrorRestApi().response(status=409, errors=['Duplicate ID \'{0}\' for entity.'.format(data['id'])])
@@ -284,7 +287,7 @@ def create_document():
 
         db.session.add(doc)
         db.session.commit()
-        log(doc.entity_id, "Added %s document `%s'" % (data['type'], doc))
+        log(doc.entity.id, "Added %s document `%s'" % (data['type'], doc))
 
         return RestApi().response(status=201, data={'data': doc.to_dict()})
     except ValueError as e:
@@ -433,7 +436,7 @@ def delete_document(id):
             i += 1
     else:
         db.session.delete(doc)
-    log(doc.entity_id, "Removed the document '%s' %s" %
+    log(doc.entity.id, "Removed the document '%s' %s" %
         (doc, doc.entity))
     db.session.commit()
     return "", 204

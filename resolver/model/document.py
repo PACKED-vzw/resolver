@@ -43,7 +43,7 @@ class Document(db.Model):
                 'type':self.type,
                 'notes':self.notes,
                 'resolves':self.resolves,
-                'entity':self.entity_id}
+                'entity':self.entity.id}
 
     @property
     def persistent_uri(self):

@@ -134,7 +134,7 @@ class Entity(db.Model):
     def documents(self):
         def sort_help(a, b):
             # Helper function for sorting the documents list
-            if (a.type=='data') or (b.type=='data'):
+            if (a.type == 'data') or (b.type == 'data'):
                 return 0
             else:
                 return -1 if a.order < b.order else 1

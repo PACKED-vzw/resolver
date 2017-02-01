@@ -36,14 +36,14 @@ class Data(Document):
         url = '{base_url}/collection/{entity_type}/data/{entity_id}'.format(
             base_url=app.config['BASE_URL'],
             entity_type=self.entity.type,
-            entity_id=self.entity_id
+            entity_id=self.entity.id
         )
         return url
 
     @property
     def persistent_uri(self):
         uri = app.config['BASE_URL']
-        uri += '/collection/%s/data/%s/%s' % (self.entity.type, self.entity_id,
+        uri += '/collection/%s/data/%s/%s' % (self.entity.type, self.entity.id,
                                               self.format)
         uris = [uri]
 

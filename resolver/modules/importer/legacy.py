@@ -11,8 +11,8 @@ _csv_header = ['PID', 'entity type', 'title', 'document type', 'URL',
 def import_file(file):
     """
     Import a CSV file
-    CSV layout: PID, entity_type, title, document_type, URL, enabled, notes, format, reference, order
-                0       1           2       3           4       5       6       7       8           9
+    CSV layout: PID, domain, entity_type, title, document_type, URL, enabled, notes, format, reference, order
+                0       1         2         3           4       5       6       7      8          9      10
     :param file:
     :return:
     """
@@ -20,7 +20,7 @@ def import_file(file):
     # NOTE: we always assume the first row is a header
     # As this feature is mainly used for imports/edits from Excel, it is
     # possible that Excel uses `;' as a separator instead of `,' ...
-    if len(reader.next()) != 10:
+    if len(reader.next()) != 11:
         file.seek(0)
         reader = UnicodeReader(file, delimiter=';')
         reader.next()  # Skip header again
@@ -37,11 +37,11 @@ def import_file(file):
         record_id = record[0]
         # Skip wrong types now
         # TODO: do we actually fail on importing a wrong type?
-        if not record[1] in entity_types:
+        if not record[2] in entity_types:
             failures.append((record_id, "Wrong entity type `%s'" % record[1]))
             bad_records.append(record)
             continue
-        if not record[3] in document_types:
+        if not record[4] in document_types:
             failures.append((record_id, "Wrong document type `%s'" % record[3]))
             bad_records.append(record)
             continue
@@ -72,69 +72,69 @@ def import_file(file):
             log(ent.id, "Added entity `%s'" % ent)
 
         # All records in the list have the same title and type
-        ent.title = record_list[0][2]
-        ent.type = record_list[0][1]
+        ent.title = record_list[0][3]
+        ent.type = record_list[0][2]
 
         for record in record_list:
-            if record[4] == 'None':
+            if record[5] == 'None':
                 url = ''
             else:
                 url = record[4]
-            if record[5] == '1':
+            if record[6] == '1':
                 enabled = '1'
             else:
                 enabled = '0'
 
-            # record[3] = document_type
-            if record[3] == 'data':
-                if not (record[7] and record[7] in data_formats):
+            # record[4] = document_type
+            if record[4] == 'data':
+                if not (record[8] and record[8] in data_formats):
                     failures.append((clean_id, "Format missing or invalid for PID `%s'" % ent.id))
                     bad_records.append(record)
                     continue
                 # record[7] = format
-                doc = Data.query.filter(Data.format == record[7],
+                doc = Data.query.filter(Data.format == record[8],
                                         Document.entity_id == ent.prim_key).first()
                 if doc:
                     doc.url = url
                     doc.enabled = enabled
-                    doc.notes = record[6]
+                    doc.notes = record[7]
                 else:
-                    doc = Data(ent.prim_key, record[7], url=url, enabled=enabled,
-                               notes=record[6])
+                    doc = Data(ent.prim_key, record[8], url=url, enabled=enabled,
+                               notes=record[7])
                     db.session.add(doc)
                     log(id, "Added data document `%s'" % doc)
-            elif record[3] == 'representation':
+            elif record[4] == 'representation':
                 # This function expects order in the database to be "" (empty) when not set,
                 # but in reality it is set to count(documents) + 1 when not provided.
                 # When we search for it with an unset order, we will never find it and thus
                 # create a new representation which is not needed.
                 # See https://github.com/PACKED-vzw/resolver/issues/50
-                if record[4] == "" or not record[4]:
+                if record[5] == "" or not record[5]:
                     # r_url is None (NULL) in the DB, but "" in the CSV
                     r_url = None
                 else:
-                    r_url = record[4]
+                    r_url = record[5]
                 doc = Representation.query.filter(Document.entity_id == ent.prim_key,
                                                   Document.url == r_url,
-                                                  Document.type == record[3]).first()
+                                                  Document.type == record[4]).first()
                 if doc:
                     doc.url = url
                     doc.enabled = enabled
-                    doc.notes = record[6]
+                    doc.notes = record[7]
                 else:
-                    if record[9] and record[9] != "":
-                        order = int(record[9])
+                    if record[10] and record[10] != "":
+                        order = int(record[10])
                     else:
                         # We set order to the total amount representation documents for this entity + 1
                         order = Representation.query \
                                     .filter(Document.entity_id == ent.prim_key).count() + 1
 
                     doc = Representation(ent.prim_key, order, url=url,
-                                         enabled=enabled, notes=record[6])
+                                         enabled=enabled, notes=record[7])
                     db.session.add(doc)
                     log(clean_id, "Added representation document `%s'" % doc)
 
-                reference = record[8] == '1'
+                reference = record[9] == '1'
                 if reference:
                     ref = Representation.query. \
                         filter(Document.entity_id == ent.prim_key,

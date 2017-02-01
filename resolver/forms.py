@@ -3,10 +3,12 @@ from wtforms import StringField, SelectField, BooleanField,\
     PasswordField, TextAreaField, DecimalField, validators
 from resolver.model import entity_types, data_formats
 
+
 class EntityForm(Form):
     # TODO: use model constants
     id = StringField('ID', [validators.required(),
                             validators.Length(max=64)])
+    domain = StringField('Domain', [validators.required(), validators.length(max=255)])
     title = StringField('Title', [validators.optional(),
                                   validators.Length(max=512)])
     type = SelectField('Type', [validators.required()],
@@ -14,16 +16,19 @@ class EntityForm(Form):
                                    map(lambda c: c.capitalize(),
                                        entity_types)))
 
+
 class DocumentForm(Form):
     url = StringField('URL', [validators.optional(), validators.URL()])
     enabled = BooleanField('Enabled', default=True)
     notes = TextAreaField('Notes', [validators.optional()])
+
 
 class DataForm(DocumentForm):
     format = SelectField('Type', [validators.required()],
                          choices=zip(data_formats,
                                      map(lambda f: f.capitalize(),
                                          data_formats)))
+
 
 class RepresentationForm(DocumentForm):
     #order = DecimalField('Order', [validators.required(),
@@ -33,10 +38,12 @@ class RepresentationForm(DocumentForm):
     label = StringField('Label', [validators.optional(),
                                   validators.Length(max=64)])
 
+
 class SigninForm(Form):
     username = StringField('Username', [validators.required()])
 
     password = PasswordField('Password', [validators.required()])
+
 
 class UserForm(Form):
     username = StringField('Username', [validators.required(),
@@ -45,10 +52,12 @@ class UserForm(Form):
                                           validators.Length(min=7, max=64)])
     confirm = PasswordField('Confirm', [validators.required()])
 
+
 class ResetForm(Form):
     password = PasswordField('Password', [validators.required(),
                                           validators.Length(min=7, max=64)])
     confirm = PasswordField('Confirm', [validators.required()])
+
 
 class SettingsForm(Form):
     default_notice = TextAreaField('Default notice', [validators.required()])

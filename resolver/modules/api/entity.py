@@ -21,7 +21,7 @@ class UnrecognizedDataType(Exception):
 
 class EntityApi(GenericApi):
 
-    keys = ('PID', 'entity_type', 'title', 'document_type', 'url', 'enabled', 'notes', 'format', 'reference', 'order')
+    keys = ('PID', 'domain', 'entity_type', 'title', 'document_type', 'url', 'enabled', 'notes', 'format', 'reference', 'order')
     possible_params = ('PID', 'entity_type', 'title', 'domain')
     required_params = ('PID', 'entity_type')
     simple_params = keys
@@ -37,7 +37,8 @@ class EntityApi(GenericApi):
         entity_data = {
             'PID': rows[0]['PID'],
             'entity_type': rows[0]['entity_type'],
-            'title': rows[0]['title']
+            'title': rows[0]['title'],
+            'domain': rows[0]['domain']
         }
         entity = self.create(entity_data)
         import_log(import_id, u'Added entity {0}'.format(entity))
@@ -96,7 +97,7 @@ class EntityApi(GenericApi):
         cleaned_data = self.clean_input_data(Entity, input_data, self.possible_params, self.required_params, [])
         cleaned_data['cleanPID'] = cleanID(cleaned_data['PID'])
         try:
-            new_entity = self.read(cleaned_data['cleanPID'])
+            new_entity = self.read_by_pid(cleaned_data['cleanPID'])
         except ItemDoesNotExist:
             # CleanPID
             new_entity = Entity(cleaned_data['PID'])
@@ -107,6 +108,7 @@ class EntityApi(GenericApi):
 
         new_entity.title = cleaned_data['title']
         new_entity.type = cleaned_data['entity_type']
+        new_entity.domain = cleaned_data['domain']
         db.session.flush()
         return new_entity
 

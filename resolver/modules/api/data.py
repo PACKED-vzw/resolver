@@ -38,7 +38,8 @@ class DataApi(GenericApi):
         raise NotImplementedError()
 
     def by_format_and_entity_id(self, d_format, entity_prim_key):
-        existing_document = Data.query.filter(and_(Data.format == d_format, Document.entity_id == entity_prim_key)).first()
+        existing_document = Data.query.filter(and_(Data.format == d_format, Document.entity_id == entity_prim_key))\
+            .first()
         if not existing_document:
             raise ItemDoesNotExist((d_format, entity_prim_key))
         return existing_document

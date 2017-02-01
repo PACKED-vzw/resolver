@@ -5,6 +5,7 @@ from resolver.controllers.user import check_privilege
 from resolver.forms import SettingsForm
 import resolver.kvstore as kvstore
 
+
 @app.route('/resolver/settings')
 @check_privilege
 def admin_settings(form=None):
@@ -16,6 +17,7 @@ def admin_settings(form=None):
 
     return render_template('resolver/settings.html', title='Settings',
                            form=form, version=VERSION)
+
 
 @app.route('/resolver/settings', methods=["POST"])
 @check_privilege

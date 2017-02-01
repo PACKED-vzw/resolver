@@ -54,7 +54,7 @@ def admin_list_entities_dynamic():
         .order_by(order_column)\
         .offset(int(request.args["start"]))\
         .limit(int(request.args["length"])).all()
-    data = [[e.type, entity_link.format(e.id), e.title, e.active_documents,
+    data = [[e.type, e.domain, entity_link.format(e.id), e.title, e.active_documents,
              remove_link.format(e.id), log_link.format(e.id)] for e in entities]
 
     return json.dumps({'draw': int(request.args["draw"]),
@@ -71,7 +71,8 @@ def admin_new_entity():
         try:
             ent = Entity(type=form.type.data,
                          title=form.title.data,
-                         id=form.id.data)
+                         id=form.id.data,
+                         domain=form.domain.data)
         except EntityPIDExistsException:
             flash("There already exists and entity with this PID.", "warning")
             return admin_list_entities(form=form)
@@ -93,7 +94,7 @@ def admin_new_entity():
         return admin_list_entities(form=form, show_form=True)
 
 
-@app.route('/resolver/entity/<id>')
+@app.route('/resolver/entity/<id>', methods=['GET'])
 @check_privilege
 def admin_view_entity(id, form=None):
     ent = Entity.query.filter(Entity.id == id).first()
@@ -127,6 +128,7 @@ def admin_edit_entity(id):
         ent.id = form.id.data
         ent.title = form.title.data
         ent.type = form.type.data
+        ent.domain = form.domain.data
     except EntityCollisionException:
         db.session.rollback()
         flash('There already is an entity in the database using the new PID',

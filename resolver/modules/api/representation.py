@@ -6,17 +6,17 @@ from sqlalchemy import and_
 
 
 class RepresentationApi(GenericApi):
-
     possible_params = ('entity_prim_key', 'order', 'label', 'url', 'enabled', 'notes', 'reference', 'document_type')
     required_params = ('entity_prim_key', 'order')
 
     def create(self, object_data):
-        cleaned_data = self.clean_input_data(Representation, object_data, self.possible_params, self.required_params, [])
+        cleaned_data = self.clean_input_data(Representation, object_data, self.possible_params, self.required_params,
+                                             [])
         if cleaned_data['url'] == '':
             cleaned_data['url'] = None
         try:
             new_document = self.by_entity_prim_key_url_and_type(cleaned_data['entity_prim_key'], cleaned_data['url'],
-                                                          cleaned_data['document_type'])
+                                                                cleaned_data['document_type'])
         except ItemDoesNotExist:
             if cleaned_data['order'] and cleaned_data['order'] != '' and cleaned_data['order'] != 0:
                 i_order = int(cleaned_data['order'])
@@ -63,4 +63,5 @@ class RepresentationApi(GenericApi):
         return existing_document
 
     def get_in_order(self, entity_prim_key):
-        return Representation.query.filter(Document.entity_id == entity_prim_key).order_by(Representation.order.asc()).all()
+        return Representation.query.filter(Document.entity_id == entity_prim_key).order_by(
+            Representation.order.asc()).all()

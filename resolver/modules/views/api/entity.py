@@ -21,7 +21,7 @@ class EntityViewApi:
     def output(self, entity):
         return {
             'id': entity.id,
-            'domain': app.config['BASE_URL'],
+            'domain': entity.domain,
             'type': entity.type,
             'work_pid': entity.work_pid,
             'persistentURIs': entity.persistent_uris,
