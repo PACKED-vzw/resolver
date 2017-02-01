@@ -18,7 +18,7 @@ class Document(db.Model):
     _url = db.Column('url', db.String(512))
     type = db.Column(db.String(50))
     hits = db.relationship('DocumentHit',
-                           #cascade='all,delete',
+                           # cascade='all,delete',
                            cascade='all, delete-orphan',
                            backref='document')
 
@@ -37,13 +37,13 @@ class Document(db.Model):
         raise Exception("Implement me")
 
     def to_dict(self):
-        return {'url':self.url if self.url else "",
-                'enabled':self.enabled,
-                'id':self.id,
-                'type':self.type,
-                'notes':self.notes,
-                'resolves':self.resolves,
-                'entity':self.entity.id}
+        return {'url': self.url if self.url else "",
+                'enabled': self.enabled,
+                'id': self.id,
+                'type': self.type,
+                'notes': self.notes,
+                'resolves': self.resolves,
+                'entity': self.entity.id}
 
     @property
     def persistent_uri(self):
@@ -77,7 +77,7 @@ class Document(db.Model):
             if u.scheme:
                 self._url = url
             else:
-                self._url = urlunparse(('http',)+u[1:])
+                self._url = urlunparse(('http',) + u[1:])
         else:
             self._url = None
 

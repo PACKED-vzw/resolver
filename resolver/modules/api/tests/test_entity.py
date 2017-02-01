@@ -10,8 +10,8 @@ class EntityTest(ApiTest):
     def test_create_from_rows(self):
         #('PID', 'entity_type', 'title', 'document_type', 'url', 'enabled', 'notes', 'format', 'reference', 'order')
         row_pack = [
-            [u'1812-A', u'work', u'Naderend onweer', u'data', u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A', u'1', u'', u'html', u'', u''],
-            [u'1812-A', u'work', u'Naderend onweer', u'representation', u'http://www.vlaamsekunstcollectie.be/proxy.aspx?server=62.221.199.163&port=28301&overlaytext=&overlaytextalpha=14&overlaytextfontname=verdana&overlaytextfontsize=8&overlaytextfontcolor=000000&overlaytextbackgroundcolor=cccccc&cache=yes&borderwidth=0&borderheight=0&bordercolor=999999&passepartoutwidth=6&passepartoutheight=6&passepartoutcolor=ffffff&bg=ffffff&filename=gent%2F1812-A.jpg', u'1', u'', u'1', u'1', u'']
+            [u'1812-A', u'resolver.app', u'work', u'Naderend onweer', u'data', u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A', u'1', u'', u'html', u'', u''],
+            [u'1812-A', u'resolver.app', u'work', u'Naderend onweer', u'representation', u'http://www.vlaamsekunstcollectie.be/proxy.aspx?server=62.221.199.163&port=28301&overlaytext=&overlaytextalpha=14&overlaytextfontname=verdana&overlaytextfontsize=8&overlaytextfontcolor=000000&overlaytextbackgroundcolor=cccccc&cache=yes&borderwidth=0&borderheight=0&bordercolor=999999&passepartoutwidth=6&passepartoutheight=6&passepartoutcolor=ffffff&bg=ffffff&filename=gent%2F1812-A.jpg', u'1', u'', u'1', u'1', u'']
         ]
         import_id = '123'
         entity, documents = EntityApi().create_from_rows(row_pack, import_id)
@@ -35,7 +35,7 @@ class EntityTest(ApiTest):
         # ('PID', 'entity_type', 'title', 'document_type', 'url', 'enabled', 'notes', 'format', 'reference', 'order')
         import_id = '123'
         row_pack = [
-            [u'1812-A', u'exception', u'Naderend onweer', u'data',
+            [u'1812-A', u'resolver.app', u'exception', u'Naderend onweer', u'data',
              u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
              u'1', u'', u'html', u'', u'']
         ]
@@ -44,7 +44,7 @@ class EntityTest(ApiTest):
     def test_unrecognizeddatatype_create_from_rows(self):
         import_id = '123'
         row_pack = [
-            [u'1813-A', u'work', u'Naderend onweer', u'data',
+            [u'1813-A', u'resolver.app', u'work', u'Naderend onweer', u'data',
              u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
              u'1', u'', u'ldf', u'', u'']
         ]
@@ -53,7 +53,7 @@ class EntityTest(ApiTest):
     def test_unrecognizeddocumenttype_create_from_rows(self):
         import_id = '123'
         row_pack = [
-            [u'1813-A', u'work', u'Naderend onweer', u'exception',
+            [u'1813-A', u'resolver.app', u'work', u'Naderend onweer', u'exception',
              u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
              u'1', u'', u'html', u'', u'']
         ]
@@ -62,13 +62,13 @@ class EntityTest(ApiTest):
     def test_entitycollision_create_from_rows(self):
         import_id = '123'
         row_pack = [
-            [u'1814(A', u'work', u'Naderend onweer', u'data',
+            [u'1814(A', u'resolver.app', u'work', u'Naderend onweer', u'data',
              u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
              u'1', u'', u'html', u'', u'']
         ]
         EntityApi().create_from_rows(row_pack, import_id)
         row_pack = [
-            [u'1814_A', u'work', u'Naderende storm', u'data',
+            [u'1814_A', u'resolver.app', u'work', u'Naderende storm', u'data',
              u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
              u'1', u'', u'html', u'', u'']
         ]
@@ -77,7 +77,7 @@ class EntityTest(ApiTest):
     def test_unicode_create_from_rows(self):
         import_id = '123'
         row_pack = [
-            [u'1813-A', u'work', u'Le &àçèé£$^=°-)', u'data',
+            [u'1813-A', u'resolver.app', u'work', u'Le &àçèé£$^=°-)', u'data',
              u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
              u'1', u'', u'html', u'', u'']
         ]
@@ -104,6 +104,7 @@ class EntityTest(ApiTest):
             'PID': u'1812-A',
             'entity_type': u'work',
             'title': u'Naderend onweer',
+            'domain': u'packed.resolver.be'
         })
         d_e = EntityApi().read(e.prim_key)
         assert d_e == e
@@ -114,12 +115,14 @@ class EntityTest(ApiTest):
         input_data = {
             'PID': u'1812-A',
             'entity_type': u'work',
-            'title': u'Naderend onweer'
+            'title': u'Naderend onweer',
+            'domain': u'packed.resolver.be'
         }
         updated_data = {
             'PID': u'1812-A',
             'entity_type': u'work',
-            'title': u'Na regen komt zonneschijn'
+            'title': u'Na regen komt zonneschijn',
+            'domain': u'packed.resolver.be'
         }
         self.t_update(EntityApi, input_data, updated_data)
 
@@ -130,6 +133,7 @@ class EntityTest(ApiTest):
             'PID': u'1812-A',
             'entity_type': u'work',
             'title': u'Naderend onweer',
+            'domain': u'packed.resolver.be'
         }
         self.t_delete(EntityApi, input_data)
 
@@ -140,5 +144,6 @@ class EntityTest(ApiTest):
             'PID': u'1812-A',
             'entity_type': u'work',
             'title': u'Naderend onweer',
+            'domain': u'packed.resolver.be'
         }
         self.t_list(EntityApi, input_data)

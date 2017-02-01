@@ -8,16 +8,16 @@ class CSVTest(ImporterTest):
 
     def test_csv_importer(self):
         records = [
-            [u'1812-A', u'work', u'Naderend onweer', u'data',
+            [u'1812-A', u'packed.resolver.be', u'work', u'Naderend onweer', u'data',
              u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
              u'1', u'', u'html', u'', u''],
-            [u'1812-A', u'work', u'Naderend onweer', u'representation',
+            [u'1812-A', u'packed.resolver.be', u'work', u'Naderend onweer', u'representation',
              u'http://www.vlaamsekunstcollectie.be/proxy.aspx?server=62.221.199.163&port=28301&overlaytext=&overlaytextalpha=14&overlaytextfontname=verdana&overlaytextfontsize=8&overlaytextfontcolor=000000&overlaytextbackgroundcolor=cccccc&cache=yes&borderwidth=0&borderheight=0&bordercolor=999999&passepartoutwidth=6&passepartoutheight=6&passepartoutcolor=ffffff&bg=ffffff&filename=gent%2F1812-A.jpg',
              u'1', u'', u'1', u'1', u''],
-            [u'1813-A', u'work', u'Na de regen', u'data',
+            [u'1813-A', u'packed.resolver.be', u'work', u'Na de regen', u'data',
              u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
              u'1', u'', u'html', u'', u''],
-            [u'1813-A', u'work', u'Na de regen', u'representation',
+            [u'1813-A', u'packed.resolver.be', u'work', u'Na de regen', u'representation',
              u'http://www.vlaamsekunstcollectie.be/proxy.aspx?server=62.221.199.163&port=28301&overlaytext=&overlaytextalpha=14&overlaytextfontname=verdana&overlaytextfontsize=8&overlaytextfontcolor=000000&overlaytextbackgroundcolor=cccccc&cache=yes&borderwidth=0&borderheight=0&bordercolor=999999&passepartoutwidth=6&passepartoutheight=6&passepartoutcolor=ffffff&bg=ffffff&filename=gent%2F1812-A.jpg',
              u'1', u'', u'1', u'1', u''],
         ]
@@ -34,10 +34,10 @@ class CSVTest(ImporterTest):
 
     def test_import_exceptions(self):
         records = [
-            [u'1812-A', u'exception', u'Naderend onweer', u'data',
+            [u'1812-A', u'packed.resolver.be', u'exception', u'Naderend onweer', u'data',
              u'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A',
              u'1', u'', u'xhtml', u'', u''],
-            [u'1812-A', u'exception', u'Naderend onweer', u'representation',
+            [u'1812-A', u'packed.resolver.be', u'exception', u'Naderend onweer', u'representation',
              u'http://www.vlaamsekunstcollectie.be/proxy.aspx?server=62.221.199.163&port=28301&overlaytext=&overlaytextalpha=14&overlaytextfontname=verdana&overlaytextfontsize=8&overlaytextfontcolor=000000&overlaytextbackgroundcolor=cccccc&cache=yes&borderwidth=0&borderheight=0&bordercolor=999999&passepartoutwidth=6&passepartoutheight=6&passepartoutcolor=ffffff&bg=ffffff&filename=gent%2F1812-A.jpg',
              u'1', u'', u'1', u'1', u'']
             ]
