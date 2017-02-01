@@ -18,7 +18,7 @@ class EntityTest(ApiTest):
         d_e = EntityApi().read_by_original_id(row_pack[0][0])
         assert d_e == entity
         assert len(Entity.query.all()) == 1
-        d_d = Document.query.filter(Document.entity_id == entity.id).all()
+        d_d = Document.query.filter(Document.entity_id == entity.prim_key).all()
         assert len(d_d) == 2
         assert 'data' in [d.type for d in d_d]
         assert 'representation' in [d.type for d in d_d]
@@ -27,7 +27,7 @@ class EntityTest(ApiTest):
                 assert d.url == 'http://www.vlaamsekunstcollectie.be/collection.aspx?p=0848cab7-2776-4648-9003-25957707491a&inv=1812-A'
             if d.type == 'representation':
                 assert d.url == 'http://www.vlaamsekunstcollectie.be/proxy.aspx?server=62.221.199.163&port=28301&overlaytext=&overlaytextalpha=14&overlaytextfontname=verdana&overlaytextfontsize=8&overlaytextfontcolor=000000&overlaytextbackgroundcolor=cccccc&cache=yes&borderwidth=0&borderheight=0&bordercolor=999999&passepartoutwidth=6&passepartoutheight=6&passepartoutcolor=ffffff&bg=ffffff&filename=gent%2F1812-A.jpg'
-            assert d.entity_id == '1812-A'
+            assert d.entity.id == '1812-A'
         assert len(Data.query.all()) == 1
         assert len(Representation.query.all()) == 1
 
@@ -90,10 +90,12 @@ class EntityTest(ApiTest):
             'PID': u'1812-A',
             'entity_type': u'work',
             'title': u'Naderend onweer',
+            'domain': 'packed.resolver.be'
             }
         min_data = {
-            'PID': u'1812-A',
-            'entity_type': u'work'
+            'PID': u'1813-A',
+            'entity_type': u'work',
+            'domain': 'packed.resolver.be'
             }
         self.t_create(input_data, min_data, Entity, EntityApi)
 
@@ -103,7 +105,7 @@ class EntityTest(ApiTest):
             'entity_type': u'work',
             'title': u'Naderend onweer',
         })
-        d_e = EntityApi().read(e.id)
+        d_e = EntityApi().read(e.prim_key)
         assert d_e == e
 
     def test_update(self):

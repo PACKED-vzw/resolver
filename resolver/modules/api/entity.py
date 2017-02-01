@@ -22,7 +22,7 @@ class UnrecognizedDataType(Exception):
 class EntityApi(GenericApi):
 
     keys = ('PID', 'entity_type', 'title', 'document_type', 'url', 'enabled', 'notes', 'format', 'reference', 'order')
-    possible_params = ('PID', 'entity_type', 'title')
+    possible_params = ('PID', 'entity_type', 'title', 'domain')
     required_params = ('PID', 'entity_type')
     simple_params = keys
 
@@ -48,7 +48,7 @@ class EntityApi(GenericApi):
                 if row['format'] == '' or row['format'] not in data_formats:
                     raise UnrecognizedDataType(row['format'])
                 document_data = {
-                    'entity_id': entity.id,
+                    'entity_prim_key': entity.prim_key,
                     'url': row['url'],
                     'format': row['format'],
                     'enabled': row['enabled'],
@@ -62,7 +62,7 @@ class EntityApi(GenericApi):
             # Add representations
             elif row['document_type'] == 'representation':
                 representation_data = {
-                    'entity_id': entity.id,
+                    'entity_prim_key': entity.prim_key,
                     'order': row['order'],
                     'label': '',
                     'url': row['url'],
@@ -79,7 +79,7 @@ class EntityApi(GenericApi):
                 raise UnrecognizedDocumentType(row['document_type'])
 
         # Set the reference representation and the order if it isn't quite right
-        representations = RepresentationApi().get_in_order(entity.id)
+        representations = RepresentationApi().get_in_order(entity.prim_key)
         has_reference = False
         order = 1
         for representation in representations:
@@ -111,13 +111,19 @@ class EntityApi(GenericApi):
         return new_entity
 
     def read(self, object_id):
-        existing_entity = Entity.query.filter(Entity.id == object_id).first()
+        existing_entity = Entity.query.filter(Entity.prim_key == object_id).first()
         if not existing_entity:
-            raise ItemDoesNotExist(Entity.id)
+            raise ItemDoesNotExist(object_id)
+        return existing_entity
+
+    def read_by_pid(self, pid):
+        existing_entity = Entity.query.filter(Entity.id == pid).first()
+        if not existing_entity:
+            raise ItemDoesNotExist(pid)
         return existing_entity
 
     def read_by_original_id(self, original_id):
-        existing_entity = entity = Entity.query.filter(Entity.original_id == original_id).first()
+        existing_entity = Entity.query.filter(Entity.original_id == original_id).first()
         if not existing_entity:
             raise ItemDoesNotExist(original_id)
         return existing_entity

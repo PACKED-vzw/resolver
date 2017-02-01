@@ -13,6 +13,7 @@ from resolver.forms import EntityForm
 from resolver.util import log
 import resolver.kvstore as kvstore
 
+
 @app.route('/resolver/entity')
 @check_privilege
 def admin_list_entities(form=None, show_form=None):
@@ -81,8 +82,8 @@ def admin_new_entity():
         db.session.add(ent)
         db.session.flush()
 
-        db.session.add(Data(ent.id, 'html'))
-        db.session.add(Representation(ent.id, 1, reference=True))
+        db.session.add(Data(ent.prim_key, 'html'))
+        db.session.add(Representation(ent.prim_key, 1, reference=True))
 
         db.session.commit()
 
@@ -105,6 +106,7 @@ def admin_view_entity(id, form=None):
     else:
         flash("Entity not found!", "danger")
         return redirect("/resolver/entity")
+
 
 @app.route('/resolver/entity/edit/<id>', methods=["POST"])
 @check_privilege
@@ -137,6 +139,7 @@ def admin_edit_entity(id):
 
     db.session.commit() #commit changes to DB
     return redirect('/resolver/entity/%s' % ent.id)
+
 
 @app.route('/resolver/entity/delete/<id>')
 @check_privilege

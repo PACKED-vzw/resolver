@@ -1,9 +1,11 @@
 from resolver import app
 from flask import redirect
 
+
 @app.route('/')
 def index():
     return redirect('/resolver')
+
 
 @app.route('/resolver')
 @app.route('/resolver/')

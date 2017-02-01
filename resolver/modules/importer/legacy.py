@@ -93,13 +93,13 @@ def import_file(file):
                     continue
                 # record[7] = format
                 doc = Data.query.filter(Data.format == record[7],
-                                        Document.entity_id == ent.id).first()
+                                        Document.entity_id == ent.prim_key).first()
                 if doc:
                     doc.url = url
                     doc.enabled = enabled
                     doc.notes = record[6]
                 else:
-                    doc = Data(ent.id, record[7], url=url, enabled=enabled,
+                    doc = Data(ent.prim_key, record[7], url=url, enabled=enabled,
                                notes=record[6])
                     db.session.add(doc)
                     log(id, "Added data document `%s'" % doc)
@@ -114,7 +114,7 @@ def import_file(file):
                     r_url = None
                 else:
                     r_url = record[4]
-                doc = Representation.query.filter(Document.entity_id == ent.id,
+                doc = Representation.query.filter(Document.entity_id == ent.prim_key,
                                                   Document.url == r_url,
                                                   Document.type == record[3]).first()
                 if doc:
@@ -127,9 +127,9 @@ def import_file(file):
                     else:
                         # We set order to the total amount representation documents for this entity + 1
                         order = Representation.query \
-                                    .filter(Document.entity_id == ent.id).count() + 1
+                                    .filter(Document.entity_id == ent.prim_key).count() + 1
 
-                    doc = Representation(ent.id, order, url=url,
+                    doc = Representation(ent.prim_key, order, url=url,
                                          enabled=enabled, notes=record[6])
                     db.session.add(doc)
                     log(clean_id, "Added representation document `%s'" % doc)
@@ -137,8 +137,8 @@ def import_file(file):
                 reference = record[8] == '1'
                 if reference:
                     ref = Representation.query. \
-                        filter(Document.entity_id == ent.id,
-                               Representation.reference == True).first()
+                        filter(Document.entity_id == ent.prim_key,
+                               Representation.reference is True).first()
                     if ref:
                         ref.reference = False
 
@@ -147,8 +147,9 @@ def import_file(file):
             db.session.flush()
 
     for record_id in records:
+        ent = Entity.query.filter(Entity.id == record_id).first()
         reps = Representation.query. \
-            filter(Document.entity_id == record_id). \
+            filter(Document.entity_id == ent.prim_key). \
             order_by(Representation.order.asc()).all()
         i = 1
         has_reference = False
@@ -162,4 +163,4 @@ def import_file(file):
 
     db.session.commit()
 
-    return (import_id, rows, count_pids, failures, bad_records)
+    return import_id, rows, count_pids, failures, bad_records

@@ -9,6 +9,7 @@ entity_schema = {
         "type": {"type": "string",
                  "enum": ["work", "concept", "event", "agent"]},
         "id": {"type": "string"},
+        "prim_key": {"type": "integer"},
         "title": {"type": "string"},
         "documents": {"type": "array",
                       "items": {"type": "integer"}},
@@ -28,7 +29,7 @@ document_schema = {
         "document": {
             "properties": {
                 "id": {"type": "integer"},
-                "entity": {"type": "string"},
+                "entity": {"type": "integer"},
                 "enabled": {"type": "boolean"},
                 "notes": {"type": "string"},
                 "url": {"type": "string"},

@@ -9,7 +9,7 @@ class RepresentationTest(ApiTest):
     def test_create(self):
         entity = EntityApi().create({'PID': u'1812-A', 'entity_type': u'work'})
         input_data = {
-            'entity_id': entity.id,
+            'entity_prim_key': entity.prim_key,
             'order': 1,
             'label': 'Foo',
             'url': 'http://www.foo.bar',
@@ -19,15 +19,15 @@ class RepresentationTest(ApiTest):
             'document_type': 'representation'
         }
         input_data_min = {
-            'entity_id': entity.id,
+            'entity_prim_key': entity.prim_key,
             'order': 1
         }
         self.t_create(input_data, input_data_min, Representation, RepresentationApi)
 
-    def test_by_entity_id_url_and_type(self):
+    def test_by_entity_prim_key_url_and_type(self):
         entity = EntityApi().create({'PID': u'1812-A', 'entity_type': u'work'})
         input_data = {
-            'entity_id': entity.id,
+            'entity_prim_key': entity.prim_key,
             'order': 1,
             'label': 'Foo',
             'url': 'http://www.foo.bar',
@@ -37,13 +37,13 @@ class RepresentationTest(ApiTest):
             'document_type': 'representation'
         }
         r = RepresentationApi().create(input_data)
-        l = RepresentationApi().by_entity_id_url_and_type(entity.id, 'http://www.foo.bar', 'representation')
+        l = RepresentationApi().by_entity_prim_key_url_and_type(entity.prim_key, 'http://www.foo.bar', 'representation')
         assert r == l
 
     def test_get_in_order(self):
         entity = EntityApi().create({'PID': u'1812-A', 'entity_type': u'work'})
         input_data = {
-            'entity_id': entity.id,
+            'entity_prim_key': entity.prim_key,
             'order': 1,
             'label': 'Foo',
             'url': 'http://www.foo.bar',
@@ -54,7 +54,7 @@ class RepresentationTest(ApiTest):
         }
         r_a = RepresentationApi().create(input_data)
         input_data_extra = {
-            'entity_id': entity.id,
+            'entity_prim_key': entity.prim_key,
             'order': 2,
             'label': 'Foo',
             'url': 'http://www.foo.bar.x',
@@ -64,7 +64,7 @@ class RepresentationTest(ApiTest):
             'document_type': 'representation'
         }
         r_b = RepresentationApi().create(input_data_extra)
-        l = RepresentationApi().get_in_order(entity.id)
+        l = RepresentationApi().get_in_order(entity.prim_key)
         assert len(l) == 2
         assert l[0] == r_a
         assert l[1] == r_b
@@ -74,7 +74,7 @@ class RepresentationTest(ApiTest):
         return
         entity = EntityApi().create({'PID': u'1812-A', 'entity_type': u'work'})
         input_data_min = {
-            'entity_id': entity.id,
+            'entity_prim_key': entity.prim_key,
             'order': 1
         }
         self.t_read(RepresentationApi, input_data_min)
@@ -84,7 +84,7 @@ class RepresentationTest(ApiTest):
         return
         entity = EntityApi().create({'PID': u'1812-A', 'entity_type': u'work'})
         input_data = {
-            'entity_id': entity.id,
+            'entity_prim_key': entity.prim_key,
             'order': 1,
             'label': 'Foo',
             'url': 'http://www.foo.bar',
@@ -94,7 +94,7 @@ class RepresentationTest(ApiTest):
             'document_type': 'representation'
         }
         updated_data = {
-            'entity_id': entity.id,
+            'entity_prim_key': entity.prim_key,
             'order': 1,
             'label': 'Foobar',
             'url': 'http://www.foo.bar.x',
@@ -110,7 +110,7 @@ class RepresentationTest(ApiTest):
         return
         entity = EntityApi().create({'PID': u'1812-A', 'entity_type': u'work'})
         input_data_min = {
-            'entity_id': entity.id,
+            'entity_prim_key': entity.prim_key,
             'order': 1
         }
         self.t_delete(RepresentationApi, input_data_min)
@@ -120,7 +120,7 @@ class RepresentationTest(ApiTest):
         return
         entity = EntityApi().create({'PID': u'1812-A', 'entity_type': u'work'})
         input_data_min = {
-            'entity_id': entity.id,
+            'entity_prim_key': entity.prim_key,
             'order': 1
         }
         self.t_list(RepresentationApi, input_data_min)

@@ -6,7 +6,7 @@ class EntityViewApi:
 
     def get(self, entity_id):
         try:
-            existing_entity = EntityApi().read(entity_id)
+            existing_entity = EntityApi().read_by_pid(entity_id)
         except ItemDoesNotExist:
             return None
         return self.output(existing_entity)

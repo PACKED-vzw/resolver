@@ -22,7 +22,9 @@ class ApiTest(TestCase):
         db.session.remove()
         db.session.commit()
 
-    def t_create(self, input_data_max, input_data_min, db_class, api_class):
+    def t_create(self, input_data_max, input_data_min, db_class, api_class, id_attr=None):
+        if not id_attr:
+            id_attr = 'id'
         e = api_class().create(input_data_max)
         assert e in db.session
         self.assertIsInstance(e, db_class)
@@ -30,23 +32,29 @@ class ApiTest(TestCase):
         assert e_min in db.session
         return e
 
-    def t_read(self, api_class, input_data):
+    def t_read(self, api_class, input_data, id_attr=None):
+        if not id_attr:
+            id_attr = 'id'
         e = api_class().create(input_data)
-        e_r = api_class().read(e.id)
+        e_r = api_class().read(getattr(e, id_attr))
         assert e_r == e
         return e_r
 
-    def t_update(self, api_class, input_data, updated_data):
+    def t_update(self, api_class, input_data, updated_data, id_attr=None):
+        if not id_attr:
+            id_attr = 'id'
         e = api_class().create(input_data)
-        e_u = api_class().update(e.id, updated_data)
-        e_r = api_class().read(e.id)
+        e_u = api_class().update(getattr(e, id_attr), updated_data)
+        e_r = api_class().read(getattr(e, id_attr))
         for key in updated_data:
             assert e_r[key] == updated_data[key]
         return e_r
 
-    def t_delete(self, api_class, input_data):
+    def t_delete(self, api_class, input_data, id_attr=None):
+        if not id_attr:
+            id_attr = 'id'
         e = api_class().create(input_data)
-        assert api_class().delete(e.id) is True
+        assert api_class().delete(getattr(e, id_attr)) is True
         assert e not in db.session
 
     def t_list(self, api_class, input_data):

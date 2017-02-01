@@ -134,8 +134,8 @@ def create_entity():
             }])
         db.session.add(ent)
         db.session.flush()
-        db.session.add(Data(ent.id, 'html'))
-        db.session.add(Representation(ent.id, 1, reference=True))
+        db.session.add(Data(ent.prim_key, 'html'))
+        db.session.add(Representation(ent.prim_key, 1, reference=True))
         db.session.commit()
         log(ent.id, "Created entity `%s'" % ent)
         return RestApi().response(status=201, data={'data': EntityViewApi().output(entity=ent)})
@@ -245,21 +245,21 @@ def create_document():
         data = json.loads(request.data)
         validate(data, document_schema)
 
-        ent = Entity.query.filter(Entity.id == data['entity']).first()
+        ent = Entity.query.filter(Entity.prim_key == data['entity']).first()
         if not ent:
             return ErrorRestApi().response(status=400, errors=['Entity not found.'])
 
         if data['type'] == 'data':
-            docs = Data.query.filter(Document.entity_id == ent.id,
+            docs = Data.query.filter(Document.entity_id == ent.prim_key,
                                      Data.format == data['format']).all()
             if len(docs) != 0:
                 return ErrorRestApi().response(status=400, errors=['Duplicate data format \'{0}\' for entity.'
                                                .format(data['format'])])
-            doc = Data(ent.id, data['format'], data.get('url', ''),
+            doc = Data(ent.prim_key, data['format'], data.get('url', ''),
                        data['enabled'], data.get('notes', ''))
         else:
-            ref = Representation.query.filter(Document.entity_id == ent.id,
-                                              Representation.reference == True).first()
+            ref = Representation.query.filter(Document.entity_id == ent.prim_key,
+                                              Representation.reference is True).first()
             if data['reference']:
                 if ref:
                     ref.reference = False
@@ -271,14 +271,14 @@ def create_document():
                 return ErrorRestApi().response(status=400, errors=errors)
 
             highest = Representation.query. \
-                filter(Document.entity_id == ent.id). \
+                filter(Document.entity_id == ent.prim_key). \
                 order_by(Representation.order.desc()).first()
             if highest:
                 order = highest.order + 1
             else:
                 order = 1
 
-            doc = Representation(ent.id, order, url=data.get('url', ''),
+            doc = Representation(ent.prim_key, order, url=data.get('url', ''),
                                  label=data.get('label', ''), enabled=data['enabled'],
                                  notes=data.get('form', ''), reference=data['reference'])
 
@@ -327,7 +327,7 @@ def update_data(data, doc):
 # TODO: this code for updating order etc should be model code
 def update_representation(data, doc):
     ref = Representation.query.filter(Document.entity_id == doc.entity_id,
-                                      Representation.reference == True).first()
+                                      Representation.reference is True).first()
     if data["reference"]:
         if ref:
             ref.reference = False

@@ -8,6 +8,7 @@ from flask import redirect, request, render_template
 
 DEFAULT_FORMAT = 'html'
 
+
 @app.route('/collection/<id>')
 @app.route('/collection/<id>/<slug>')
 @app.route('/collection/<etype>/id/<id>')
@@ -38,6 +39,7 @@ def landing_page(id, etype=None, slug=None):
                            title=title,
                            documents=docs)
 
+
 @app.route('/collection/<dtype>/<id>')
 @app.route('/collection/<dtype>/<id>/<opt1>')
 @app.route('/collection/<dtype>/<id>/<opt1>/<opt2>')
@@ -55,6 +57,7 @@ def document(id, dtype, opt1=None, opt2=None):
     else:
         raise NotFoundException()
 
+
 @app.route('/collection/<etype>/data/<id>')
 @app.route('/collection/<etype>/data/<id>/<opt>')
 @app.route('/collection/<etype>/data/<id>/<format>/<slug>')
@@ -71,14 +74,14 @@ def document_data(id, etype=None, opt=None, format=None, slug=None):
         # Solution: if opt is in data_formats =>
         #   treat as format, not as slug (even if it is the slug)
         if opt in data_formats:
-            doc = Data.query.filter(Document.entity_id == id,
+            doc = Data.query.filter(Document.entity_id == ent.prim_key,
                                     Data.format == opt).first()
         else:
             if kvstore.get('titles_enabled') and\
                ent.slug != opt:
                 raise NotFoundException()
 
-            doc = Data.query.filter(Document.entity_id == id,
+            doc = Data.query.filter(Document.entity_id == ent.prim_key,
                                     Data.format == DEFAULT_FORMAT).first()
     elif format:
         # format also implies slug
@@ -86,17 +89,18 @@ def document_data(id, etype=None, opt=None, format=None, slug=None):
            ent.slug != slug:
             raise NotFoundException()
 
-        doc = Data.query.filter(Document.entity_id == id,
+        doc = Data.query.filter(Document.entity_id == ent.prim_key,
                                 Data.format == format).first()
     else:
         # only ID
-        doc = Data.query.filter(Document.entity_id == id,
+        doc = Data.query.filter(Document.entity_id == ent.prim_key,
                                 Data.format == DEFAULT_FORMAT).first()
 
     if not doc:
         raise NotFoundException()
 
     return show_document(doc)
+
 
 @app.route('/collection/<etype>/representation/<id>')
 @app.route('/collection/<etype>/representation/<id>/<opt>')
@@ -119,15 +123,15 @@ def document_representation(id, etype=None, opt=None, num=None, slug=None):
         try:
             num = int(opt)
             doc = Representation.query.filter(Representation.order == num,
-                                              Document.entity_id == id).first()
+                                              Document.entity_id == ent.prim_key).first()
         except ValueError:
             # opt == slug
             if kvstore.get('titles_enabled') and\
                ent.slug != opt:
                 raise NotFoundException()
 
-            doc = Representation.query.filter(Representation.reference == True,
-                                              Document.entity_id == id).first()
+            doc = Representation.query.filter(Representation.reference is True,
+                                              Document.entity_id == ent.prim_key).first()
     elif num:
         # num also implies slug
         if kvstore.get('titles_enabled') and\
@@ -135,15 +139,16 @@ def document_representation(id, etype=None, opt=None, num=None, slug=None):
             raise NotFoundException()
 
         doc = Representation.query.filter(Representation.order == num,
-                                          Document.entity_id == id).first()
+                                          Document.entity_id == ent.prim_key).first()
     else:
         # only ID
-        doc = Representation.query.filter(Representation.reference == True,
-                                          Document.entity_id == id).first()
+        doc = Representation.query.filter(Representation.reference is True,
+                                          Document.entity_id == ent.prim_key).first()
     if not doc:
         raise NotFoundException()
 
     return show_document(doc)
+
 
 def show_document(doc):
     hit = DocumentHit(doc.id, request.remote_addr, request.referrer)

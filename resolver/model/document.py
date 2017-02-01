@@ -11,9 +11,8 @@ document_types = ('data', 'representation')
 class Document(db.Model):
     __tablename__ = 'document'
     id = db.Column(db.Integer, primary_key=True)
-    entity_id = db.Column(db.String(64), db.ForeignKey("entity.id",
-                                                       onupdate='cascade',
-                                                       ondelete='cascade'))
+    entity_prim_key = db.Column('entity_id', db.Integer, db.ForeignKey('entity.prim_key', onupdate='cascade',
+                                                                       ondelete='cascade'))
     _enabled = db.Column('enabled', db.Boolean)
     notes = db.Column(db.Text)
     _url = db.Column('url', db.String(512))
@@ -100,5 +99,18 @@ class Document(db.Model):
 
         self._enabled = value
 
+    @property
+    def entity_id(self):
+        return self.entity_prim_key
+
+    @entity_id.setter
+    def entity_id(self, value):
+        self.entity_prim_key = value
+
     enabled = db.synonym('_enabled', descriptor=enabled)
     url = db.synonym('_url', descriptor=url)
+    ##
+    # Legacy: entity_id used to refer to entity.id, but the
+    # primary key changed to entity.prim_key. Keeping
+    # entity_id for backwards compatibility
+    entity_id = db.synonym('entity_prim_key', descriptor=entity_id)

@@ -30,22 +30,26 @@ entity_types = ('work', 'agent', 'concept', 'event')
 
 class Entity(db.Model):
     __tablename__ = 'entity'
-    _id = db.Column('id', db.String(ID_MAX), primary_key=True)
-    original_id = db.Column(db.String(ID_MAX))
-    _type = db.Column('type', db.Enum(*entity_types, name='EntityType'))
-    _title =  db.Column('title', db.String(TITLE_MAX))
-    slug = db.Column(db.String(SLUG_MAX))
 
+    original_id = db.Column(db.String(ID_MAX))
+    slug = db.Column(db.String(SLUG_MAX))
+    prim_key = db.Column(db.Integer, primary_key=True)
+    domain = db.Column(db.String(255), index=True)
+
+    _type = db.Column('type', db.Enum(*entity_types, name='EntityType'))
+    _title = db.Column('title', db.String(TITLE_MAX))
+    _id = db.Column('id', db.String(ID_MAX), index=True)
     _documents = db.relationship("Document",
                                  #cascade='all,delete',
                                  cascade='all,delete-orphan',
                                  backref='entity',
                                  order_by='Document.type')
 
-    def __init__(self, id, type='work', title=None):
+    def __init__(self, id, type='work', title=None, domain=None):
         self.id = id
         self.type = type
         self.title = title
+        self.domain = domain
 
     def __repr__(self):
         return '<Entity(%s), id=%s (%s), title=%s>' %\

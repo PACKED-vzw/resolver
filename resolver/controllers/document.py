@@ -34,7 +34,7 @@ def admin_delete_document(id):
             if count > 1:
                 flash("Please select another representation to be reference first",
                       'warning')
-                return redirect("/resolver/entity/%s" % entity_id)
+                return redirect("/resolver/entity/%s" % doc.entity.id)
 
         db.session.delete(doc)
         db.session.flush()
@@ -49,11 +49,11 @@ def admin_delete_document(id):
     else:
         db.session.delete(doc)
 
-    log(entity_id, "Removed the document '%s' %s" %
+    log(doc.entity.id, "Removed the document '%s' %s" %
         (doc, doc.entity))
     db.session.commit()
     flash("Document deleted succesfully", "success")
-    return redirect("/resolver/entity/%s" % entity_id)
+    return redirect("/resolver/entity/%s" % doc.entity.id)
 
 @app.route('/resolver/document/representation/up/<int:id>')
 @check_privilege
@@ -61,7 +61,7 @@ def admin_representation_up(id):
     doc = Document.query.filter(Document.id == id).first()
     if (not doc) or (doc.type != 'representation'):
         flash('Document not found or wrong type', 'danger')
-        return redirect("/resolver/entity/%s" % doc.entity_id)\
+        return redirect("/resolver/entity/%s" % doc.entity.id)\
             if doc else redirect("/resolver/entity")
 
     if doc.order != 1:
@@ -74,7 +74,7 @@ def admin_representation_up(id):
             db.session.commit()
             log(doc.entity_id, "Moved document `%s' up one position" % doc)
 
-    return redirect("/resolver/entity/%s" % doc.entity_id)
+    return redirect("/resolver/entity/%s" % doc.entity.id)
 
 @app.route('/resolver/document/representation/down/<int:id>')
 @check_privilege
@@ -82,7 +82,7 @@ def admin_representation_down(id):
     doc = Document.query.filter(Document.id == id).first()
     if (not doc) or (doc.type != 'representation'):
         flash('Document not found or wrong type', 'danger')
-        return redirect("/resolver/entity/%s" % doc.entity_id)\
+        return redirect("/resolver/entity/%s" % doc.entity.id)\
             if doc else redirect("/resolver/entity")
 
     next = Representation.query.filter(Document.entity_id == doc.entity_id,
@@ -108,19 +108,20 @@ def admin_add_data_json(entity_id):
     if not form.validate():
         return form_errors_json(form)
 
-    docs = Data.query.filter(Document.entity_id == ent.id,
+    docs = Data.query.filter(Document.entity_id == ent.prim_key,
                              Data.format == form.format.data).all()
     if len(docs) != 0:
         return json.dumps({'errors':[{'title':'Wrong format',
                                       'detail':'Duplicate format'}]})
 
-    doc = Data(ent.id, form.format.data, url=form.url.data,
+    doc = Data(ent.prim_key, form.format.data, url=form.url.data,
                enabled=form.enabled.data, notes=form.notes.data)
     log(doc.entity_id, "Added data document `%s'" % doc)
     db.session.add(doc)
     db.session.commit()
 
     return json.dumps({'success':True})
+
 
 @app.route('/resolver/document/representation/<entity_id>', methods=["POST"])
 @check_privilege
@@ -134,8 +135,8 @@ def admin_add_representation_json(entity_id):
     if not form.validate():
         return form_errors_json(form)
 
-    ref = Representation.query.filter(Document.entity_id == ent.id,
-                                      Representation.reference == True).first()
+    ref = Representation.query.filter(Document.entity_id == ent.prim_key,
+                                      Representation.reference is True).first()
     if form.reference.data:
         if ref:
             ref.reference = False
@@ -144,14 +145,14 @@ def admin_add_representation_json(entity_id):
                                       'detail':'At least one representation has to be the reference image.'}]})
 
     highest = Representation.query.\
-              filter(Document.entity_id == ent.id).\
+              filter(Document.entity_id == ent.prim_key).\
               order_by(Representation.order.desc()).first()
     if highest:
         order = highest.order + 1
     else:
         order = 1
 
-    rep = Representation(ent.id, order, url=form.url.data, label=form.label.data,
+    rep = Representation(ent.prim_key, order, url=form.url.data, label=form.label.data,
                          enabled=form.enabled.data, notes=form.notes.data,
                          reference=form.reference.data)
     log(rep.entity_id, "Added representation document `%s'" % rep)
@@ -159,6 +160,7 @@ def admin_add_representation_json(entity_id):
     db.session.commit()
 
     return json.dumps({'success':True})
+
 
 @app.route('/resolver/document/edit/<int:id>.json', methods=["POST"])
 @check_privilege
@@ -214,6 +216,7 @@ def admin_edit_document_json(id):
         return json.dumps({'success':True})
     else:
         return form_errors_json(form)
+
 
 def form_errors_json(form):
     errors = []
