@@ -20,7 +20,6 @@ Currently, the resolver has one stable branch: 1.7.0 and two deprecated branches
 * Download the latest release of the 1.7.0-branch (stable, supported until 2018-06-03) [here](https://github.com/PACKED-vzw/resolver/releases/tag/v1.7.2).
 
 ### Deprecated branches (still supported)
-* Download the latest release of the 1.5.0-branch (deprecated, supported until 2017-02-04) [here](https://github.com/PACKED-vzw/resolver/releases/tag/v1.5.2).
 * Download the latest release of the 1.6.1-branch (deprecated, supported until 2017-09-07) [here](https://github.com/PACKED-vzw/resolver/releases/tag/v1.6.1).
 
 ## Installation
