@@ -6,6 +6,8 @@ from resolver.exception import EntityPIDExistsException,\
     EntityCollisionException
 from resolver.util import cleanID, log
 import resolver.kvstore as kvstore
+import urllib
+import urlparse
 
 ID_MAX = 64
 SLUG_MAX = 64
@@ -54,6 +56,12 @@ class Entity(db.Model):
     @property
     def persistent_uri(self):
         url = app.config['BASE_URL']+'/collection/%s' % self.id
+
+        p = urlparse.urlparse(url, 'http')
+        netloc = p.netloc or p.path
+        path = p.path if p.netloc else ''
+        p = urlparse.ParseResult('http', netloc, path, *p[3:])
+        url = p.geturl()
 
         if kvstore.get('titles_enabled'):
             return [url, url+'/%s'%self.slug]

@@ -3,6 +3,8 @@ from resolver.database import db
 from resolver.model import Document
 from resolver.util import log
 import resolver.kvstore as kvstore
+import urllib
+import urlparse
 
 data_formats = ['html', 'json', 'xml', 'pdf', 'csv']
 
@@ -45,6 +47,13 @@ class Data(Document):
         uri = app.config['BASE_URL']
         uri += '/collection/%s/data/%s/%s' % (self.entity.type, self.entity_id,
                                               self.format)
+
+        p = urlparse.urlparse(uri, 'http')
+        netloc = p.netloc or p.path
+        path = p.path if p.netloc else ''
+        p = urlparse.ParseResult('http', netloc, path, *p[3:])
+        uri = p.geturl()
+
         uris = [uri]
 
         if kvstore.get('titles_enabled'):

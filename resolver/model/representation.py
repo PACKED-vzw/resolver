@@ -3,6 +3,8 @@ from resolver.database import db
 from resolver.model import Document
 from resolver.util import log
 import resolver.kvstore as kvstore
+import urllib
+import urlparse
 
 LABEL_MAX = 64
 
@@ -44,14 +46,27 @@ class Representation(Document):
         uri += '/collection/%s/representation/%s/%s' % (self.entity.type,
                                                         self.entity_id,
                                                         self.order)
+
+        p = urlparse.urlparse(uri, 'http')
+        netloc = p.netloc or p.path
+        path = p.path if p.netloc else ''
+        p = urlparse.ParseResult('http', netloc, path, *p[3:])
+        uri = p.geturl()
+
         uris = [uri]
 
         if kvstore.get('titles_enabled'):
             uris.append(uri+'/'+self.entity.slug)
         if self.reference:
-            uris.append(app.config['BASE_URL'] +
-                        '/collection/%s/representation/%s' % (self.entity.type,
-                                                              self.entity_id))
+            uri = app.config['BASE_URL'] + '/collection/%s/representation/%s' % (self.entity.type, self.entity_id)
+
+            p = urlparse.urlparse(uri, 'http')
+            netloc = p.netloc or p.path
+            path = p.path if p.netloc else ''
+            p = urlparse.ParseResult('http', netloc, path, *p[3:])
+            uri = p.geturl()
+
+            uris.append(uri)
 
         return uris
 
