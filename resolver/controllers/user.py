@@ -25,12 +25,14 @@ def before_request():
 
 def check_privilege(func):
     """Decorator to provide easy access control to functions."""
+
     def inner(*args, **kwargs):
         if current_user.is_authenticated:
             return func(*args, **kwargs)
         else:
             return redirect("/resolver/signin")
-    #func.provide_automatic_options = False
+
+    # func.provide_automatic_options = False
     return update_wrapper(inner, func)
 
 
@@ -54,11 +56,15 @@ def admin_signin():
     if form.validate_on_submit():
         user = User.query.filter(User.username == form.username.data).first()
         if not user:
-            flash("Username incorrect", "danger")
+            flash('Incorrect username and/or password.', "danger")
             return render_template('resolver/signin.html', title='Sign in',
                                    form=form)
-        login_user(user)
-        return redirect('/resolver')
+        if user.verify_password(form.password.data):
+            login_user(user)
+            return redirect('/resolver')
+        flash('Incorrect username and/or password.', "danger")
+        return render_template('resolver/signin.html', title='Sign in',
+                               form=form)
     return render_template('resolver/signin.html', title='Sign in', form=form)
 
 
@@ -97,7 +103,7 @@ def admin_new_user():
         user = User(form.username.data, form.password.data)
         db.session.add(user)
         db.session.commit()
-        #log("added user `%s' to the system" % user.username)
+        # log("added user `%s' to the system" % user.username)
         flash("User added succesfully", "success")
         return admin_list_users()
     return admin_list_users(form=form)
@@ -117,7 +123,7 @@ def admin_delete_user(username):
         return redirect("/resolver/user")
     db.session.delete(user)
     db.session.commit()
-    #log("removed user `%s' from the system" % user.username)
+    # log("removed user `%s' from the system" % user.username)
     flash("User removed succesfully", "success")
     return redirect("/resolver/user")
 
@@ -152,6 +158,6 @@ def admin_change_user_password(username):
             return redirect("/resolver/user/%s" % username)
         user.change_password(form.password.data)
         db.session.commit()
-        #log("changed the password of user `%s'" % user.username)
+        # log("changed the password of user `%s'" % user.username)
         flash("Password changed succesfully", "success")
     return render_template("resolver/user.html", title="Edit user", user=user, form=form)
